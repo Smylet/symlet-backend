@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
+	users "github.com/The-CuriousX/project/api/user"
 	"github.com/gin-gonic/gin"
-	users "github.com/r-scheele/project/api/user"
 )
 
 func main() {

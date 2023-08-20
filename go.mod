@@ -1,4 +1,4 @@
-module github.com/r-scheele/project
+module github.com/The-CuriousX/project
 
 go 1.20
 

@@ -1,8 +1,8 @@
 package users
 
 import (
+	routers "github.com/The-CuriousX/project/api/user/router"
 	"github.com/gin-gonic/gin"
-	routers "github.com/r-scheele/project/api/user/router"
 )
 
 // Register all the routes
