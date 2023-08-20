@@ -1,0 +1,27 @@
+# Docker #
+## Docker build ##
+Dockerfile*
+docker-compose.yml
+.dockerignore
+
+## Docker data ##
+.docker
+
+# Golang #
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+/vendor/
+
+# Misc #
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
