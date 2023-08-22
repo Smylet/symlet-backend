@@ -5,11 +5,11 @@ services:
   
   api:
     image: cosmtrek/air
-    working_dir: /project
+    working_dir: /symlet-backend
     ports:
       - 8000:8000
     volumes:
-      - ./:/project/ 
+      - ./:/symlet-backend/ 
     # links: 
     # - postgres
     container_name: api
