@@ -2,18 +2,26 @@ package main
 
 import (
 	"log"
+	"os"
 
-	users "github.com/The-CuriousX/project/api/user"
-	"github.com/gin-gonic/gin"
+	"github.com/Smylet/symlet-backend/utilities/common"
+	"github.com/Smylet/symlet-backend/utilities/db"
+	"github.com/Smylet/symlet-backend/utilities/utils"
+	"github.com/rs/zerolog"
 )
 
 func main() {
-	r := gin.Default()
+	config, err := utils.LoadConfig(".")
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	// Register routes
-	users.RegisterRoutes(r)
+	if config.Environment == "development" {
+		log.SetOutput(zerolog.ConsoleWriter{Out: os.Stderr})
+	}
 
-	log.Println("Starting server on port 8080")
-	// Start the Gin server
-	r.Run() // default to :8080
+	db := db.GetDB()
+	defer db.Close()
+
+	common.RunGinServer(config)
 }
