@@ -3,14 +3,14 @@ package hostel
 import (
 	"time"
 
+	"github.com/Smylet/symlet-backend/api/core"
 	"github.com/Smylet/symlet-backend/api/student"
 	"github.com/Smylet/symlet-backend/api/users"
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 type Hostel struct {
-	gorm.Model
+	core.AbstractBaseModel
 	UID uuid.UUID `gorm:"not null"`
 	Name string `gorm:"not null"`
 	University string `gorm:"not null"`
@@ -28,7 +28,7 @@ type Hostel struct {
 // HostelStudent is the join table between Hostel and Student
 // It holds the relationship between the two entities and other metadata
 type HostelStudent struct {
-	gorm.Model
+	core.AbstractBaseModel
 	StudentID     uint
 	HostelID      uint
 	CheckInDate   time.Time
