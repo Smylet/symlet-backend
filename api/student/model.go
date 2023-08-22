@@ -1,9 +1,6 @@
 package student
 
-import (
-
-	"github.com/The-CuriousX/project/api/user"
-)
+import "github.com/Smylet/symlet-backend/api/users"
 
 // Student is a form of user model for our application
 type Student struct {

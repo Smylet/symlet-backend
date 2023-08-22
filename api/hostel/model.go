@@ -3,8 +3,8 @@ package hostel
 import (
 	"time"
 
-	"github.com/The-CuriousX/project/api/student"
-	users "github.com/The-CuriousX/project/api/user"
+	"github.com/Smylet/symlet-backend/api/student"
+	"github.com/Smylet/symlet-backend/api/users"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
