@@ -2,12 +2,10 @@ package db
 
 import (
 	"fmt"
-
-	"github.com/Smylet/symlet-backend/api/core"
-	"github.com/Smylet/symlet-backend/api/hostel"
-	"github.com/Smylet/symlet-backend/api/student"
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	//"github.com/Smylet/symlet-backend/api/core"
+	"github.com/Smylet/symlet-backend/utilities/utils"
 )
 
 // Database struct represents the database connection.
@@ -18,10 +16,12 @@ type Database struct {
 var DB *gorm.DB
 
 // Init opens a database connection and saves the reference to the Database struct.
-func InitDB() *gorm.DB {
+func InitDB(config utils.Config) *gorm.DB {
 	// Adjust the connection string based on your PostgreSQL setup
-	connectionString := "host=localhost user=your_username dbname=your_dbname sslmode=disable password=your_password"
-	db, err := gorm.Open("postgres", connectionString)
+	connectionString := fmt.Sprintf("host=%v user=%v password=%v dbname=%v port=%v sslmode=%v TimeZone=UTC",
+							config.DBHost, config.DBUser, config.DBPass, config.DBName, config.DBPort, config.SSLMode,
+							)
+	db, err := gorm.Open(postgres.Open(connectionString), &gorm.Config{})
 	if err != nil {
 		fmt.Println("db err: (Init) ", err)
 	}
@@ -29,23 +29,30 @@ func InitDB() *gorm.DB {
 	//Only migrate if their is a change in schema
 	Migrate(db)
 
-	db.DB().SetMaxIdleConns(10)
+	sqlDB, _ := db.DB()
+	
+	sqlDB.SetMaxIdleConns(10)
+
+	defer sqlDB.Close()
 	//db.LogMode(true)
-	DB = db
 	return DB
 }
 
 // GetDB returns the reference to the database connection.
-func GetDB() *gorm.DB {
-	return DB
+func GetDB(config utils.Config) *gorm.DB {
+	return InitDB(config)
 }
 
 
-func GetModels() []core.ModelInterface {
-	return []core.ModelInterface{
-		student.Student{},
-		hostel.Hostel{},
-		hostel.HostelStudent{},
-	}
+// var implementedModelInterface []core.ModelInterface
 
-}
+// //All package having a model should call this function in an init
+// // function in the model.go file to register their model 
+// func RegisterModel(model ...core.ModelInterface) {
+// 	fmt.Println(implementedModelInterface, "WFNORR")
+// 	implementedModelInterface = append(implementedModelInterface, model...)
+// }
+
+// func GetModels() []core.ModelInterface{
+// 	return implementedModelInterface
+// }
