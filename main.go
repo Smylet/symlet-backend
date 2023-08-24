@@ -20,8 +20,7 @@ func main() {
 		log.SetOutput(zerolog.ConsoleWriter{Out: os.Stderr})
 	}
 
-	db := db.GetDB()
-	defer db.Close()
-
+	db.GetDB(config)
+	
 	common.RunGinServer(config)
 }
