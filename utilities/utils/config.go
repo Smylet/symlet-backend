@@ -9,6 +9,12 @@ import (
 // Config stores all configuration of the application.
 // The values are read by viper from a config file or environment variable.
 type Config struct {
+	DBHost               string        `mapstructure:"DB_HOST"`
+	DBPort               string        `mapstructure:"DB_PORT"`
+	DBUser               string        `mapstructure:"DB_USER"`
+	DBPass               string        `mapstructure:"DB_PASS"`
+	DBName               string        `mapstructure:"DB_NAME"`
+	SSLMode              string        `mapstructure:"SSL_MODE"`
 	Environment          string        `mapstructure:"ENVIRONMENT"`
 	DBSource             string        `mapstructure:"DB_SOURCE"`
 	MigrationURL         string        `mapstructure:"MIGRATION_URL"`
@@ -22,6 +28,7 @@ type Config struct {
 	EmailSenderAddress   string        `mapstructure:"EMAIL_SENDER_ADDRESS"`
 	EmailSenderPassword  string        `mapstructure:"EMAIL_SENDER_PASSWORD"`
 }
+
 
 // LoadConfig reads configuration from file or environment variables.
 func LoadConfig(path string) (config Config, err error) {
