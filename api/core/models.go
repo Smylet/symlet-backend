@@ -12,9 +12,9 @@ type ModelInterface interface{
 
 type AbstractBaseModel struct{
 	gorm.Model
-	UID uuid.UUID `json:"uid"`
+	UID          uuid.UUID `pg:"type:uuid"`
 }
 
-func (m AbstractBaseModel)isModel() bool{
+func (m *AbstractBaseModel)isModel() bool{
 	return true
 }

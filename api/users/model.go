@@ -4,10 +4,12 @@ package users
 import (
 	"time"
 
+	"github.com/Smylet/symlet-backend/api/core"
 	"github.com/jinzhu/gorm"
 )
 
 type User struct {
+	core.AbstractBaseModel
 	ID           uint `gorm:"primary_key"`
 	CreatedAt    time.Time
 	UpdatedAt    time.Time

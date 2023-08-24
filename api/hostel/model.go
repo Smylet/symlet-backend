@@ -3,15 +3,22 @@ package hostel
 import (
 	"time"
 
-	"github.com/Smylet/symlet-backend/api/core"
 	"github.com/Smylet/symlet-backend/api/student"
 	"github.com/Smylet/symlet-backend/api/users"
-	"github.com/google/uuid"
+
+	"github.com/Smylet/symlet-backend/api/core"
+	//"github.com/Smylet/symlet-backend/utilities/db"
 )
+
+// func init(){
+// 	db.RegisterModel(
+// 		&Hostel{},
+// 		&HostelStudent{},
+// 	)
+// }
 
 type Hostel struct {
 	core.AbstractBaseModel
-	UID uuid.UUID `gorm:"not null"`
 	Name string `gorm:"not null"`
 	University string `gorm:"not null"`
 	Address string `gorm:"not null"`
