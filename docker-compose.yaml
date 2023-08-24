@@ -3,7 +3,7 @@ services:
   ## Postgres, redis, minio, etc ...
 
   
-  api:
+  api-service:
     image: cosmtrek/air
     working_dir: /symlet-backend
     ports:
@@ -12,5 +12,42 @@ services:
       - ./:/symlet-backend/ 
     # links: 
     # - postgres
+    depends_on:
+      - app-service
     container_name: api
+
+
+  postgres:
+    image: postgres:14.1-alpine
+    restart: always
+    ports:
+      - '5432:5432'
+    volumes:
+      - db:/var/lib/postgresql/data
+
+
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: smylet
+
+
+  app-service:
+    build:
+      context: .
+    depends_on:
+      - postgres
+    
+    environment:
+      HTTP_SERVER_ADDRESS: ${HTTP_SERVER_ADDRESS}
+      DB_PORT: ${DB_PORT}
+      DB_HOST: ${DB_HOST}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      DB_NAME: postgres
+      SSL_MODE: ${SSL_MODE}
+
+volumes:
+  db:
+    driver: local
 
