@@ -7,9 +7,12 @@ import (
 )
 
 func Migrate(db *gorm.DB) {
-	db.AutoMigrate(
+	err := db.AutoMigrate(
 		student.Student{},
 		hostel.Hostel{},
 		hostel.HostelStudent{},
 	)
+	if err != nil {
+		panic(err)
+	}
 }
