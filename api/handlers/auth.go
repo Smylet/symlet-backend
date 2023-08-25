@@ -8,7 +8,6 @@ import (
 )
 
 func (server *Server) Register(c *gin.Context) {
-
 	log.Println("here")
 
 	// user := users.CreateUserTx()

@@ -16,7 +16,6 @@ type Server struct {
 
 // NewServer creates a new HTTP server and set up routing.
 func NewServer(config utils.Config, db *gorm.DB) (*Server, error) {
-
 	server := &Server{
 		config: config,
 		cron:   cron.New(),
@@ -29,7 +28,6 @@ func NewServer(config utils.Config, db *gorm.DB) (*Server, error) {
 }
 
 func (server *Server) registerUserRoutes() {
-
 	r := gin.Default()
 
 	userRoutes := r.Group("/users")
@@ -89,7 +87,6 @@ func (server *Server) registerUserRoutes() {
 }
 
 func (server *Server) registerReviewRoutes() {
-
 }
 
 // Start runs the HTTP server on a specific address.
