@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	//"github.com/Smylet/symlet-backend/api/core"
@@ -26,7 +27,7 @@ func InitDB(config utils.Config) *gorm.DB {
 		fmt.Println("db err: (Init) ", err)
 	}
 
-	//Only migrate if their is a change in schema
+	// Only migrate if their is a change in schema
 	Migrate(db)
 
 	sqlDB, _ := db.DB()
@@ -34,7 +35,7 @@ func InitDB(config utils.Config) *gorm.DB {
 	sqlDB.SetMaxIdleConns(10)
 
 	defer sqlDB.Close()
-	//db.LogMode(true)
+	// db.LogMode(true)
 	return DB
 }
 
