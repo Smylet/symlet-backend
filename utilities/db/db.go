@@ -19,18 +19,18 @@ var DB *gorm.DB
 func InitDB(config utils.Config) *gorm.DB {
 	// Adjust the connection string based on your PostgreSQL setup
 	connectionString := fmt.Sprintf("host=%v user=%v password=%v dbname=%v port=%v sslmode=%v TimeZone=UTC",
-							config.DBHost, config.DBUser, config.DBPass, config.DBName, config.DBPort, config.SSLMode,
-							)
+		config.DBHost, config.DBUser, config.DBPass, config.DBName, config.DBPort, config.SSLMode,
+	)
 	db, err := gorm.Open(postgres.Open(connectionString), &gorm.Config{})
 	if err != nil {
 		fmt.Println("db err: (Init) ", err)
 	}
-	
+
 	//Only migrate if their is a change in schema
 	Migrate(db)
 
 	sqlDB, _ := db.DB()
-	
+
 	sqlDB.SetMaxIdleConns(10)
 
 	defer sqlDB.Close()
@@ -43,11 +43,10 @@ func GetDB(config utils.Config) *gorm.DB {
 	return InitDB(config)
 }
 
-
 // var implementedModelInterface []core.ModelInterface
 
 // //All package having a model should call this function in an init
-// // function in the model.go file to register their model 
+// // function in the model.go file to register their model
 // func RegisterModel(model ...core.ModelInterface) {
 // 	fmt.Println(implementedModelInterface, "WFNORR")
 // 	implementedModelInterface = append(implementedModelInterface, model...)

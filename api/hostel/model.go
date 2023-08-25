@@ -19,18 +19,16 @@ import (
 
 type Hostel struct {
 	core.AbstractBaseModel
-	Name string `gorm:"not null"`
-	University string `gorm:"not null"`
-	Address string `gorm:"not null"`
-	City string `gorm:"not null"`
-	State string `gorm:"not null"`
-	Country string `gorm:"not null"`
-	ManagerID uint `gorm:"not null"`
-	Manager users.User `gorm:"foreignKey:ManagerID"`
-	Students []*student.Student `gorm:"many2many:hostel_students;"`
-	
+	Name       string             `gorm:"not null"`
+	University string             `gorm:"not null"`
+	Address    string             `gorm:"not null"`
+	City       string             `gorm:"not null"`
+	State      string             `gorm:"not null"`
+	Country    string             `gorm:"not null"`
+	ManagerID  uint               `gorm:"not null"`
+	Manager    users.User         `gorm:"foreignKey:ManagerID"`
+	Students   []*student.Student `gorm:"many2many:hostel_students;"`
 }
-
 
 // HostelStudent is the join table between Hostel and Student
 // It holds the relationship between the two entities and other metadata
@@ -45,4 +43,3 @@ type HostelStudent struct {
 
 	// Other metadata fields specific to the student-hostel relationship
 }
-

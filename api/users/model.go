@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/Smylet/symlet-backend/api/core"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 type User struct {

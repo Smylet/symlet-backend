@@ -1,33 +1,19 @@
-# Stage 1: Build
-FROM golang:1.20-alpine as builder
-
-# Set necessary environmet variables needed for our image
-ENV GO111MODULE=on \
-    CGO_ENABLED=0 \
-    GOOS=linux \
-    GOARCH=amd64
-
-# Move to working directory /build
-WORKDIR /build
-
-# Copy and download dependency using go mod
-COPY go.mod .
-COPY go.sum .
-RUN go mod download
-
-# Copy the code into the container
-COPY . .
-
-# Build the application
-RUN go build -o main .
-
-# Stage 2: Run
-FROM alpine:latest
+# Build stage
+FROM golang:1.20-alpine3.16 AS builder
 
 WORKDIR /app
+COPY . .
+RUN go build -o main main.go
 
-# Copy binary from build to main folder
-COPY --from=builder /build/main /app/
+# Run stage
+FROM alpine:3.16
+WORKDIR /app
+COPY --from=builder /app/main .
+
+COPY . .
+
+# Expose port 8080 to the outside world
+EXPOSE 8000
 
 # Command to run
 ENTRYPOINT ["/app/main"]
