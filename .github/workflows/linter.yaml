@@ -9,12 +9,16 @@ on:
 jobs:
 
   code-check:
-    name: Check formatting, linting, vetting
+    name: Code linting
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout the code
-        uses: actions/checkout@v3.2.0
-      - name: Run the formatter, linter, and vetter
-        uses: dell/common-github-actions/go-code-formatter-linter-vetter@main
+      - name: Install Go
+        uses: actions/setup-go@v3
         with:
-          directories: ./...
+          go-version: 1.18
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Run linters
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: v1.46.2
