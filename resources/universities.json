@@ -1,0 +1,172 @@
+[
+    {
+        "name":"University of Ilorin, Ilorin",
+        "state":"Kwara State",
+        "city":"Ilorin",
+        "country":"Nigeria",
+        "code":"UNILORIN"
+    },
+    {
+        "name":"Kwara State University, Malete",
+        "state":"Kwara State",
+        "city":"Malete",
+        "country":"Nigeria",
+        "code":"KWASU"
+    },
+
+    {
+        "name":"University of Lagos, Akoka",
+        "state":"Lagos State",
+        "city":"Lagos",
+        "country":"Nigeria",
+        "code":"UNILAG"
+    },
+    {
+        "name":"University of Ibadan, Ibadan",
+        "state":"Oyo State",
+        "city":"Ibadan",
+        "country":"Nigeria",
+        "code":"UI"
+    },
+    {
+        "name":"University of Benin, Benin City",
+        "state":"Edo State",
+        "city":"Benin City",
+        "country":"Nigeria",
+        "code":"UNIBEN"
+    },
+    {
+        "name":"University of Nigeria, Nsukka",
+        "state":"Enugu State",
+        "city":"Nsukka",
+        "country":"Nigeria",
+        "code":"UNN"
+    },
+    {
+        "name":"University of Port Harcourt, Port Harcourt",
+        "state":"Rivers State",
+        "city":"Port Harcourt",
+        "country":"Nigeria",
+        "code":"UNIPORT"
+    },
+    {
+        "name":"University of Abuja, Abuja",
+        "state":"FCT",
+        "city":"Abuja",
+        "country":"Nigeria",
+        "code":"UNIABUJA"
+    },
+    {
+        "name":"University of Jos, Jos",
+        "state":"Plateau State",
+        "city":"Jos",
+        "country":"Nigeria",
+        "code":"UNIJOS"
+    },
+    {
+        "name":"University of Calabar, Calabar",
+        "state":"Cross River State",
+        "city":"Calabar",
+        "country":"Nigeria",
+        "code":"UNICAL"
+    },
+    {
+        "name":"Ahmadu Bello University, Zaria",
+        "state":"Kaduna State",
+        "city":"Zaria",
+        "country":"Nigeria",
+        "code":"ABU"
+    },
+    {
+        "name":"Federal University of Technology, Minna",
+        "state":"Niger State",
+        "city":"Minna",
+        "country":"Nigeria",
+        "code":"FUTMINNA"
+    },
+    {
+        "name":"Obafemi Awolowo University, Ile-Ife",
+        "state":"Osun State",
+        "city":"Ile-Ife",
+        "country":"Nigeria",
+        "code":"OAU"
+    },
+    {
+        "name":"University of Agriculture, Abeokuta",
+        "state":"Ogun State",
+        "city":"Abeokuta",
+        "country":"Nigeria",
+        "code":"UNAAB"
+    },
+    {
+        "name":"Federal University of Technology, Akure",
+        "state":"Ondo State",
+        "city":"Akure",
+        "country":"Nigeria",
+        "code":"FUTA"
+    },
+    {
+        "name":"University of Uyo, Uyo",
+        "state":"Akwa Ibom State",
+        "city":"Uyo",
+        "country":"Nigeria",
+        "code":"UNIUYO"
+    },
+    {
+        "name":"University of Maiduguri, Maiduguri",
+        "state":"Borno State",
+        "city":"Maiduguri",
+        "country":"Nigeria",
+        "code":"UNIMAID"
+    },
+    {
+        "name":"University of Agriculture, Makurdi",
+        "state":"Benue State",
+        "city":"Makurdi",
+        "country":"Nigeria",
+        "code":"UAM"
+    },
+    {
+        "name":"Federal University of Technology, Owerri",
+        "state":"Imo State",
+        "city":"Owerri",
+        "country":"Nigeria",
+        "code":"FUTO"
+    },
+    {
+        "name":"University of Uyo, Uyo",
+        "state":"Akwa Ibom State",
+        "city":"Uyo",
+        "country":"Nigeria",
+        "code":"UNIUYO"
+    },
+    {
+        "name":"University of Maiduguri, Maiduguri",
+        "state":"Borno State",
+        "city":"Maiduguri",
+        "country":"Nigeria",
+        "code":"UNIMAID"
+    },
+    {
+        "name":"University of Agriculture, Makurdi",
+        "state":"Benue State",
+        "city":"Makurdi",
+        "country":"Nigeria",
+        "code":"UAM"
+    },
+    {
+        "name":"Federal University of Technology, Owerri",
+        "state":"Imo State",
+        "city":"Owerri",
+        "country":"Nigeria",
+        "code":"FUTO"
+    },
+    {
+        "name":"University of Jos, Jos",
+        "state":"Plateau State",
+        "city":"Jos",
+        "country":"Nigeria",
+        "code":"UNIJOS"
+    }
+
+]
