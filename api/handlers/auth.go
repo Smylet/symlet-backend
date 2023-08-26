@@ -2,20 +2,70 @@
 package handlers
 
 import (
-	"log"
+	"time"
 
+	"github.com/Smylet/symlet-backend/api/users"
+	"github.com/Smylet/symlet-backend/utilities/common"
+	"github.com/Smylet/symlet-backend/utilities/worker"
 	"github.com/gin-gonic/gin"
+	"github.com/hibiken/asynq"
 )
 
 func (server *Server) Register(c *gin.Context) {
-	log.Println("here")
+	var req users.CreateUserReq
 
-	// user := users.CreateUserTx()
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(400, gin.H{
+			"error": err.Error(),
+			"msg":   "Invalid request body",
+		})
+		return
+	}
 
-	// Handle user registration logic
-	// This would include creating a new user account, sending a confirmation email, etc.
+	hashedPassword, err := common.HashPassword(req.Password)
+	if err != nil {
+		c.JSON(500, gin.H{
+			"error": err.Error(),
+			"msg":   "Failed to hash password",
+		})
+		return
+	}
+
+	arg := users.CreateUserTxParams{
+		CreateUserReq: users.CreateUserReq{
+			Username: req.Username,
+			Email:    req.Email,
+			Password: hashedPassword,
+		},
+		AfterCreate: func(user users.User) error {
+			taskPayload := &worker.PayloadSendVerifyEmail{
+				Username: user.Username,
+			}
+			opts := []asynq.Option{
+				asynq.MaxRetry(10),
+				asynq.ProcessIn(10 * time.Second),
+				asynq.Queue(worker.QueueCritical),
+			}
+
+			return server.task.DistributeTaskSendVerifyEmail(c, taskPayload, opts...)
+		},
+	}
+	txResult, err := users.CreateUserTx(c, server.db, arg)
+	if err != nil {
+		c.JSON(500, gin.H{
+			"error": err.Error(),
+			"msg":   "Failed to create user",
+		})
+		return
+	}
+
+	c.JSON(200, txResult.User)
+}
+
+func (server *Server) ConfirmEmail(c *gin.Context) {
+	// Handle email confirmation logic
 	c.JSON(200, gin.H{
-		"message": "Registered successfully",
+		"message": "Email confirmed",
 	})
 }
 
@@ -33,13 +83,6 @@ func (server *Server) Logout(c *gin.Context) {
 	// This would typically involve revoking tokens or clearing sessions.
 	c.JSON(200, gin.H{
 		"message": "Logged out successfully",
-	})
-}
-
-func (server *Server) ConfirmEmail(c *gin.Context) {
-	// Handle email confirmation logic
-	c.JSON(200, gin.H{
-		"message": "Email confirmed",
 	})
 }
 
