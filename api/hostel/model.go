@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/Smylet/symlet-backend/api/reference"
+	"github.com/Smylet/symlet-backend/api/student"
 	"github.com/Smylet/symlet-backend/api/users"
 
 	"github.com/Smylet/symlet-backend/api/core"
@@ -61,16 +62,34 @@ type HostelStudent struct {
 	CheckOutDate  time.Time
 	RoomNumber    string
 	CurrentHostel bool
+	Student       student.Student `gorm:"foreignKey:StudentID"`
+	Hostel        Hostel     `gorm:"foreignKey:HostelID"`
+	
+	SignedAgreement bool
+	HostelAgreementTemplateID uint 
+	HostelAgreementTemplate HostelAgreementTemplate `gorm:"foreignKey:HostelAgreementTemplateID"`
+	SubmittedSignedAgreementUrl string
+
 	// Other metadata fields specific to the student-hostel relationship
 }
 
 
 type HostelFee struct {
+	core.AbstractBaseModel
+	HostelID uint 
+	Hostel Hostel
 	TotalAmount   float64
-	Breakdown     []FeeBreakdown `gorm:"embedded"`
+	Breakdown     []HostelFeeBreakdown `gorm:"embedded"`
 }
 
-type FeeBreakdown struct {
+type HostelFeeBreakdown struct {
 	Description string  `gorm:"not null"`
 	Amount      float64 `gorm:"not null"`
+}
+
+type HostelAgreementTemplate struct {
+	core.AbstractBaseModel 
+	HostelID uint `gorm:"not null"`
+	Hostel Hostel 
+	DocumentURL string `gorm:"not null"`
 }
