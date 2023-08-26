@@ -10,6 +10,12 @@ import (
 	"gorm.io/gorm"
 )
 
+type ReferenceModelInterface interface {
+	core.ModelInterface
+	isReferenceModel() bool
+	Populate()
+}
+
 type ReferenceHostelAmmenities struct {
 	core.AbstractBaseReferenceModel
 	Name string
@@ -75,4 +81,10 @@ func (u *ReferenceUniversity)Populate(db *gorm.DB) error{
 		}
 	}
 	return nil
+}
+
+
+
+func Populate(model ReferenceModelInterface){
+	model.Populate()	
 }
