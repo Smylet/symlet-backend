@@ -3,10 +3,9 @@ package db
 import (
 	"fmt"
 
+	"github.com/Smylet/symlet-backend/utilities/utils"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	//"github.com/Smylet/symlet-backend/api/core"
-	"github.com/Smylet/symlet-backend/utilities/utils"
 )
 
 // Database struct represents the database connection.
@@ -30,13 +29,7 @@ func InitDB(config utils.Config) *gorm.DB {
 	// Only migrate if their is a change in schema
 	Migrate(db)
 
-	sqlDB, _ := db.DB()
-
-	sqlDB.SetMaxIdleConns(10)
-
-	defer sqlDB.Close()
-	// db.LogMode(true)
-	return DB
+	return db
 }
 
 // GetDB returns the reference to the database connection.
