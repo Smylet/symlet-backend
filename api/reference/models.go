@@ -12,8 +12,7 @@ import (
 
 type ReferenceModelInterface interface {
 	core.ModelInterface
-	isReferenceModel() bool
-	Populate()
+	Populate(db *gorm.DB) error
 }
 
 type ReferenceHostelAmmenities struct {
@@ -22,10 +21,10 @@ type ReferenceHostelAmmenities struct {
 	Description string
 }
 
-func (h *ReferenceHostelAmmenities)Populate(db *gorm.DB) error{
+func (h ReferenceHostelAmmenities)Populate(db *gorm.DB) error{
 
 	//Populate the ammenities table with the data from the json file
-	file, err := os.Open("ammenities.json")
+	file, err := os.Open("../resources/amenities.json")
 	if err != nil{
 		fmt.Printf("Error opening file: %v", err)
 		return err 
@@ -61,7 +60,7 @@ type ReferenceUniversity struct {
 	Country string
 }	
 
-func (u *ReferenceUniversity)Populate(db *gorm.DB) error{
+func (u ReferenceUniversity)Populate(db *gorm.DB) error{
 	file, err := os.Open("universities.json")
 	if err != nil {
 		log.Fatal(err)
@@ -85,6 +84,3 @@ func (u *ReferenceUniversity)Populate(db *gorm.DB) error{
 
 
 
-func Populate(model ReferenceModelInterface){
-	model.Populate()	
-}

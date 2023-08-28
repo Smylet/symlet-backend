@@ -1,7 +1,7 @@
 package maintenance
 
 import (
-	"time"
+	"database/sql"
 
 	"github.com/Smylet/symlet-backend/api/core"
 	"github.com/Smylet/symlet-backend/api/hostel"
@@ -18,17 +18,23 @@ type HostelMaintenanceRequest struct {
 	StudentID uint `gorm:"not null"`
 	Student student.Student
 
-	ResolvedBy uint
-	ResolvedByUser users.User
+	ResolvedByID sql.NullInt16
+	ResolvedBy *users.User `gorm:"foreignKey:ResolvedByID"`
 	
-	RequestImages []string `gorm:"not null"`
+	RequestImages []HostelMaintenanceRequestImage `gorm:"foreignKey:HostelMaintenanceRequestID"`
 	Subject string `gorm:"not null; size:64"`
 	Description string `gorm:"not null size:1023"`
 	ResolveStatus string `gorm:"default:open; oneof: 'open' 'closed' 'in-progress'"`
-	Resolved bool `gorm:"not null"`
+	Resolved bool `gorm:"default:false"`
 
 
-	ResolvedDate time.Time
+	ResolvedDate sql.NullTime
+}
+
+type HostelMaintenanceRequestImage struct {
+	core.AbstractBaseImageModel
+	HostelMaintenanceRequestID uint
+	HostelMaintenanceRequest HostelMaintenanceRequest
 }
 
 
@@ -42,11 +48,17 @@ type WorkOrder struct {
 	Vendor                     users.User
     Description                string `gorm:"size:1023"`
 
-    Status                     string `gorm:"size:16;default:'open' oneof: 'open' 'pending' 'rejected' 'approved' 'in-progress' 'cancelled' 'completed'"`
-	Image 					 string `gorm:"size:1023"`
-	Cost                       float64
-	CompletionDate             time.Time
+    Status                     string `gorm:"size:16;default:'open'; oneof: 'open' 'pending' 'rejected' 'approved' 'in-progress' 'cancelled' 'completed'"`
+	Cost                       float64 `gorm:"default:0"`
+	CompletionDate            sql.NullTime
 	Comments 				 []WorkOrderComment `gorm:"foreignKey:WorkOrderID"`
+	WorkOrderImages			 []WorkOrderImage `gorm:"foreignKey:WorkOrderID"`
+}
+
+type WorkOrderImage struct {
+	core.AbstractBaseImageModel
+	WorkOrderID uint
+	WorkOrder WorkOrder
 }
 
 type WorkOrderComment struct {

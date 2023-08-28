@@ -7,6 +7,7 @@ import (
 type Vendor struct {
 	core.AbstractBaseModel
 	UserID uint `gorm:"not null"`
+
 	CompanyName string `gorm:"not null"`
 	Address string `gorm:"not null"`
 	Email string `gorm:"not null"`
@@ -16,6 +17,5 @@ type Vendor struct {
 	Description string `gorm:"not null"`
 	Service string `gorm:"not null"`
 	Rating float64 `gorm:"not null"`
-	Reviews []VendorReview `gorm:"foreignKey:VendorID"`
 	IsVerified bool `gorm:"default:false"`
 }

@@ -2,14 +2,12 @@ package review
 
 import (
 	"database/sql"
-	"os/user"
 
 	"github.com/Smylet/symlet-backend/api/core"
 	"github.com/Smylet/symlet-backend/api/hostel"
 	"github.com/Smylet/symlet-backend/api/student"
 	"github.com/Smylet/symlet-backend/api/users"
-	"github.com/Smylet/symlet-backend/api/vendor"
-)
+	"github.com/Smylet/symlet-backend/api/vendor")
 
 
 type HostelReview struct{
@@ -43,8 +41,9 @@ type VendorReview struct{
 	core.AbstractBaseModel
 	VendorID uint `gorm:"not null"`
 	Vendor vendor.Vendor `gorm:"foreignKey:VendorID"`
+
 	ReviewerID uint `gorm:"not null"`
-	Reviewer user.User `gorm:"foreignKey:ReviewerID"`
+	Reviewer users.User `gorm:"foreignKey:ReviewerID"`
 	
 	Rating          sql.NullFloat64    `gorm:"default:0.0"`//avg of all ratings for this vendor
 	GeneralComment   sql.NullString `gorm:"size:127"`
@@ -82,8 +81,8 @@ type HostelManagerReview struct {
     ManagerID   uint               `gorm:"not null"`
     Manager     users.User         `gorm:"foreignKey:ManagerID"`
 
-    Rating      float32            `gorm:"default:0.0 check:(rating >= 0) AND (rating <= 5)"`
-    Description string             `gorm:"not null size:1023"`
+    Rating      float32            `gorm:"default:0.0;check:(rating >= 0) AND (rating <= 5)"`
+    Description string             `gorm:"not null;size:1023"`
 
     // Review criteria fields and comments
     CommunicationRating sql.NullFloat64     `gorm:"check:(communication_rating >= 1) AND (communication_rating <= 5)"`
