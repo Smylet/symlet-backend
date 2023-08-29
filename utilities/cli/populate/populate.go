@@ -60,26 +60,6 @@ func Populate(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func ReferenceTableArgsValidator() func(cmd *cobra.Command, args []string) error {
-	referenceTableMap := map[string]reference.ReferenceModelInterface{
-		"amenities": reference.ReferenceHostelAmmenities{},
-		"university":        reference.ReferenceUniversity{},
-	}
-	return func(cmd *cobra.Command, args []string) error {
-
-		if len(args) == 0 {
-			return nil
-		}
-
-		for _, flag := range args {
-			if _, ok := referenceTableMap[flag]; !ok {
-				return errors.New("invalid flag %s" + flag)
-			}
-		}
-		return nil
-	}
-}
-
 
 var PopulateCommand = &cobra.Command{
 	Use:     `populate [table]...`,
@@ -87,7 +67,6 @@ var PopulateCommand = &cobra.Command{
 	Aliases: []string{"p"},
 	Example: `populate --table hostel_ammenities university`,
 	//Long:    `populate reference tables`,
-	PreRunE: ReferenceTableArgsValidator(),
 	//PreRunE: OptionsValidator(config, headers),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return Populate(cmd, args)
