@@ -1,5 +1,4 @@
-{
-    "amenities": [
+[
       { "name": "Adequate Water Supply", "description": "Sufficient water availability for guests." },
       { "name": "Stable Electricity Supply", "description": "Uninterrupted power supply for the hostel." },
       { "name": "Backup Generator", "description": "Generator to provide power during outages." },
@@ -52,4 +51,4 @@
       { "name": "Energy-Saving Measures", "description": "Efforts to save energy." },
       { "name": "Water Conservation Initiatives", "description": "Efforts to conserve water." }
     ]
-  }
+  

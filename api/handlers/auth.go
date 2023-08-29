@@ -2,13 +2,11 @@
 package handlers
 
 import (
-	"log"
 
 	"github.com/gin-gonic/gin"
 )
 
 func (server *Server) Register(c *gin.Context) {
-	log.Println("here")
 
 	// user := users.CreateUserTx()
 
