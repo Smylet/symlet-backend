@@ -32,9 +32,11 @@ func InitDB(config utils.Config) *gorm.DB {
 
 	sqlDB, _ := db.DB()
 
+	DB = db
+
 	sqlDB.SetMaxIdleConns(10)
 
-	defer sqlDB.Close()
+	//defer sqlDB.Close()
 	// db.LogMode(true)
 	return DB
 }
