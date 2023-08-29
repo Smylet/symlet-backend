@@ -18,24 +18,22 @@ type AbstractBaseModel struct {
 
 //Before create hook
 func (m *AbstractBaseModel) BeforeCreate(tx *gorm.DB) (err error) {
+	print("Before create hook")
 	m.UID = uuid.New()
 	return
 }
 
-func (m *AbstractBaseModel) isModel() bool {
+func (m AbstractBaseModel) isModel() bool {
 	return true
 }
 
 type AbstractBaseReferenceModel struct{
 	AbstractBaseModel
-	Name        string `gorm:"size:1023;uniqueIndex"`
-    Value       int16  `gorm:"unique"`
-    Slug        string `gorm:"size:140;uniqueIndex"`
-    Description string `gorm:"size:1023;index"`
 }
 
-func (r *AbstractBaseReferenceModel) isReferenceModel() bool {
-	return true
-}
 
+type AbstractBaseImageModel struct {
+	AbstractBaseModel
+	ImageURL string `gorm:"not null"`
+}
 

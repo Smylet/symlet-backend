@@ -14,6 +14,7 @@ import (
 // Student is a form of user model for our application
 type Student struct {
 	core.AbstractBaseModel
-	users.User `gorm:"embedded"`
+	UserID	  uint   `gorm:"not null"`
+	User  users.User `gorm:"foreignKey:UserID"`
 	University string `gorm:"not null"`
 }
