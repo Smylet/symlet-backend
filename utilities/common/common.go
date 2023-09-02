@@ -18,7 +18,6 @@ type AbstractBaseModel struct {
 
 //Before create hook
 func (m *AbstractBaseModel) BeforeCreate(tx *gorm.DB) (err error) {
-	print("Before create hook")
 	m.UID = uuid.New()
 	return
 }

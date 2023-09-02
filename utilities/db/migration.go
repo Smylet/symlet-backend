@@ -10,7 +10,6 @@ import (
 	"github.com/Smylet/symlet-backend/api/reference"
 	"github.com/Smylet/symlet-backend/api/review"
 	"github.com/Smylet/symlet-backend/api/student"
-	"github.com/Smylet/symlet-backend/api/users"
 	"github.com/rs/zerolog/log"
 	"github.com/Smylet/symlet-backend/api/users"
 	"github.com/Smylet/symlet-backend/api/vendor"

@@ -6,19 +6,18 @@ import (
 	"log"
 	"os"
 
-
-	"github.com/Smylet/symlet-backend/api/core"
+	"github.com/Smylet/symlet-backend/utilities/common"
 	"gorm.io/gorm"
 )
 
 type ReferenceModelInterface interface {
-	core.ModelInterface
+	common.ModelInterface
 	Populate(db *gorm.DB) error
 	GetTableName() string
 }
 
 type ReferenceHostelAmmenities struct {
-	core.AbstractBaseReferenceModel
+	common.AbstractBaseReferenceModel
 	Name string
 	Description string
 }
@@ -67,7 +66,7 @@ func (h ReferenceHostelAmmenities)Populate(db *gorm.DB) error{
 }
 
 type ReferenceUniversity struct {
-	core.AbstractBaseReferenceModel
+	common.AbstractBaseReferenceModel
 	Name string
 	Slug string
 	State string

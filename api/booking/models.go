@@ -4,15 +4,15 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/Smylet/symlet-backend/api/core"
 	"github.com/Smylet/symlet-backend/api/hostel"
 	"github.com/Smylet/symlet-backend/api/student"
+	"github.com/Smylet/symlet-backend/utilities/common"
 )
 
 // HostelStudent is the join table between Hostel and Student
 // It holds the relationship between the two entities and other metadata
 type HostelStudent struct {
-	core.AbstractBaseModel
+	common.AbstractBaseModel
 	StudentID     uint `gorm:"primaryKey"`
 	HostelID      uint `gorm:"primaryKey"`
 	CheckInDate   time.Time
@@ -37,7 +37,7 @@ type HostelStudent struct {
 
 // Booking model
 type HostelBooking struct {
-	core.AbstractBaseModel
+	common.AbstractBaseModel
 	StudentID    uint `gorm:"not null"`
 	Student      student.Student
 	HostelID     uint `gorm:"not null"`
@@ -46,7 +46,7 @@ type HostelBooking struct {
 }
 
 type PaymentPlan struct {
-	core.AbstractBaseModel
+	common.AbstractBaseModel
 	Amount float64 `gorm:"not null"`
 	HostelBookingID      uint `gorm:"not null"`
 	HostelBooking        HostelBooking
@@ -60,7 +60,7 @@ type PaymentPlan struct {
 
 // PaymentDistribution model
 type PaymentDistribution struct {
-	core.AbstractBaseModel
+	common.AbstractBaseModel
 	PaymentPlanID uint      `gorm:"not null"`
 	Date                time.Time `gorm:"not null"`
 	Amount              float64   `gorm:"not null"`

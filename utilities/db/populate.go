@@ -20,7 +20,7 @@ func createVendor(db *gorm.DB) (vendor.Vendor, error) {
 	vendorUser := users.User{
 		Username:     faker.Username(),
 		Email:        faker.Email(),
-		PasswordHash: faker.Password(),
+		Password: faker.Password(),
 	}
 
 	vendor := vendor.Vendor{
@@ -53,7 +53,7 @@ func createHostelManager(db *gorm.DB) (manager.HostelManager, error) {
 	managerUser := users.User{
 		Username:     faker.Username(),
 		Email:        faker.Email(),
-		PasswordHash: faker.Password(),
+		Password: faker.Password(),
 	}
 
 	hostelManager := manager.HostelManager{
@@ -130,7 +130,7 @@ func createStudent(db *gorm.DB, university reference.ReferenceUniversity) (stude
 	studentUser := users.User{
 		Username:     faker.Username(),
 		Email:        faker.Email(),
-		PasswordHash: faker.Password(),
+		Password: faker.Password(),
 	}
 
 	studentObj := student.Student{

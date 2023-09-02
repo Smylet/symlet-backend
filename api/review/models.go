@@ -3,17 +3,17 @@ package review
 import (
 	"database/sql"
 
-	"github.com/Smylet/symlet-backend/api/core"
 	"github.com/Smylet/symlet-backend/api/hostel"
 	"github.com/Smylet/symlet-backend/api/manager"
 	"github.com/Smylet/symlet-backend/api/student"
 	"github.com/Smylet/symlet-backend/api/users"
 	"github.com/Smylet/symlet-backend/api/vendor"
+	"github.com/Smylet/symlet-backend/utilities/common"
 )
 
 
 type HostelReview struct{
-	core.AbstractBaseModel
+	common.AbstractBaseModel
 	HostelID uint `gorm:"not null"`
 	Hostel hostel.Hostel `gorm:"foreignKey:HostelID"`	
 
@@ -40,7 +40,7 @@ type HostelReview struct{
 }
 
 type VendorReview struct{
-	core.AbstractBaseModel
+	common.AbstractBaseModel
 	VendorID uint `gorm:"not null"`
 	Vendor vendor.Vendor `gorm:"foreignKey:VendorID"`
 
@@ -76,7 +76,7 @@ type VendorReview struct{
 	
 
 type HostelManagerReview struct {
-    core.AbstractBaseModel
+    common.AbstractBaseModel
     ReviewerID  uint               `gorm:"not null"`
     Reviewer    users.User         `gorm:"foreignKey:ReviewerID"`
 

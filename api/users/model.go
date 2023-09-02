@@ -12,9 +12,6 @@ import (
 
 type User struct {
 	common.AbstractBaseModel
-	ID                 uint `gorm:"primary_key"`
-	CreatedAt          time.Time
-	UpdatedAt          time.Time
 	Username           string `gorm:"unique;not null"`
 	Email              string `gorm:"unique;not null"`
 	Password           string `sql:"not null"`
@@ -22,7 +19,7 @@ type User struct {
 }
 
 type Profile struct {
-	ID     uint `gorm:"primary_key"`
+	common.AbstractBaseModel
 	UserID uint
 	Bio    string
 	Image  string
@@ -44,7 +41,6 @@ func CreateUserTx(ctx context.Context, database *gorm.DB, arg CreateUserTxParams
 			Username:  arg.Username,
 			Email:     arg.Email,
 			Password:  arg.Password,
-			CreatedAt: time.Now(),
 		}
 		if err := tx.Create(&user).Error; err != nil {
 			// check if the error is a duplicate key error

@@ -16,7 +16,7 @@ import (
 // }
 
 type Hostel struct {
-	core.AbstractBaseModel
+	common.AbstractBaseModel
 	Name         string                        `gorm:"not null"`
 	UniversityID uint                          `gorm:"not null"`
 	University   reference.ReferenceUniversity `gorm:"foreignKey:UniversityID;constraint:OnDelete:SET NULL"`
@@ -44,14 +44,14 @@ type Hostel struct {
 }
 
 type HostelImage struct {
-	core.AbstractBaseImageModel
+	common.AbstractBaseImageModel
 	HostelID  uint
 	Hostel    Hostel `gorm:"foreignKey:HostelID;constraint:OnDelete:CASCADE"`
 }
 
 
 type HostelFee struct {
-	core.AbstractBaseModel
+	common.AbstractBaseModel
 	HostelID    uint
 	TotalAmount float64
 	PaymentPlan string `gorm:"oneof: 'monthly' 'by_school_session' 'annually'"`
@@ -61,7 +61,7 @@ type HostelFee struct {
 
 
 type HostelAgreementTemplate struct {
-	core.AbstractBaseModel
+	common.AbstractBaseModel
 	HostelID    uint   `gorm:"not null"`
 	DocumentURL string `gorm:"not null"`
 }

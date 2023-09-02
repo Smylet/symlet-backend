@@ -6,13 +6,13 @@ import (
 	"gorm.io/driver/sqlite"
 
 	"github.com/Smylet/symlet-backend/api/booking"
-	"github.com/Smylet/symlet-backend/api/core"
 	"github.com/Smylet/symlet-backend/api/hostel"
 	"github.com/Smylet/symlet-backend/api/manager"
 	"github.com/Smylet/symlet-backend/api/reference"
 	"github.com/Smylet/symlet-backend/api/student"
 	"github.com/Smylet/symlet-backend/api/users"
 	"github.com/Smylet/symlet-backend/api/vendor"
+	"github.com/Smylet/symlet-backend/utilities/common"
 	"github.com/spf13/cobra"
 	"gorm.io/gorm"
 )
@@ -116,7 +116,7 @@ func TestPopulateData(t *testing.T) {
 
 // MockReferenceModel is a mock implementation of ReferenceModelInterface
 type MockReferenceModel struct {
-	core.AbstractBaseReferenceModel
+	common.AbstractBaseReferenceModel
 	PopulateCalled int
 }
 

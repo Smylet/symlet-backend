@@ -1,13 +1,12 @@
 package notification
 
-
 import (
-	"github.com/Smylet/symlet-backend/api/core"
+	"github.com/Smylet/symlet-backend/utilities/common"
 )
 
 
 type Notification struct {
-	core.AbstractBaseModel
+	common.AbstractBaseModel
     UserID      uint   
     Content     string `gorm:"not null size:1023"`
     IsRead      bool   `gorm:"default:false"`

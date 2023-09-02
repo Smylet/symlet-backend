@@ -3,15 +3,15 @@ package maintenance
 import (
 	"database/sql"
 
-	"github.com/Smylet/symlet-backend/api/core"
 	"github.com/Smylet/symlet-backend/api/hostel"
 	"github.com/Smylet/symlet-backend/api/student"
 	"github.com/Smylet/symlet-backend/api/users"
+	"github.com/Smylet/symlet-backend/utilities/common"
 )
 
 
 type HostelMaintenanceRequest struct {
-	core.AbstractBaseModel
+	common.AbstractBaseModel
 	HostelID uint `gorm:"not null"`
 	Hostel hostel.Hostel
 
@@ -32,14 +32,14 @@ type HostelMaintenanceRequest struct {
 }
 
 type HostelMaintenanceRequestImage struct {
-	core.AbstractBaseImageModel
+	common.AbstractBaseImageModel
 	HostelMaintenanceRequestID uint
 	HostelMaintenanceRequest HostelMaintenanceRequest
 }
 
 
 type WorkOrder struct {
-	core.AbstractBaseModel
+	common.AbstractBaseModel
 
     HostelMaintenanceRequestID uint
 	HostelMaintenanceRequest   HostelMaintenanceRequest
@@ -56,13 +56,13 @@ type WorkOrder struct {
 }
 
 type WorkOrderImage struct {
-	core.AbstractBaseImageModel
+	common.AbstractBaseImageModel
 	WorkOrderID uint
 	WorkOrder WorkOrder
 }
 
 type WorkOrderComment struct {
-	core.AbstractBaseModel
+	common.AbstractBaseModel
 	WorkOrderID uint
 	WorkOrder WorkOrder
 	Comment string `gorm:"size:1023"`

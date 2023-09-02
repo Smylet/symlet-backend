@@ -88,7 +88,6 @@ func SetupTestDB() {
     user := users.User{
         Username:     "testuser",
         Email:        "test@example.com",
-        PasswordHash: "hashed_password",
     }
     if err := DB.Create(&user).Error; err != nil {
         panic("Failed to insert test user: " + err.Error())
