@@ -7,7 +7,6 @@ import (
 type UserSerializer struct {
 	C *gin.Context
 	User
-	Profile ProfileSerializer `json:"profile"`
 }
 
 type ProfileSerializer struct {
@@ -21,16 +20,16 @@ func (s *UserSerializer) Response() map[string]interface{} {
 		"username":   s.Username,
 		"email":      s.Email,
 		"created_at": s.CreatedAt.Format("2006-01-02T15:04:05.000Z"),
-		"profile":    s.Profile.Response(),
 	}
 	return response
 }
 
 func (s *ProfileSerializer) Response() map[string]interface{} {
 	response := map[string]interface{}{
-		"id":    s.ID,
-		"bio":   s.Bio,
-		"image": s.Image,
+		"id":      s.ID,
+		"bio":     s.Bio,
+		"image":   s.Image,
+		"user_id": s.UserID,
 	}
 	return response
 }

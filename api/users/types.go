@@ -17,9 +17,20 @@ type CreateUserTxResult struct {
 }
 
 type CreateVerifyEmailParams struct {
-	Username   string `json:"username"`
+	UserID     uint
 	Email      string `json:"email"`
 	SecretCode string `json:"secret_code"`
+}
+
+type ConfirmVerifyEmailParams struct {
+	UserID     uint   `form:"user_id" binding:"required"`
+	VerEmailID uint   `form:"ver_email_id" binding:"required"`
+	SecretCode string `form:"secret_code" binding:"required"`
+}
+
+type ValidationStatus struct {
+	Valid   bool
+	Message string
 }
 type UpdateVerifyEmailParams struct {
 	Email      string
