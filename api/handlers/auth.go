@@ -19,7 +19,12 @@ func (server *Server) Register(c *gin.Context) {
 			"error": err.Error(),
 			"msg":   "Invalid request body",
 		})
-		return
+	}
+
+	if status := users.ValidateRegisterUserReq(req); !status.Valid {
+		c.JSON(400, gin.H{
+			"msg": status.Message,
+		})
 	}
 
 	hashedPassword, err := common.HashPassword(req.Password)
@@ -28,7 +33,6 @@ func (server *Server) Register(c *gin.Context) {
 			"error": err.Error(),
 			"msg":   "Failed to hash password",
 		})
-		return
 	}
 
 	arg := users.CreateUserTxParams{
@@ -56,16 +60,38 @@ func (server *Server) Register(c *gin.Context) {
 			"error": err.Error(),
 			"msg":   "Failed to create user",
 		})
-		return
 	}
 
-	c.JSON(200, txResult.User)
+	user := users.UserSerializer{C: c, User: txResult.User}
+	c.JSON(200, gin.H{
+		"user": user.Response(),
+		"msg":  "User created successfully",
+	})
 }
 
 func (server *Server) ConfirmEmail(c *gin.Context) {
-	// Handle email confirmation logic
+	var req users.ConfirmVerifyEmailParams
+
+	if err := c.ShouldBindQuery(&req); err != nil {
+		c.JSON(400, gin.H{
+			"error": err.Error(),
+			"msg":   "Invalid request body",
+		})
+	}
+
+	if err := users.VerifyEmailTx(c, server.db, users.ConfirmVerifyEmailParams{
+		UserID:     req.UserID,
+		VerEmailID: req.VerEmailID,
+		SecretCode: req.SecretCode,
+	}); err != nil {
+		c.JSON(500, gin.H{
+			"error": err.Error(),
+			"msg":   "Failed to verify email",
+		})
+	}
+
 	c.JSON(200, gin.H{
-		"message": "Email confirmed",
+		"msg": "Email confirmed",
 	})
 }
 
