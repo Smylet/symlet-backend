@@ -44,7 +44,6 @@ func (sender *SESEmailSender) SendEmail(
 	bcc []string,
 	attachFiles []string,
 ) error {
-
 	// Check if we're in development mode
 	if sender.config.Environment == "development" {
 		fmt.Println("Sending email in development mode")

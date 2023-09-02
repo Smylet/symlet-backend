@@ -17,7 +17,6 @@ var (
 )
 
 func ValidateRegisterUserReq(req CreateUserReq) ValidationStatus {
-
 	if len(req.Email) < 3 || len(req.Email) > 254 {
 		return ValidationStatus{
 			Valid:   false,

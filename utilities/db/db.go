@@ -22,7 +22,6 @@ var DB *gorm.DB
 
 // Init opens a database connection and saves the reference to the Database struct.
 func InitDB(config utils.Config) *gorm.DB {
-
 	// Adjust the connection string based on your PostgreSQL setup
 	connectionString := fmt.Sprintf("host=%v user=%v password=%v dbname=%v port=%v sslmode=%v TimeZone=UTC",
 		config.DBHost, config.DBUser, config.DBPass, config.DBName, config.DBPort, config.SSLMode,
@@ -47,7 +46,6 @@ func InitDB(config utils.Config) *gorm.DB {
 	}), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.LogLevel(logLevel)),
 	})
-
 	if err != nil {
 		log.Println("db err: (Init) ", err)
 	}

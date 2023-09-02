@@ -16,7 +16,8 @@ func CreateAWSSession(config *utils.Config) (*session.Session, error) {
 			config.AwsAccessKeyID,
 			config.AwsSecretAccessKey,
 			"",
-		)},
+		),
+	},
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error occurred while creating AWS session: %w", err)

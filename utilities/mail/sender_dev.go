@@ -32,7 +32,6 @@ func SendEmailDev(
 	attachFiles []string, // Note: The current code doesn't handle attachments yet.
 	fromEmailAddress string,
 ) error {
-
 	hostAddress, portNumber := "127.0.0.1", server.PortNumber
 	address := fmt.Sprintf("%s:%d", hostAddress, portNumber)
 	timeout := time.Duration(2) * time.Second
