@@ -1,8 +1,8 @@
 package student
 
 import (
-	"github.com/Smylet/symlet-backend/api/core"
 	"github.com/Smylet/symlet-backend/api/users"
+	"github.com/Smylet/symlet-backend/utilities/common"
 	//"github.com/Smylet/symlet-backend/utilities/db"
 )
 
@@ -13,7 +13,7 @@ import (
 
 // Student is a form of user model for our application
 type Student struct {
-	core.AbstractBaseModel
+	common.AbstractBaseModel
 	users.User `gorm:"embedded"`
 	University string `gorm:"not null"`
 }

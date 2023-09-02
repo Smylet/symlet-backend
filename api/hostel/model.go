@@ -5,8 +5,7 @@ import (
 
 	"github.com/Smylet/symlet-backend/api/student"
 	"github.com/Smylet/symlet-backend/api/users"
-
-	"github.com/Smylet/symlet-backend/api/core"
+	"github.com/Smylet/symlet-backend/utilities/common"
 	//"github.com/Smylet/symlet-backend/utilities/db"
 )
 
@@ -18,7 +17,7 @@ import (
 // }
 
 type Hostel struct {
-	core.AbstractBaseModel
+	common.AbstractBaseModel
 	Name       string             `gorm:"not null"`
 	University string             `gorm:"not null"`
 	Address    string             `gorm:"not null"`
@@ -33,7 +32,7 @@ type Hostel struct {
 // HostelStudent is the join table between Hostel and Student
 // It holds the relationship between the two entities and other metadata
 type HostelStudent struct {
-	core.AbstractBaseModel
+	common.AbstractBaseModel
 	StudentID     uint
 	HostelID      uint
 	CheckInDate   time.Time
