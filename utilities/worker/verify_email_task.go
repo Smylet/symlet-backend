@@ -57,7 +57,7 @@ func (processor *RedisTaskProcessor) ProcessTaskSendVerifyEmail(ctx context.Cont
 		Str("email", user.Email).Msg("processing task")
 
 	verifyEmail, err := users.CreateVerifyEmail(ctx, processor.db, users.CreateVerifyEmailParams{
-		Username:   user.Username,
+		UserID:     user.ID,
 		Email:      user.Email,
 		SecretCode: utils.RandomString(32),
 	})
@@ -65,9 +65,11 @@ func (processor *RedisTaskProcessor) ProcessTaskSendVerifyEmail(ctx context.Cont
 		return fmt.Errorf("failed to create verify email: %w", err)
 	}
 
-	subject := "Welcome to Simple Bank"
-	// TODO: replace this URL with an environment variable that points to a front-end page
-	verifyUrl := fmt.Sprintf("http://localhost:8080/v1/verify_email?email_id=%d&secret_code=%s",
+	subject := "Welcome to Symlet! Please verify your email address"
+	// TODO: replace this URL with an environment variable that points to a front-end page - GET /users/confirm-email
+	verifyUrl := fmt.Sprintf("http://%s/users/confirm-email?user_id=%d&ver_email_id=%d&secret_code=%s",
+		processor.config.HTTPServerAddress,
+		verifyEmail.UserID,
 		verifyEmail.ID, verifyEmail.SecretCode)
 
 	content := fmt.Sprintf(`Hello %s,<br/>

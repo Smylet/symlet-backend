@@ -5,6 +5,7 @@ import (
 
 	"github.com/Smylet/symlet-backend/utilities/common"
 	"github.com/Smylet/symlet-backend/utilities/mail"
+	"github.com/Smylet/symlet-backend/utilities/utils"
 	"github.com/go-redis/redis/v8"
 	"github.com/hibiken/asynq"
 	"github.com/rs/zerolog/log"
@@ -18,16 +19,17 @@ const (
 
 type TaskProcessor interface {
 	Start() error
-	// ProcessTaskSendVerifyEmail(ctx context.Context, task *asynq.Task) error
+	ProcessTaskSendVerifyEmail(ctx context.Context, task *asynq.Task) error
 }
 
 type RedisTaskProcessor struct {
 	server *asynq.Server
 	db     *gorm.DB
 	mailer mail.EmailSender
+	config utils.Config
 }
 
-func NewRedisTaskProcessor(redisOpt asynq.RedisClientOpt, db *gorm.DB, mailer mail.EmailSender) TaskProcessor {
+func NewRedisTaskProcessor(redisOpt asynq.RedisClientOpt, db *gorm.DB, mailer mail.EmailSender, config utils.Config) TaskProcessor {
 	logger := common.NewLogger()
 	redis.SetLogger(logger)
 
@@ -50,13 +52,21 @@ func NewRedisTaskProcessor(redisOpt asynq.RedisClientOpt, db *gorm.DB, mailer ma
 		server: server,
 		db:     db,
 		mailer: mailer,
+		config: config,
+	}
+}
+
+func RunTaskProcessor(config utils.Config, redisOpt asynq.RedisClientOpt, db *gorm.DB, mailer mail.EmailSender) {
+	processor := NewRedisTaskProcessor(redisOpt, db, mailer, config)
+	if err := processor.Start(); err != nil {
+		log.Fatal().Err(err).Msg("failed to start task processor")
 	}
 }
 
 func (processor *RedisTaskProcessor) Start() error {
 	mux := asynq.NewServeMux()
 
-	// mux.HandleFunc(TaskSendVerifyEmail, processor.ProcessTaskSendVerifyEmail)
+	mux.HandleFunc(TaskSendVerifyEmail, processor.ProcessTaskSendVerifyEmail)
 
 	return processor.server.Start(mux)
 }
