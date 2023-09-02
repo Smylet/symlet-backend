@@ -5,9 +5,14 @@ import (
 	"os"
 
 	"github.com/Smylet/symlet-backend/api/handlers"
+	"github.com/Smylet/symlet-backend/utilities/common"
 	"github.com/Smylet/symlet-backend/utilities/db"
+	"github.com/Smylet/symlet-backend/utilities/mail"
 	"github.com/Smylet/symlet-backend/utilities/utils"
+	"github.com/Smylet/symlet-backend/utilities/worker"
+	"github.com/hibiken/asynq"
 	"github.com/rs/zerolog"
+	logger "github.com/rs/zerolog/log"
 )
 
 func main() {
@@ -20,15 +25,35 @@ func main() {
 		log.SetOutput(zerolog.ConsoleWriter{Out: os.Stderr})
 	}
 
-	database := db.GetDB(config)
+	database, redisOption := db.GetDB(config),
+		asynq.RedisClientOpt{
+			Addr: config.RedisAddress,
+		}
 
-	server, err := handlers.NewServer(config, database)
+	awsSession, err := common.CreateAWSSession(&config)
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal().Err(err).Msg("failed to create AWS session")
+	}
+
+	mailer, task := mail.NewSESEmailSender(
+		config.EmailSenderAddress,
+		awsSession,
+		config),
+		worker.NewRedisTaskDistributor(redisOption)
+
+	go worker.RunTaskProcessor(config, redisOption,
+		database, mailer)
+
+	server, err := handlers.NewServer(config, database,
+		task, mailer, awsSession)
+	if err != nil {
+		logger.Fatal().Err(err).Msg("failed to create server")
 	}
 
 	err = server.Start(config.HTTPServerAddress)
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal().Err(err).Msg("failed to start server")
 	}
+
+	mail.Cleanup()
 }

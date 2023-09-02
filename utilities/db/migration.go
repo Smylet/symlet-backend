@@ -11,6 +11,8 @@ import (
 	"github.com/Smylet/symlet-backend/api/review"
 	"github.com/Smylet/symlet-backend/api/student"
 	"github.com/Smylet/symlet-backend/api/users"
+	"github.com/rs/zerolog/log"
+	"github.com/Smylet/symlet-backend/api/users"
 	"github.com/Smylet/symlet-backend/api/vendor"
 	"gorm.io/gorm"
 )
@@ -21,6 +23,9 @@ func Migrate(db *gorm.DB) {
 		manager.HostelManager{},
 		reference.ReferenceHostelAmmenities{},
 		reference.ReferenceUniversity{},
+		users.User{},
+		users.Profile{},
+		users.VerificationEmail{},
 		student.Student{},
 		//hostel
 		hostel.Hostel{},
@@ -51,6 +56,6 @@ func Migrate(db *gorm.DB) {
 		review.VendorReview{},
 	)
 	if err != nil {
-		panic(err)
+		log.Fatal().Err(err).Msg("failed to migrate")
 	}
 }

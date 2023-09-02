@@ -1,3 +1,6 @@
+# User defined variables
+USER := $(whoami)
+REDIS_VOLUME := ~/OrbStack/docker/volumes/symlet-backend_redis-data/
 # Go variables
 GOCMD := go
 GOBUILD := $(GOCMD) build
@@ -10,7 +13,7 @@ BINARY_NAME := myapp
 DOCKER_COMPOSE := docker-compose
 DOCKER_COMPOSE_FILE := docker-compose.yaml
 
-.PHONY: all build test clean up
+.PHONY: all build test clean up down clean-redis
 
 all: test build up
 
@@ -29,3 +32,5 @@ up:
 
 down:
 	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) down
+clean-redis:
+	@rm -f $(REDIS_VOLUME)

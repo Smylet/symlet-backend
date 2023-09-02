@@ -4,8 +4,7 @@ import (
 	"github.com/Smylet/symlet-backend/api/manager"
 	"github.com/Smylet/symlet-backend/api/reference"
 	"github.com/Smylet/symlet-backend/api/student"
-
-	"github.com/Smylet/symlet-backend/api/core"
+	"github.com/Smylet/symlet-backend/utilities/common"
 	//"github.com/Smylet/symlet-backend/utilities/db"
 )
 
