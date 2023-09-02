@@ -3,18 +3,23 @@ module github.com/Smylet/symlet-backend
 go 1.20
 
 require (
+	github.com/aws/aws-sdk-go v1.45.0
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/hibiken/asynq v0.24.1
-	github.com/jordan-wright/email v4.0.1-0.20210109023952-943e75fe5223+incompatible
+	github.com/lib/pq v1.10.9
+	github.com/mocktools/go-smtp-mock v1.10.0
 	github.com/robfig/cron v1.2.0
 	github.com/rs/zerolog v1.30.0
 	github.com/spf13/viper v1.16.0
+	github.com/stretchr/testify v1.8.4
+	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 	gorm.io/gorm v1.25.4
 )
 
 require (
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/frankban/quicktest v1.14.6 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
@@ -23,9 +28,12 @@ require (
 	github.com/jackc/pgx/v5 v5.3.1 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
+	github.com/jmespath/go-jmespath v0.4.0 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/redis/go-redis/v9 v9.0.3 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 	golang.org/x/time v0.1.0 // indirect
+	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 )
 
 require (
