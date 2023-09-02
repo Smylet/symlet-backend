@@ -4,28 +4,31 @@ import (
 	"github.com/Smylet/symlet-backend/utilities/mail"
 	"github.com/Smylet/symlet-backend/utilities/utils"
 	"github.com/Smylet/symlet-backend/utilities/worker"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/gin-gonic/gin"
 	"github.com/robfig/cron"
 	"gorm.io/gorm"
 )
 
 type Server struct {
-	router *gin.Engine
-	config utils.Config
-	cron   *cron.Cron
-	db     *gorm.DB
-	task   worker.TaskDistributor
-	mailer mail.EmailSender
+	router  *gin.Engine
+	config  utils.Config
+	cron    *cron.Cron
+	db      *gorm.DB
+	task    worker.TaskDistributor
+	mailer  mail.EmailSender
+	session *session.Session
 }
 
 // NewServer creates a new HTTP server and set up routing.
-func NewServer(config utils.Config, db *gorm.DB, task worker.TaskDistributor, mailer mail.EmailSender) (*Server, error) {
+func NewServer(config utils.Config, db *gorm.DB, task worker.TaskDistributor, mailer mail.EmailSender, session *session.Session) (*Server, error) {
 	server := &Server{
-		config: config,
-		cron:   cron.New(),
-		db:     db,
-		task:   task,
-		mailer: mailer,
+		config:  config,
+		cron:    cron.New(),
+		db:      db,
+		task:    task,
+		mailer:  mailer,
+		session: session,
 	}
 
 	server.registerUserRoutes()
