@@ -2,11 +2,13 @@ package vendor
 
 import (
 	"github.com/Smylet/symlet-backend/api/core"
+	"github.com/Smylet/symlet-backend/api/users"
 )
 
 type Vendor struct {
 	core.AbstractBaseModel
 	UserID uint `gorm:"not null"`
+	User  users.User `gorm:"foreignKey:UserID"`
 
 	CompanyName string `gorm:"not null"`
 	Address string `gorm:"not null"`

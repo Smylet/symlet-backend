@@ -2,6 +2,7 @@ package student
 
 import (
 	"github.com/Smylet/symlet-backend/api/core"
+	"github.com/Smylet/symlet-backend/api/reference"
 	"github.com/Smylet/symlet-backend/api/users"
 	//"github.com/Smylet/symlet-backend/utilities/db"
 )
@@ -16,5 +17,7 @@ type Student struct {
 	core.AbstractBaseModel
 	UserID	  uint   `gorm:"not null"`
 	User  users.User `gorm:"foreignKey:UserID"`
-	University string `gorm:"not null"`
+	UniversityID uint `gorm:"not null"`
+	University reference.ReferenceUniversity `gorm:"foreignKey:UniversityID"`
 }
+

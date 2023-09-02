@@ -1,10 +1,9 @@
 package hostel
 
 import (
-
+	"github.com/Smylet/symlet-backend/api/manager"
 	"github.com/Smylet/symlet-backend/api/reference"
 	"github.com/Smylet/symlet-backend/api/student"
-	"github.com/Smylet/symlet-backend/api/users"
 
 	"github.com/Smylet/symlet-backend/api/core"
 	//"github.com/Smylet/symlet-backend/utilities/db"
@@ -29,7 +28,7 @@ type Hostel struct {
 	Description  string                        `gorm:"not null"`
 
 	ManagerID uint       `gorm:"not null"`
-	Manager   users.User `gorm:"foreignKey:ManagerID"`
+	Manager    manager.HostelManager `gorm:"foreignKey:ManagerID"`
 
 	Ammenities []*reference.ReferenceHostelAmmenities `gorm:"many2many:hostel_ammenities;"`
 	Students   []*student.Student `gorm:"many2many:hostel_students;"`

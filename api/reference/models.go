@@ -114,4 +114,7 @@ func (u ReferenceUniversity)Populate(db *gorm.DB) error{
 }
 
 
-
+var ReferenceModelMap = map[string]ReferenceModelInterface{
+	"amenities": ReferenceHostelAmmenities{},
+	"university": ReferenceUniversity{},
+}

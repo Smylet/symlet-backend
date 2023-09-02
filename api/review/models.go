@@ -5,9 +5,11 @@ import (
 
 	"github.com/Smylet/symlet-backend/api/core"
 	"github.com/Smylet/symlet-backend/api/hostel"
+	"github.com/Smylet/symlet-backend/api/manager"
 	"github.com/Smylet/symlet-backend/api/student"
 	"github.com/Smylet/symlet-backend/api/users"
-	"github.com/Smylet/symlet-backend/api/vendor")
+	"github.com/Smylet/symlet-backend/api/vendor"
+)
 
 
 type HostelReview struct{
@@ -79,7 +81,7 @@ type HostelManagerReview struct {
     Reviewer    users.User         `gorm:"foreignKey:ReviewerID"`
 
     ManagerID   uint               `gorm:"not null"`
-    Manager     users.User         `gorm:"foreignKey:ManagerID"`
+    Manager     manager.HostelManager         `gorm:"foreignKey:ManagerID"`
 
     Rating      float32            `gorm:"default:0.0;check:(rating >= 0) AND (rating <= 5)"`
     Description string             `gorm:"not null;size:1023"`
