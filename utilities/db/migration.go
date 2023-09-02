@@ -1,19 +1,24 @@
 package db
 
 import (
+
 	"github.com/Smylet/symlet-backend/api/booking"
 	"github.com/Smylet/symlet-backend/api/hostel"
 	"github.com/Smylet/symlet-backend/api/maintenance"
+	"github.com/Smylet/symlet-backend/api/manager"
 	"github.com/Smylet/symlet-backend/api/notification"
 	"github.com/Smylet/symlet-backend/api/reference"
 	"github.com/Smylet/symlet-backend/api/review"
 	"github.com/Smylet/symlet-backend/api/student"
+	"github.com/Smylet/symlet-backend/api/users"
 	"github.com/Smylet/symlet-backend/api/vendor"
 	"gorm.io/gorm"
 )
 
 func Migrate(db *gorm.DB) {
 	err := db.AutoMigrate(
+		users.User{},
+		manager.HostelManager{},
 		reference.ReferenceHostelAmmenities{},
 		reference.ReferenceUniversity{},
 		student.Student{},
@@ -21,7 +26,7 @@ func Migrate(db *gorm.DB) {
 		hostel.Hostel{},
 		booking.HostelStudent{},
 		booking.HostelBooking{},
-		booking.CustomPaymentPlan{},
+		booking.PaymentPlan{},
 		booking.PaymentDistribution{},
 		hostel.HostelImage{},
 		hostel.HostelFee{},
