@@ -73,7 +73,10 @@ func (sender *SESEmailSender) SendEmail(
 
 	// Create a buffer to store raw data
 	var emailRaw bytes.Buffer
-	msg.WriteTo(&emailRaw)
+	_, err = msg.WriteTo(&emailRaw)
+	if err != nil {
+		return fmt.Errorf("error writing email to buffer: %w", err)
+	}
 
 	// Create a new raw message
 	rawMessage := ses.RawMessage{Data: emailRaw.Bytes()}
