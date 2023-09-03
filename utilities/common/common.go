@@ -9,11 +9,30 @@ type ModelInterface interface {
 	isModel() bool
 }
 
+
+
 type AbstractBaseModel struct {
 	gorm.Model
 	UID uuid.UUID `pg:"type:uuid"`
 }
 
-func (m *AbstractBaseModel) isModel() bool {
+//Before create hook
+func (m *AbstractBaseModel) BeforeCreate(tx *gorm.DB) (err error) {
+	m.UID = uuid.New()
+	return
+}
+
+func (m AbstractBaseModel) isModel() bool {
 	return true
 }
+
+type AbstractBaseReferenceModel struct{
+	AbstractBaseModel
+}
+
+
+type AbstractBaseImageModel struct {
+	AbstractBaseModel
+	ImageURL string `gorm:"not null"`
+}
+
