@@ -2,29 +2,65 @@
 package users
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
+	"github.com/Smylet/symlet-backend/utilities/token"
+	"github.com/Smylet/symlet-backend/utilities/utils"
 	"github.com/gin-gonic/gin"
 )
 
-// 1. Authentication Middleware
-func AuthenticationMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		// This is a stub. Implement your authentication check logic here.
-		// Usually, you'll check for a token in the request header, then verify its validity.
-		if /* check for valid token */ false {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-			c.Abort()
+const (
+	AuthorizationHeaderKey  = "authorization"
+	AuthorizationTypeBearer = "bearer"
+	AuthorizationPayloadKey = "authorization_payload"
+)
+
+// AuthMiddleware creates a gin middleware for authorization
+func AuthMiddleware(tokenMaker token.Maker) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		authorizationHeader := ctx.GetHeader(AuthorizationHeaderKey)
+
+		if len(authorizationHeader) == 0 {
+			err := errors.New("authorization header is not provided")
+			utils.RespondWithError(ctx, http.StatusUnauthorized, err.Error(), "Unauthorized")
 			return
 		}
-		c.Next()
+
+		fields := strings.Fields(authorizationHeader)
+		if len(fields) < 2 {
+			err := errors.New("invalid authorization header format")
+			utils.RespondWithError(ctx, http.StatusUnauthorized, err.Error(), "Unauthorized")
+			return
+		}
+
+		authorizationType := strings.ToLower(fields[0])
+		if authorizationType != AuthorizationTypeBearer {
+			err := fmt.Errorf("unsupported authorization type %s", authorizationType)
+			utils.RespondWithError(ctx, http.StatusUnauthorized, err.Error(), "Unauthorized")
+			return
+		}
+
+		accessToken := fields[1]
+		payload, err := tokenMaker.VerifyToken(accessToken)
+		if err != nil {
+			utils.RespondWithError(ctx, http.StatusUnauthorized, err.Error(), "Unauthorized")
+			return
+		}
+
+		ctx.Set(AuthorizationPayloadKey, payload)
+		ctx.Next()
 	}
 }
 
 // 2. Authorization Middleware
 func AuthorizationMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// Add user role to the payload
+		// check the role in this middleware
 		// Implement your authorization logic here. E.g., check the user role or specific permissions.
 		if /* user does not have permission */ false {
 			c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
@@ -61,20 +97,6 @@ func ErrorHandlingMiddleware() gin.HandlerFunc {
 				// You can also log the error if needed.
 			}
 		}()
-		c.Next()
-	}
-}
-
-// 5. Data Validation Middleware
-func DataValidationMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		// Implement your data validation logic here. Depending on the endpoint, you'll need to validate different data.
-		// This can be done using a library or manually.
-		if /* data is invalid */ false {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Bad Request"})
-			c.Abort()
-			return
-		}
 		c.Next()
 	}
 }

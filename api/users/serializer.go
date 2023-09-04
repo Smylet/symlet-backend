@@ -1,16 +1,10 @@
 package users
 
-import (
-	"github.com/gin-gonic/gin"
-)
-
 type UserSerializer struct {
-	C *gin.Context
 	User
 }
 
 type ProfileSerializer struct {
-	C *gin.Context
 	Profile
 }
 
