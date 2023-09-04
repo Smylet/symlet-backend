@@ -14,8 +14,8 @@ import (
 )
 
 var (
-    DB *gorm.DB
-   initialized bool
+	DB          *gorm.DB
+	initialized bool
 )
 
 
@@ -23,13 +23,11 @@ func connectToPostgreSQL(host, username, password, dbname string) (*sql.DB, erro
     // Define the PostgreSQL connection parameters
     port := 5432
 
-
-    // Connection string
-    connStr := fmt.Sprintf(
-        "sslmode=disable host=%s port=%d user=%s password=%s dbname=%s",
-        host, port, username, password, dbname,
-    )
-
+	// Connection string
+	connStr := fmt.Sprintf(
+		"host=%s port=%d user=%s password=%s sslmode=disable",
+		host, port, username, password,
+	)
 
     // Open a connection to PostgreSQL
     db, err := sql.Open("postgres", connStr)
@@ -39,7 +37,6 @@ func connectToPostgreSQL(host, username, password, dbname string) (*sql.DB, erro
 
     return db, nil
 }
-
 
 func CreateTestDatabase(db *sql.DB) error {
     // Create the test database if not exist
@@ -57,14 +54,13 @@ func CreateTestDatabase(db *sql.DB) error {
         "CREATE DATABASE smy_test",
 	)
 
-    return err
+	return err
 }
 
 func DropTestDatabase(db *sql.DB) error {
     _, err := db.Exec("DROP DATABASE IF EXISTS smy_test WITH (FORCE);")
     return err
 }
-
 
 func SetupTestDB() {
     if initialized {
@@ -112,6 +108,7 @@ func SetupTestDB() {
     }
     initialized = true
 
+	initialized = true
 }
 
 func TeardownTestDB() {
@@ -132,8 +129,8 @@ func TeardownTestDB() {
 
 // RunTests is a helper function to run tests and handle setup/teardown.
 func RunTests(m *testing.M) int {
-    SetupTestDB()
-    defer TeardownTestDB()
+	SetupTestDB()
+	defer TeardownTestDB()
 
-    return m.Run()
+	return m.Run()
 }

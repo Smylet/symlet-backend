@@ -57,7 +57,6 @@ func TestPopulate(t *testing.T) {
 	}
 }
 
-
 func TestPopulateData(t *testing.T) {
 	// Mock the command for populating data
 	cmd := &cobra.Command{}
@@ -67,14 +66,13 @@ func TestPopulateData(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to connect to database: %v", err)
 	}
-	
 
 	// Execute the DataCommand to populate data
 	err = DataCommand.RunE(cmd, nil)
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
 	}
-	//Assert there is are 3 users in the database, a student, a hostel manager, vendor
+	// Assert there is are 3 users in the database, a student, a hostel manager, vendor
 	var users []users.User
 	db.Find(&users)
 	if len(users) != 3 {
@@ -112,7 +110,6 @@ func TestPopulateData(t *testing.T) {
 
 	// Add additional assertions as needed for the DataCommand branch
 }
-
 
 // MockReferenceModel is a mock implementation of ReferenceModelInterface
 type MockReferenceModel struct {

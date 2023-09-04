@@ -3,12 +3,9 @@ package root
 import (
 	"fmt"
 
-	
 	"github.com/Smylet/symlet-backend/utilities/cli/populate"
 	"github.com/spf13/cobra"
 )
-
-
 
 var rootCmd = &cobra.Command{
 	Use:     `smy`,
@@ -23,7 +20,7 @@ func Execute() error {
 
 func init() {
 	rootCmd.AddCommand(populate.PopulateCommand)
-	//rootCmd.AddCommand(migrate.MigrateCommand)
-	//rootCmd.AddCommand(rollback.RollbackCommand)
-	//rootCmd.AddCommand(rollback.RollbackCommand)
+	// rootCmd.AddCommand(migrate.MigrateCommand)
+	// rootCmd.AddCommand(rollback.RollbackCommand)
+	// rootCmd.AddCommand(rollback.RollbackCommand)
 }

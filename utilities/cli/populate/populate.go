@@ -13,8 +13,6 @@ import (
 	"github.com/Smylet/symlet-backend/utilities/utils"
 )
 
-
-
 func GetDB() (*gorm.DB, error) {
 	config, err := utils.LoadConfig("../..")
 	if err != nil {
@@ -22,13 +20,12 @@ func GetDB() (*gorm.DB, error) {
 	}
 	database := db.GetDB(config)
 	if database == nil {
-		return nil , errors.New("error connecting to database")
+		return nil, errors.New("error connecting to database")
 	}
 	return database, nil
 }
 
 func PopulateReference(cmd *cobra.Command, args []string, referenceModelMap map[string]reference.ReferenceModelInterface, database *gorm.DB) error {
-	
 	var models []reference.ReferenceModelInterface
 	flags, err := cmd.Flags().GetStringSlice("table")
 	fmt.Println(flags, len(flags))
@@ -36,7 +33,7 @@ func PopulateReference(cmd *cobra.Command, args []string, referenceModelMap map[
 	if err != nil {
 		return err
 	}
-	
+
 	if len(flags) == 0 {
 		for _, model := range referenceModelMap {
 			models = append(models, model)
@@ -45,13 +42,11 @@ func PopulateReference(cmd *cobra.Command, args []string, referenceModelMap map[
 		for _, flag := range flags {
 			model, ok := referenceModelMap[flag]
 			if !ok {
-				return fmt.Errorf("invalid option %s", flag, )
+				return fmt.Errorf("invalid option %s", flag)
 			}
 			models = append(models, model)
 		}
 	}
-
-
 
 	for _, model := range models {
 		err := model.Populate(database)
@@ -72,8 +67,8 @@ var PopulateCommand = &cobra.Command{
 	Short:   `populate the reference table or data in the database`,
 	Aliases: []string{"p"},
 	Example: `populate reference --table hostel_ammenities university`,
-	//Long:    `populate reference tables`,
-	//PreRunE: OptionsValidator(config, headers),
+	// Long:    `populate reference tables`,
+	// PreRunE: OptionsValidator(config, headers),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		database, err := GetDB()
 		if err != nil {
@@ -82,7 +77,6 @@ var PopulateCommand = &cobra.Command{
 		return PopulateReference(cmd, args, reference.ReferenceModelMap, database)
 	},
 }
-
 
 var ReferenceCommand = &cobra.Command{
 	Use:     `reference [table]...`,
@@ -112,10 +106,9 @@ var DataCommand = &cobra.Command{
 	},
 }
 
-
 func init() {
-	ReferenceCommand.Flags().StringSliceP("table", "T",nil, "-T amenities,university")
+	ReferenceCommand.Flags().StringSliceP("table", "T", nil, "-T amenities,university")
 	PopulateCommand.AddCommand(ReferenceCommand)
 	PopulateCommand.AddCommand(DataCommand)
-	//PopulateCommand.PersistentFlags().StringP("table", "T", "", "table to populate")
+	// PopulateCommand.PersistentFlags().StringP("table", "T", "", "table to populate")
 }

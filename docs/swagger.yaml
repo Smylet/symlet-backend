@@ -1,0 +1,100 @@
+definitions:
+  users.CreateUserReq:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+  utils.ErrorMessage:
+    properties:
+      error:
+        type: string
+      msg:
+        type: string
+    type: object
+  utils.SuccessMessage:
+    properties:
+      data: {}
+      msg:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /users/confirm-email:
+    post:
+      consumes:
+      - application/json
+      description: Confirm a user's email using verification parameters.
+      parameters:
+      - description: User ID for email verification
+        in: query
+        name: userID
+        required: true
+        type: string
+      - description: Verification Email ID
+        in: query
+        name: verEmailID
+        required: true
+        type: string
+      - description: Secret verification code
+        in: query
+        name: secretCode
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Email successfully confirmed
+          schema:
+            $ref: '#/definitions/utils.SuccessMessage'
+        "400":
+          description: Invalid request or parameters
+          schema:
+            $ref: '#/definitions/utils.ErrorMessage'
+        "500":
+          description: Server error or unexpected issues
+          schema:
+            $ref: '#/definitions/utils.ErrorMessage'
+      summary: Confirm a user's email
+      tags:
+      - users
+  /users/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user with the system.
+      parameters:
+      - description: User registration information
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/users.CreateUserReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User created successfully
+          schema:
+            $ref: '#/definitions/utils.SuccessMessage'
+        "400":
+          description: Invalid request body or validation failure
+          schema:
+            $ref: '#/definitions/utils.ErrorMessage'
+        "500":
+          description: Server error or unexpected issues
+          schema:
+            $ref: '#/definitions/utils.ErrorMessage'
+      summary: Register a new user
+      tags:
+      - users
+swagger: "2.0"

@@ -1,13 +1,13 @@
 package db
 
 import (
-	"database/sql"
-	"fmt"
-	"log"
+	"strconv"
 	"time"
 
 	"github.com/Smylet/symlet-backend/utilities/utils"
-	_ "github.com/lib/pq"
+	"github.com/jackc/pgx"
+	"github.com/jackc/pgx/stdlib"
+	"github.com/rs/zerolog/log"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -22,15 +22,21 @@ var DB *gorm.DB
 
 // Init opens a database connection and saves the reference to the Database struct.
 func InitDB(config utils.Config) *gorm.DB {
-	// Adjust the connection string based on your PostgreSQL setup
-	connectionString := fmt.Sprintf("host=%v user=%v password=%v dbname=%v port=%v sslmode=%v TimeZone=UTC",
-		config.DBHost, config.DBUser, config.DBPass, config.DBName, config.DBPort, config.SSLMode,
-	)
-
-	sqlDB, err := sql.Open("postgres", connectionString)
+	port, err := strconv.ParseUint(config.DBPort, 10, 16)
 	if err != nil {
-		log.Println("db err: (Init) ", err)
+		log.Fatal().Err(err).Msg("failed to parse db port")
 	}
+
+	postgresConfig := pgx.ConnConfig{
+		Host:                 config.DBHost,
+		Port:                 uint16(port),
+		User:                 config.DBUser,
+		Password:             config.DBPass,
+		Database:             config.DBName,
+		PreferSimpleProtocol: true,
+	}
+
+	sqlDB := stdlib.OpenDB(postgresConfig)
 
 	maxIdleConns := 10               // Suitable for medium-sized applications.
 	maxOpenConns := 20               // Depending on your expected load and DB capacity.
@@ -47,16 +53,23 @@ func InitDB(config utils.Config) *gorm.DB {
 		Logger: logger.Default.LogMode(logger.LogLevel(logLevel)),
 	})
 	if err != nil {
-		log.Println("db err: (Init) ", err)
+		log.Fatal().Err(err).Msg("failed to connect to database")
 	}
 
-	// Only migrate if their is a change in schema
-	Migrate(db)
+	// Only migrate if their is a change in schema - development mode
+	if config.Environment == "development" {
+		Migrate(db)
+	}
 
 	return db
 }
 
 // GetDB returns the reference to the database connection.
 func GetDB(config utils.Config) *gorm.DB {
+	defer func() {
+		if err := recover(); err != nil {
+			log.Error().Msg("failed to get db")
+		}
+	}()
 	return InitDB(config)
 }

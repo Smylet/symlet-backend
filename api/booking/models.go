@@ -47,14 +47,14 @@ type HostelBooking struct {
 
 type PaymentPlan struct {
 	common.AbstractBaseModel
-	Amount float64 `gorm:"not null"`
-	HostelBookingID      uint `gorm:"not null"`
+	Amount               float64 `gorm:"not null"`
+	HostelBookingID      uint    `gorm:"not null"`
 	HostelBooking        HostelBooking
-	PaymentType          string        `gorm:"not null;default:'all';check:payment_type IN ('all', 'spread', 'stay', 'deferred')"`
-	PaymentInterval      sql.NullString        `gorm:"check:payment_interval IN ('equal', 'unequal')"` //not needed if ALL
-	IntervalDuration     sql.NullInt32       // `gorm:"check:interval_duration LESS"` // Only for 'equal' distribution
-	DeferredDate         sql.NullTime    // Only for 'deferred' payment
-	NumberOfMonths       sql.NullInt32 // Only for 'stay' payment
+	PaymentType          string         `gorm:"not null;default:'all';check:payment_type IN ('all', 'spread', 'stay', 'deferred')"`
+	PaymentInterval      sql.NullString `gorm:"check:payment_interval IN ('equal', 'unequal')"` // not needed if ALL
+	IntervalDuration     sql.NullInt32  // `gorm:"check:interval_duration LESS"` // Only for 'equal' distribution
+	DeferredDate         sql.NullTime   // Only for 'deferred' payment
+	NumberOfMonths       sql.NullInt32  // Only for 'stay' payment
 	PaymentDistributions []PaymentDistribution
 }
 
@@ -62,6 +62,6 @@ type PaymentPlan struct {
 type PaymentDistribution struct {
 	common.AbstractBaseModel
 	PaymentPlanID uint      `gorm:"not null"`
-	Date                time.Time `gorm:"not null"`
-	Amount              float64   `gorm:"not null"`
+	Date          time.Time `gorm:"not null"`
+	Amount        float64   `gorm:"not null"`
 }

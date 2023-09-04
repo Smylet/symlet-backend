@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Smylet/symlet-backend/utilities/common"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -33,14 +34,24 @@ type VerificationEmail struct {
 	UserID     uint
 }
 
+type Session struct {
+	ID           uuid.UUID
+	Username     string
+	RefreshToken string
+	UserAgent    string
+	ClientIP     string
+	ExpiresAt    time.Time
+	IsBlocked    bool
+}
+
 func CreateUserTx(ctx context.Context, database *gorm.DB, arg CreateUserTxParams) (CreateUserTxResult, error) {
 	var result CreateUserTxResult
 
 	err := common.ExecTx(ctx, database, func(tx *gorm.DB) error {
 		user := User{
-			Username:  arg.Username,
-			Email:     arg.Email,
-			Password:  arg.Password,
+			Username: arg.Username,
+			Email:    arg.Email,
+			Password: arg.Password,
 		}
 		if err := tx.Create(&user).Error; err != nil {
 			// check if the error is a duplicate key error
@@ -158,4 +169,21 @@ func VerifyEmailTx(ctx context.Context, database *gorm.DB, arg ConfirmVerifyEmai
 
 		return nil
 	})
+}
+
+func CreateSession(ctx context.Context, database *gorm.DB, arg CreateSessionParams) (Session, error) {
+	session := Session{
+		ID:           uuid.New(),
+		Username:     arg.Username,
+		RefreshToken: arg.RefreshToken,
+		UserAgent:    arg.UserAgent,
+		ClientIP:     arg.ClientIP,
+		ExpiresAt:    time.Now().Add(ExpiryTime),
+	}
+
+	if err := database.Create(&session).Error; err != nil {
+		return session, err
+	}
+
+	return session, nil
 }

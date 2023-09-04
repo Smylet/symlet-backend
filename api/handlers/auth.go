@@ -2,37 +2,46 @@
 package handlers
 
 import (
+	"log"
 	"time"
 
 	"github.com/Smylet/symlet-backend/api/users"
 	"github.com/Smylet/symlet-backend/utilities/common"
+	"github.com/Smylet/symlet-backend/utilities/token"
+	"github.com/Smylet/symlet-backend/utilities/utils"
 	"github.com/Smylet/symlet-backend/utilities/worker"
 	"github.com/gin-gonic/gin"
 	"github.com/hibiken/asynq"
 )
 
+// Register godoc
+// @Summary Register a new user
+// @Description Register a new user with the system.
+// @Tags users
+// @Accept  json
+// @Produce  json
+// @Param req body users.CreateUserReq true "User registration information"
+// @Success 200 {object} utils.SuccessMessage "User created successfully"
+// @Failure 400 {object} utils.ErrorMessage "Invalid request body or validation failure"
+// @Failure 500 {object} utils.ErrorMessage "Server error or unexpected issues"
+// @Router /users/register [post]
 func (server *Server) Register(c *gin.Context) {
 	var req users.CreateUserReq
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(400, gin.H{
-			"error": err.Error(),
-			"msg":   "Invalid request body",
-		})
+		utils.RespondWithError(c, 400, err.Error(), "Invalid request body")
+		return
 	}
 
 	if status := users.ValidateRegisterUserReq(req); !status.Valid {
-		c.JSON(400, gin.H{
-			"msg": status.Message,
-		})
+		utils.RespondWithError(c, 400, "", status.Message)
+		return
 	}
 
 	hashedPassword, err := common.HashPassword(req.Password)
 	if err != nil {
-		c.JSON(500, gin.H{
-			"error": err.Error(),
-			"msg":   "Failed to hash password",
-		})
+		utils.RespondWithError(c, 500, err.Error(), "Failed to hash password")
+		return
 	}
 
 	arg := users.CreateUserTxParams{
@@ -56,27 +65,33 @@ func (server *Server) Register(c *gin.Context) {
 	}
 	txResult, err := users.CreateUserTx(c, server.db, arg)
 	if err != nil {
-		c.JSON(500, gin.H{
-			"error": err.Error(),
-			"msg":   "Failed to create user",
-		})
+		utils.RespondWithError(c, 500, err.Error(), "Failed to create user")
+		return
 	}
 
-	user := users.UserSerializer{C: c, User: txResult.User}
-	c.JSON(200, gin.H{
-		"user": user.Response(),
-		"msg":  "User created successfully",
-	})
+	user := users.UserSerializer{User: txResult.User}
+	utils.RespondWithSuccess(c, 200, user.Response(), "User created successfully")
 }
 
+// ConfirmEmail godoc
+// @Summary Confirm a user's email
+// @Description Confirm a user's email using verification parameters.
+// @Tags users
+// @Accept  json
+// @Produce  json
+// @Param userID query string true "User ID for email verification"
+// @Param verEmailID query string true "Verification Email ID"
+// @Param secretCode query string true "Secret verification code"
+// @Success 200 {object} utils.SuccessMessage "Email successfully confirmed"
+// @Failure 400 {object} utils.ErrorMessage "Invalid request or parameters"
+// @Failure 500 {object} utils.ErrorMessage "Server error or unexpected issues"
+// @Router /users/confirm-email [post]
 func (server *Server) ConfirmEmail(c *gin.Context) {
 	var req users.ConfirmVerifyEmailParams
 
 	if err := c.ShouldBindQuery(&req); err != nil {
-		c.JSON(400, gin.H{
-			"error": err.Error(),
-			"msg":   "Invalid request body",
-		})
+		utils.RespondWithError(c, 400, err.Error(), "Invalid request body")
+		return
 	}
 
 	if err := users.VerifyEmailTx(c, server.db, users.ConfirmVerifyEmailParams{
@@ -84,24 +99,90 @@ func (server *Server) ConfirmEmail(c *gin.Context) {
 		VerEmailID: req.VerEmailID,
 		SecretCode: req.SecretCode,
 	}); err != nil {
-		c.JSON(500, gin.H{
-			"error": err.Error(),
-			"msg":   "Failed to verify email",
-		})
+		utils.RespondWithError(c, 500, err.Error(), "Failed to verify email")
+		return
 	}
 
-	c.JSON(200, gin.H{
-		"msg": "Email confirmed",
-	})
+	utils.RespondWithSuccess(c, 200, nil, "Email confirmed")
 }
 
-// Handlers (simplified)
+// Login godoc
+// @Summary Login a user
+// @Description Login a user with the system.
+// @Tags users
+// @Accept  json
+// @Produce  json
+// @Param req body users.LoginReq true "User login information"
+// @Success 200 {object} utils.SuccessMessage
+// @Failure 400 {object} utils.ErrorMessage
+// @Failure 500 {object} utils.ErrorMessage
+// @Router /users/login [post]
 func (server *Server) Login(c *gin.Context) {
-	// Handle user login logic
-	// This would include checking user credentials, issuing tokens, etc.
-	c.JSON(200, gin.H{
-		"message": "Logged in successfully",
+	var req users.LoginReq
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.RespondWithError(c, 400, err.Error(), "Invalid request body")
+		return
+	}
+
+	user, err := users.FindUser(c, server.db, users.FindUserParams{
+		User: users.User{
+			Email: req.Email,
+		},
 	})
+	if err != nil {
+		utils.RespondWithError(c, 500, err.Error(), "Failed to find user")
+		return
+	}
+
+	err = common.CheckPassword(req.Password, user.Password)
+	if err != nil {
+		utils.RespondWithError(c, 400, err.Error(), "Invalid password")
+		return
+	}
+
+	accessToken, accessPayload, err := server.token.CreateToken(
+		user.Username,
+		user.ID,
+		server.config.AccessTokenDuration,
+	)
+	if err != nil {
+		utils.RespondWithError(c, 500, err.Error(), "Failed to create access token")
+		return
+	}
+
+	refreshToken, refreshPayload, err := server.token.CreateToken(
+		user.Username,
+		user.ID,
+		server.config.RefreshTokenDuration,
+	)
+	if err != nil {
+		utils.RespondWithError(c, 500, err.Error(), "Failed to create refresh token")
+		return
+	}
+
+	session, err := users.CreateSession(c, server.db, users.CreateSessionParams{
+		ID:           refreshPayload.ID,
+		Username:     user.Username,
+		RefreshToken: refreshToken,
+		UserAgent:    c.Request.UserAgent(),
+		ClientIP:     c.ClientIP(),
+		ExpiresAt:    refreshPayload.ExpiresAt,
+	})
+	if err != nil {
+		utils.RespondWithError(c, 500, err.Error(), "Failed to create session")
+		return
+	}
+
+	response := users.LoginUserResponse{
+		SessionID:             session.ID,
+		AccessToken:           accessToken,
+		AccessTokenExpiresAt:  accessPayload.ExpiresAt,
+		RefreshToken:          refreshToken,
+		RefreshTokenExpiresAt: refreshPayload.ExpiresAt,
+		User:                  user,
+	}
+	utils.RespondWithSuccess(c, 200, response, "Logged in successfully")
 }
 
 func (server *Server) Logout(c *gin.Context) {
@@ -127,6 +208,8 @@ func (server *Server) RequestPasswordReset(c *gin.Context) {
 }
 
 func (server *Server) ChangePassword(c *gin.Context) {
+	authPayload := c.MustGet(users.AuthorizationPayloadKey).(*token.Payload)
+	log.Println(authPayload)
 	// Handle password change logic
 	c.JSON(200, gin.H{
 		"message": "Password changed successfully",
