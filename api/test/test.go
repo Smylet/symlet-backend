@@ -3,14 +3,14 @@ package test
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"testing"
 
 	"github.com/Smylet/symlet-backend/api/reference"
-	"github.com/Smylet/symlet-backend/api/student"
-	"github.com/Smylet/symlet-backend/api/users"
-	"github.com/Smylet/symlet-backend/utilities/db"
-	"github.com/Smylet/symlet-backend/utilities/utils"
+	_ "github.com/lib/pq"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 var (
@@ -19,16 +19,17 @@ var (
 )
 
 
-func connectToPostgreSQL(host, username, password string) (*sql.DB, error) {
+func connectToPostgreSQL(host, username, password, dbname string) (*sql.DB, error) {
     // Define the PostgreSQL connection parameters
     port := 5432
 
 
     // Connection string
     connStr := fmt.Sprintf(
-        "host=%s port=%d user=%s password=%s sslmode=disable",
-        host, port, username, password,
+        "sslmode=disable host=%s port=%d user=%s password=%s dbname=%s",
+        host, port, username, password, dbname,
     )
+
 
     // Open a connection to PostgreSQL
     db, err := sql.Open("postgres", connStr)
@@ -41,15 +42,26 @@ func connectToPostgreSQL(host, username, password string) (*sql.DB, error) {
 
 
 func CreateTestDatabase(db *sql.DB) error {
-	_, err := db.Exec(
-        `CREATE DATABASE IF NOT EXIST smy_test ;`,
+    // Create the test database if not exist
+    //-- Delete the database if it exists
+    err := DropTestDatabase(db)
+    if err != nil {
+        return err
+    }
+
+    //DROP DATABASE IF EXISTS your_database_name;
+
+    //-- Create the database if it doesn't exist
+
+	_, err = db.Exec(
+        "CREATE DATABASE smy_test",
 	)
 
     return err
 }
 
 func DropTestDatabase(db *sql.DB) error {
-    _, err := db.Exec("DROP DATABASE IF EXISTS smy_test;")
+    _, err := db.Exec("DROP DATABASE IF EXISTS smy_test WITH (FORCE);")
     return err
 }
 
@@ -59,7 +71,7 @@ func SetupTestDB() {
         return
     }
     // Create a database
-    sqlDB, err := connectToPostgreSQL("localhost", "postgres", "postgres")
+    sqlDB, err := connectToPostgreSQL("localhost", "postgres", "postgres", "")
     // Connect to the test database
     if err != nil {
         panic("Failed to open GORM database: " + err.Error())
@@ -69,13 +81,28 @@ func SetupTestDB() {
     if err := CreateTestDatabase(sqlDB); err != nil {
         panic("Failed to create test database: " + err.Error())
     }
-    config, err := utils.LoadConfig("../..")
+	logLevel := logger.Silent
+
+    sqlDB, err = connectToPostgreSQL("localhost", "postgres", "postgres", "smy_test")
+    // Connect to the test database
     if err != nil {
-        panic("Failed to load config: " + err.Error())
+        panic("Failed to open GORM database: " + err.Error())
     }
 
-    DB = db.InitDB(config)
+	DB, err = gorm.Open(postgres.New(postgres.Config{
+		Conn: sqlDB,
+	}), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.LogLevel(logLevel)),
+	})
+	if err != nil {
+		log.Println("db err: (Init) ", err)
+	}
 
+    // Migrate the schema
+    DB.AutoMigrate(
+        &reference.ReferenceHostelAmmenities{},
+        &reference.ReferenceUniversity{},
+    )
     //populate Reference model
     for _, model := range reference.ReferenceModelMap {
         err := model.Populate(DB)
@@ -83,26 +110,6 @@ func SetupTestDB() {
             panic("Failed to populate reference models: " + err.Error())
         }
     }
-
-    // Insert a test user
-    user := users.User{
-        Username:     "testuser",
-        Email:        "test@example.com",
-    }
-    if err := DB.Create(&user).Error; err != nil {
-        panic("Failed to insert test user: " + err.Error())
-    }
-    var university reference.ReferenceUniversity
-    DB.Model(&reference.ReferenceUniversity{}).First(&university)
-
-    student := student.Student{
-        User: user,
-        University: university,
-    }
-    if err := DB.Create(&student).Error; err != nil {
-        panic("Failed to insert test student: " + err.Error())
-    }
-    
     initialized = true
 
 }
@@ -112,13 +119,14 @@ func TeardownTestDB() {
     if !initialized {
         return
     }
-    sqlDB, err := connectToPostgreSQL("localhost", "postgres", "postgres")
+    sqlDB, err := connectToPostgreSQL("localhost", "postgres", "postgres", "")
     if err != nil {
         panic("Failed to open GORM database: " + err.Error())
     }
     if err := DropTestDatabase(sqlDB); err != nil {
         panic("Failed to drop test database: " + err.Error())
     }
+
     initialized = false
 }
 
