@@ -26,11 +26,11 @@ type Hostel struct {
 	Country      string                        `gorm:"not null"`
 	Description  string                        `gorm:"not null"`
 
-	ManagerID uint       `gorm:"not null"`
-	Manager    manager.HostelManager `gorm:"foreignKey:ManagerID"`
+	ManagerID uint                  `gorm:"not null"`
+	Manager   manager.HostelManager `gorm:"foreignKey:ManagerID"`
 
 	Ammenities []*reference.ReferenceHostelAmmenities `gorm:"many2many:hostel_ammenities;"`
-	Students   []*student.Student `gorm:"many2many:hostel_students;"`
+	Students   []*student.Student                     `gorm:"many2many:hostel_students;"`
 
 	// Other features
 	NumberOfUnits         uint `gorm:"not null"`
@@ -45,20 +45,17 @@ type Hostel struct {
 
 type HostelImage struct {
 	common.AbstractBaseImageModel
-	HostelID  uint
-	Hostel    Hostel `gorm:"foreignKey:HostelID;constraint:OnDelete:CASCADE"`
+	HostelID uint
+	Hostel   Hostel `gorm:"foreignKey:HostelID;constraint:OnDelete:CASCADE"`
 }
-
 
 type HostelFee struct {
 	common.AbstractBaseModel
 	HostelID    uint
 	TotalAmount float64
-	PaymentPlan string `gorm:"oneof: 'monthly' 'by_school_session' 'annually'"`
+	PaymentPlan string                 `gorm:"oneof: 'monthly' 'by_school_session' 'annually'"`
 	Breakdown   map[string]interface{} `gorm:"type:json"`
-
 }
-
 
 type HostelAgreementTemplate struct {
 	common.AbstractBaseModel

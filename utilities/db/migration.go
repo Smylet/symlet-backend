@@ -1,7 +1,6 @@
 package db
 
 import (
-
 	"github.com/Smylet/symlet-backend/api/booking"
 	"github.com/Smylet/symlet-backend/api/hostel"
 	"github.com/Smylet/symlet-backend/api/maintenance"
@@ -10,23 +9,26 @@ import (
 	"github.com/Smylet/symlet-backend/api/reference"
 	"github.com/Smylet/symlet-backend/api/review"
 	"github.com/Smylet/symlet-backend/api/student"
-	"github.com/rs/zerolog/log"
 	"github.com/Smylet/symlet-backend/api/users"
 	"github.com/Smylet/symlet-backend/api/vendor"
+	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 )
 
 func Migrate(db *gorm.DB) {
 	err := db.AutoMigrate(
-		users.User{},
-		manager.HostelManager{},
-		reference.ReferenceHostelAmmenities{},
-		reference.ReferenceUniversity{},
+
 		users.User{},
 		users.Profile{},
 		users.VerificationEmail{},
+		users.Session{},
 		student.Student{},
-		//hostel
+
+		manager.HostelManager{},
+		reference.ReferenceHostelAmmenities{},
+		reference.ReferenceUniversity{},
+
+		// hostel
 		hostel.Hostel{},
 		booking.HostelStudent{},
 		booking.HostelBooking{},
@@ -36,20 +38,20 @@ func Migrate(db *gorm.DB) {
 		hostel.HostelFee{},
 		hostel.HostelAgreementTemplate{},
 
-		//maintenance
+		// maintenance
 		maintenance.HostelMaintenanceRequest{},
 		maintenance.HostelMaintenanceRequestImage{},
 		maintenance.WorkOrder{},
 		maintenance.WorkOrderImage{},
 		maintenance.WorkOrderComment{},
 
-		//notification
+		// notification
 		notification.Notification{},
 
-		//vendor
+		// vendor
 		vendor.Vendor{},
 
-		//Review
+		// Review
 		review.HostelReview{},
 		review.HostelManagerReview{},
 		review.VendorReview{},

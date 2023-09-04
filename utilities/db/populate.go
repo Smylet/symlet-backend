@@ -18,8 +18,8 @@ import (
 
 func createVendor(db *gorm.DB) (vendor.Vendor, error) {
 	vendorUser := users.User{
-		Username:     faker.Username(),
-		Email:        faker.Email(),
+		Username: faker.Username(),
+		Email:    faker.Email(),
 		Password: faker.Password(),
 	}
 
@@ -51,13 +51,12 @@ func createVendor(db *gorm.DB) (vendor.Vendor, error) {
 
 func createHostelManager(db *gorm.DB) (manager.HostelManager, error) {
 	managerUser := users.User{
-		Username:     faker.Username(),
-		Email:        faker.Email(),
+		Username: faker.Username(),
+		Email:    faker.Email(),
 		Password: faker.Password(),
 	}
 
-	hostelManager := manager.HostelManager{
-	}
+	hostelManager := manager.HostelManager{}
 
 	err := db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Create(&managerUser).Error; err != nil {
@@ -104,17 +103,6 @@ func createHostel(db *gorm.DB, university *reference.ReferenceUniversity, ammeni
 				"agency_fee":     0,
 			},
 		},
-		// HostelImages: []hostel.HostelImage{
-		// 	{
-		// 		ImageURL: faker.URL(),
-		// 	},
-		// 	{
-		// 		ImageURL: faker.URL(),
-		// 	},
-		// 	{
-		// 		ImageURL: faker.URL(),
-		// 	},
-		// },
 		Ammenities: ammenities,
 	}
 
@@ -128,8 +116,8 @@ func createHostel(db *gorm.DB, university *reference.ReferenceUniversity, ammeni
 
 func createStudent(db *gorm.DB, university reference.ReferenceUniversity) (student.Student, error) {
 	studentUser := users.User{
-		Username:     faker.Username(),
-		Email:        faker.Email(),
+		Username: faker.Username(),
+		Email:    faker.Email(),
 		Password: faker.Password(),
 	}
 
@@ -150,7 +138,6 @@ func createStudent(db *gorm.DB, university reference.ReferenceUniversity) (stude
 	if err != nil {
 		return student.Student{}, err
 	}
-
 
 	// Populate student data and create records
 
@@ -182,22 +169,19 @@ func createHostelBooking(db *gorm.DB, hostel hostel.Hostel, student student.Stud
 }
 
 func createHostelStudent(db *gorm.DB, hostel hostel.Hostel, student student.Student, hostelBooking booking.HostelBooking) (booking.HostelStudent, error) {
-	//Create and return a hostel student record
+	// Create and return a hostel student record
 	randomDate, err := time.Parse(time.DateOnly, faker.Date())
 	if err != nil {
 		return booking.HostelStudent{}, err
 	}
 	roomNumber := "45A"
 
-
-	
-
 	hostel_student := booking.HostelStudent{
 		HostelID:        hostel.ID,
 		StudentID:       student.ID,
 		HostelBooking:   hostelBooking,
 		CheckInDate:     randomDate,
-		RoomNumber:     &roomNumber,
+		RoomNumber:      &roomNumber,
 		CurrentHostel:   true,
 		TotalAmountPaid: 100000,
 		TotalAmountDue:  0,
@@ -206,7 +190,7 @@ func createHostelStudent(db *gorm.DB, hostel hostel.Hostel, student student.Stud
 		// 	DocumentURL: faker.URL(),
 
 		// },
-		//SubmittedSignedAgreementUrl: faker.URL(),
+		// SubmittedSignedAgreementUrl: faker.URL(),
 	}
 	hostel_student.CheckOutDate = sql.NullTime{
 		Time:  hostel_student.CheckInDate.AddDate(1, 0, 0),
@@ -226,14 +210,13 @@ func createHostelStudent(db *gorm.DB, hostel hostel.Hostel, student student.Stud
 	return booking.HostelStudent{}, nil
 }
 
-func PopulateDatabase(db *gorm.DB) error{
+func PopulateDatabase(db *gorm.DB) error {
 	Migrate(db)
 
 	university := reference.ReferenceUniversity{}
 	ammenities := []*reference.ReferenceHostelAmmenities{}
 
 	err := db.Transaction(func(tx *gorm.DB) error {
-
 		err := db.Model(&university).Limit(1).First(&university).Error
 		if err != nil {
 			return err
@@ -244,7 +227,6 @@ func PopulateDatabase(db *gorm.DB) error{
 		if err != nil {
 			return err
 		}
-
 
 		_, err = createVendor(db)
 		if err != nil {
@@ -259,7 +241,6 @@ func PopulateDatabase(db *gorm.DB) error{
 		student, err := createStudent(db, university)
 		if err != nil {
 			return err
-
 		}
 
 		hostelBooking, err := createHostelBooking(db, hostel, student)
@@ -272,7 +253,6 @@ func PopulateDatabase(db *gorm.DB) error{
 			return err
 		}
 		return nil
-
 	},
 	)
 	return err
