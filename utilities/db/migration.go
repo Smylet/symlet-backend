@@ -1,6 +1,8 @@
 package db
 
 import (
+	"fmt"
+
 	"github.com/Smylet/symlet-backend/api/booking"
 	"github.com/Smylet/symlet-backend/api/hostel"
 	"github.com/Smylet/symlet-backend/api/maintenance"
@@ -57,6 +59,7 @@ func Migrate(db *gorm.DB) {
 		review.VendorReview{},
 	)
 	if err != nil {
+		fmt.Println(err)
 		log.Fatal().Err(err).Msg("failed to migrate")
 	}
 }

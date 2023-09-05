@@ -3,6 +3,7 @@ package utils
 import (
 	"time"
 
+	"github.com/Smylet/symlet-backend/env"
 	"github.com/spf13/viper"
 )
 
@@ -35,7 +36,8 @@ type Config struct {
 // LoadConfig reads configuration from file or environment variables.
 func LoadConfig(path string) (config Config, err error) {
 	viper.AddConfigPath(path)
-	viper.SetConfigName("app")
+	config_name := env.GetEnvFileName()
+	viper.SetConfigName(config_name)
 	viper.SetConfigType("env")
 
 	viper.AutomaticEnv()

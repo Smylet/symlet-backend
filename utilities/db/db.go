@@ -56,8 +56,8 @@ func InitDB(config utils.Config) *gorm.DB {
 		log.Fatal().Err(err).Msg("failed to connect to database")
 	}
 
-	// Only migrate if their is a change in schema - development mode
-	if config.Environment == "development" {
+	// Only migrate if their is a change in schema - development or test mode
+	if config.Environment == "development" || config.Environment == "test" {
 		Migrate(db)
 	}
 
