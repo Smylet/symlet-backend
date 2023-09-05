@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/Smylet/symlet-backend/api/users"
+	"github.com/Smylet/symlet-backend/utilities/mail"
 	"github.com/Smylet/symlet-backend/utilities/utils"
 	"github.com/hibiken/asynq"
 	"github.com/rs/zerolog/log"
@@ -53,9 +54,6 @@ func (processor *RedisTaskProcessor) ProcessTaskSendVerifyEmail(ctx context.Cont
 		return fmt.Errorf("failed to get user: %w", err)
 	}
 
-	log.Info().Str("type", task.Type()).Bytes("payload", task.Payload()).
-		Str("email", user.Email).Msg("processing task")
-
 	verifyEmail, err := users.CreateVerifyEmail(ctx, processor.db, users.CreateVerifyEmailParams{
 		UserID:     user.ID,
 		Email:      user.Email,
@@ -65,23 +63,32 @@ func (processor *RedisTaskProcessor) ProcessTaskSendVerifyEmail(ctx context.Cont
 		return fmt.Errorf("failed to create verify email: %w", err)
 	}
 
-	subject := "Welcome to Symlet! Please verify your email address"
 	// TODO: replace this URL with an environment variable that points to a front-end page - GET /users/confirm-email
 	verifyUrl := fmt.Sprintf("http://%s/users/confirm-email?user_id=%d&ver_email_id=%d&secret_code=%s",
 		processor.config.HTTPServerAddress,
 		verifyEmail.UserID,
 		verifyEmail.ID, verifyEmail.SecretCode)
 
-	content := fmt.Sprintf(`Hello %s,<br/>
-	Thank you for registering with us!<br/>
-	Please <a href="%s">click here</a> to verify your email address.<br/>
-	`, user.Username, verifyUrl)
+	data := mail.PersonalizedData{
+		User:    user,
+		Subject: "Welcome to Smylet!",
+		Cc:      "",
+		Bcc:     "",
+		Others: map[string]interface{}{
+			"VerificationLink": verifyUrl,
+		},
+	}
 
-	to := []string{user.Email}
-
-	err = processor.mailer.SendEmail(subject, content, to, nil, nil, nil)
+	content, err := mail.GeneratePersonalizedEmail(data)
 	if err != nil {
-		return fmt.Errorf("failed to send verify email: %w", err)
+		return fmt.Errorf("failed to generate email content: %w", err)
+	}
+
+	data.Content = content
+
+	errs := processor.mailer.SendEmail([]mail.PersonalizedData{data})
+	if len(errs) > 0 {
+		return fmt.Errorf("failed to send email: %w", errs[0])
 	}
 
 	log.Info().Str("type", task.Type()).Bytes("payload", task.Payload()).
