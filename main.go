@@ -16,7 +16,7 @@ import (
 )
 
 func main() {
-	config, err := utils.LoadConfig(".")
+	config, err := utils.LoadConfig("./env")
 	if err != nil {
 		log.Fatal(err)
 	}
