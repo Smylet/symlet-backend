@@ -45,13 +45,12 @@ func NewServer(config utils.Config, db *gorm.DB, task worker.TaskDistributor, ma
 
 	gin.SetMode(gin.ReleaseMode)
 
-	server.registerUserRoutes()
-	server.registerUtilRoutes()
+	server.registerRoutes()
 
 	return server, nil
 }
 
-func (server *Server) registerUserRoutes() {
+func (server *Server) registerRoutes() {
 	r := gin.Default()
 
 	userRoutes := r.Group("/users")
@@ -107,15 +106,8 @@ func (server *Server) registerUserRoutes() {
 		profileRoutes.GET("/:username", server.GetProfile)
 	}
 
-	server.router = r
-}
-
-func (server *Server) registerReviewRoutes() {
-}
-
-func (server *Server) registerUtilRoutes() {
-	r := gin.Default()
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
+
 	server.router = r
 }
 
