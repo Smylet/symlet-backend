@@ -43,10 +43,9 @@ func NewServer(config utils.Config, db *gorm.DB, task worker.TaskDistributor, ma
 		token:   tokenMaker,
 	}
 
-	// gin.SetMode(gin.ReleaseMode)
+	gin.SetMode(gin.ReleaseMode)
 
 	server.registerUserRoutes()
-	server.registerReviewRoutes()
 	server.registerUtilRoutes()
 
 	return server, nil
