@@ -1,30 +1,30 @@
-package users
+package test
 
 import (
 	"context"
+	"log"
 	"os"
 	"testing"
 
-	"github.com/Smylet/symlet-backend/api/test"
+	"github.com/Smylet/symlet-backend/api/users"
 	"github.com/go-faker/faker/v4"
 )
 
 func TestUser(t *testing.T) {
-	test.DB.AutoMigrate(
-		User{},
-		Profile{},
-	)
+	log.Println(os.Getwd())
 
-	userReq := CreateUserReq{
+
+
+	userReq := users.CreateUserReq{
 		Username: "test",
 		Email: faker.Email(),
 		Password: "test",
 	}
 	// Create user
 	ctx := context.Background()
-	_, err := CreateUserTx(ctx, test.DB, CreateUserTxParams{
+	_, err := users.CreateUserTx(ctx, DB, users.CreateUserTxParams{
 		CreateUserReq: userReq,
-		AfterCreate: func(user User) error {
+		AfterCreate: func(user users.User) error {
 			return nil
 		},
 	})
@@ -33,8 +33,8 @@ func TestUser(t *testing.T) {
 		t.Errorf("Error creating user: %v", err)
 	}
 	// Check if user was created
-	var user User
-	test.DB.First(&user, "username = ?", userReq.Username)
+	var user users.User
+	DB.First(&user, "username = ?", userReq.Username)
 	if user.Username != userReq.Username {
 		t.Errorf("Expected username to be %v, got %v", userReq.Username, user.Username)
 	}
@@ -45,6 +45,6 @@ func TestUser(t *testing.T) {
 }
 
 func TestMain(m *testing.M) {
-    exitCode := test.RunTests(m)
+    exitCode := RunTests(m, "../../env")
     os.Exit(exitCode)
 }
