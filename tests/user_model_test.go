@@ -5,15 +5,16 @@ import (
 	"os"
 	"testing"
 
-	"github.com/Smylet/symlet-backend/api/users"
 	"github.com/go-faker/faker/v4"
+
+	"github.com/Smylet/symlet-backend/api/users"
 )
 
 func TestUser(t *testing.T) {
 
 	userReq := users.CreateUserReq{
 		Username: "test",
-		Email: faker.Email(),
+		Email:    faker.Email(),
 		Password: "test",
 	}
 	// Create user
@@ -24,7 +25,7 @@ func TestUser(t *testing.T) {
 			return nil
 		},
 	})
-	
+
 	if err != nil {
 		t.Errorf("Error creating user: %v", err)
 	}
@@ -41,6 +42,6 @@ func TestUser(t *testing.T) {
 }
 
 func TestMain(m *testing.M) {
-    exitCode := RunTests(m)
-    os.Exit(exitCode)
+	exitCode := RunTests(m)
+	os.Exit(exitCode)
 }

@@ -4,8 +4,9 @@ import (
 	"bytes"
 	"time"
 
-	"github.com/Smylet/symlet-backend/env"
 	"github.com/spf13/viper"
+
+	"github.com/Smylet/symlet-backend/resources/env"
 )
 
 // Config stores all configuration of the application.
@@ -34,8 +35,6 @@ type Config struct {
 	AwsSecretAccessKey   string        `mapstructure:"AWS_SECRET_ACCESS_KEY"`
 	BasePath             string        `mapstructure:"BASE_PATH"`
 }
-
-
 
 // LoadConfig reads configuration from file or environment variables.
 func LoadConfig() (config Config, err error) {

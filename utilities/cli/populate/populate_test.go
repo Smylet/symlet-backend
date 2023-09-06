@@ -4,17 +4,18 @@ import (
 	"os"
 	"testing"
 
+	"github.com/spf13/cobra"
+	"gorm.io/gorm"
+
 	"github.com/Smylet/symlet-backend/api/booking"
 	"github.com/Smylet/symlet-backend/api/hostel"
 	"github.com/Smylet/symlet-backend/api/manager"
 	"github.com/Smylet/symlet-backend/api/reference"
 	"github.com/Smylet/symlet-backend/api/student"
-	"github.com/Smylet/symlet-backend/api/test"
 	"github.com/Smylet/symlet-backend/api/users"
 	"github.com/Smylet/symlet-backend/api/vendor"
+	test "github.com/Smylet/symlet-backend/tests"
 	"github.com/Smylet/symlet-backend/utilities/common"
-	"github.com/spf13/cobra"
-	"gorm.io/gorm"
 )
 
 func TestPopulate(t *testing.T) {
@@ -29,7 +30,6 @@ func TestPopulate(t *testing.T) {
 		"amenities":  mockReferenceModel,
 		"university": mockReferenceModel,
 	}
-
 
 	// Execute the Populate function
 	err := PopulateReference(cmd, nil, referenceModelMap, test.DB)
@@ -120,6 +120,6 @@ func (m *MockReferenceModel) GetTableName() string {
 }
 
 func TestMain(m *testing.M) {
-    exitCode := test.RunTests(m)
-    os.Exit(exitCode)
+	exitCode := test.RunTests(m)
+	os.Exit(exitCode)
 }
