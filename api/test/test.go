@@ -85,7 +85,6 @@ func SetupTestDB() {
         return
     }
     // Create a database
-    log.Println(os.Getwd())
     config, err := utils.LoadConfig()
     if err != nil {
         panic("Failed to load config: " + err.Error())
@@ -115,21 +114,7 @@ func SetupTestDB() {
     if DB == nil {
         panic("Failed to initialize database")
     }
-	// DB, err = gorm.Open(postgres.New(postgres.Config{
-	// 	Conn: sqlDB,
-	// }), &gorm.Config{
-	// 	Logger: logger.Default.LogMode(logger.LogLevel(logLevel)),
-	// })
-	// if err != nil {
-	// 	log.Println("db err: (Init) ", err)
-	// }
 
-    // // Migrate the schema
-    // DB.AutoMigrate(
-    //     &reference.ReferenceHostelAmmenities{},
-    //     &reference.ReferenceUniversity{},
-    // )
-    //populate Reference model
     for _, model := range reference.ReferenceModelMap {
         err := model.Populate(DB)
         if err != nil {
