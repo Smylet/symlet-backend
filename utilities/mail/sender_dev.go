@@ -27,9 +27,6 @@ func SendEmailDev(
 	subject string,
 	content string,
 	to []string,
-	cc []string,
-	bcc []string,
-	attachFiles []string, // Note: The current code doesn't handle attachments yet.
 	fromEmailAddress string,
 ) error {
 	hostAddress, portNumber := "127.0.0.1", server.PortNumber
