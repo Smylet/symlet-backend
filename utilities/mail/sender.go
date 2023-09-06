@@ -19,8 +19,8 @@ type EmailSender interface {
 
 type PersonalizedData struct {
 	Subject       string
-	Cc            string
-	Bcc           string
+	Cc            []string
+	Bcc           []string
 	Content       string
 	User          users.UserSerializer
 	AttachedFiles []string

@@ -72,8 +72,8 @@ func (processor *RedisTaskProcessor) ProcessTaskSendVerifyEmail(ctx context.Cont
 	data := mail.PersonalizedData{
 		User:    user,
 		Subject: "Welcome to Smylet!",
-		Cc:      "",
-		Bcc:     "",
+		Cc:      []string{},
+		Bcc:     []string{},
 		Others: map[string]interface{}{
 			"VerificationLink": verifyUrl,
 		},

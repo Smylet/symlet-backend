@@ -41,8 +41,8 @@ func TestSendEmailWithGmail(t *testing.T) {
 			},
 			Subject:       subject,
 			Content:       content,
-			Cc:            "",
-			Bcc:           "",
+			Cc:            []string{},
+			Bcc:           []string{},
 			AttachedFiles: []string{},
 		},
 	})
