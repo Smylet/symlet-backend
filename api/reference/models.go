@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/Smylet/symlet-backend/utilities/common"
+	"github.com/Smylet/symlet-backend/utilities/utils"
 	"gorm.io/gorm"
 )
 
@@ -28,7 +30,12 @@ func (h ReferenceHostelAmmenities) GetTableName() string {
 
 func (h ReferenceHostelAmmenities) Populate(db *gorm.DB) error {
 	// Populate the ammenities table with the data from the json file
-	file, err := os.Open("../../resources/amenities.json")
+	config,err := utils.LoadConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	file, err := os.Open(filepath.Clean(config.BasePath) + "/resources/amenities.json")
 	if err != nil {
 		fmt.Printf("Error opening file: %v", err)
 		return err
@@ -77,7 +84,11 @@ func (u ReferenceUniversity) GetTableName() string {
 }
 
 func (u ReferenceUniversity) Populate(db *gorm.DB) error {
-	file, err := os.Open("../../resources/universities.json")
+	config,err := utils.LoadConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
+	file, err := os.Open(filepath.Clean(config.BasePath) + "/resources/universities.json")
 	if err != nil {
 		log.Fatal(err)
 	}

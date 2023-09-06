@@ -1,7 +1,6 @@
 package populate
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
@@ -63,7 +62,6 @@ func TestPopulateData(t *testing.T) {
 
 	// Execute the DataCommand to populate data
 	err := PopulateData(cmd, nil, db)
-	fmt.Println(err, "CKPCRM")
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
 	}
@@ -122,6 +120,6 @@ func (m *MockReferenceModel) GetTableName() string {
 }
 
 func TestMain(m *testing.M) {
-    exitCode := test.RunTests(m, "../../../env")
+    exitCode := test.RunTests(m)
     os.Exit(exitCode)
 }

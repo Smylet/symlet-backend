@@ -13,7 +13,7 @@ func TestSendEmailWithGmail(t *testing.T) {
 		t.Skip()
 	}
 
-	config, err := utils.LoadConfig("../../env")
+	config, err := utils.LoadConfig()
 	require.NoError(t, err)
 
 	sess, err := common.CreateAWSSession(&config)

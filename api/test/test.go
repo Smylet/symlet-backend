@@ -80,13 +80,13 @@ func DropTestDatabase(db *sql.DB) error {
     return err
 }
 
-func SetupTestDB(configPath string) {
+func SetupTestDB() {
     if initialized {
         return
     }
     // Create a database
     log.Println(os.Getwd())
-    config, err := utils.LoadConfig(configPath)
+    config, err := utils.LoadConfig()
     if err != nil {
         panic("Failed to load config: " + err.Error())
     }
@@ -145,7 +145,7 @@ func TeardownTestDB() {
     if !initialized {
         return
     }
-    config, err := utils.LoadConfig("../../env/")
+    config, err := utils.LoadConfig()
     if err != nil {
         panic("Failed to load config: " + err.Error())
     }
@@ -162,13 +162,13 @@ func TeardownTestDB() {
 }
 
 // RunTests is a helper function to run tests and handle setup/teardown.
-func RunTests(m *testing.M, configPath string) int {
+func RunTests(m *testing.M) int {
     err := os.Setenv("ENV", "test")
     if err != nil {
         panic("Failed to set environment variable: " + err.Error())
     }
 
-	SetupTestDB(configPath)
+	SetupTestDB()
 	defer TeardownTestDB()
 
 	return m.Run()

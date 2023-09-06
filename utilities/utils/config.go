@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"bytes"
 	"time"
 
 	"github.com/Smylet/symlet-backend/env"
@@ -31,18 +32,20 @@ type Config struct {
 	AWSRegion            string        `mapstructure:"AWS_REGION"`
 	AwsAccessKeyID       string        `mapstructure:"AWS_ACCESS_KEY_ID"`
 	AwsSecretAccessKey   string        `mapstructure:"AWS_SECRET_ACCESS_KEY"`
+	BasePath             string        `mapstructure:"BASE_PATH"`
 }
 
+
+
 // LoadConfig reads configuration from file or environment variables.
-func LoadConfig(path string) (config Config, err error) {
-	viper.AddConfigPath(path)
-	config_name := env.GetEnvFileName()
-	viper.SetConfigName(config_name)
+func LoadConfig() (config Config, err error) {
+	config_bytes := env.GetEnv()
 	viper.SetConfigType("env")
 
 	viper.AutomaticEnv()
+	err = viper.ReadConfig(bytes.NewReader(config_bytes))
 
-	err = viper.ReadInConfig()
+	//err = viper.ReadInConfig()
 	if err != nil {
 		return
 	}

@@ -16,12 +16,8 @@ import (
 )
 
 func GetDB() (*gorm.DB, error) {
-	// if os.Getenv("ENV") == "test" {
-	// 	fmt.Println("Using test database")
-	// 	return test.DB, nil
-	// }
-	
-	config, err := utils.LoadConfig("../../../env")
+
+	config, err := utils.LoadConfig()
 	if err != nil {
 		log.Fatal(err)
 	}

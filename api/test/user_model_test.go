@@ -2,7 +2,6 @@ package test
 
 import (
 	"context"
-	"log"
 	"os"
 	"testing"
 
@@ -11,9 +10,6 @@ import (
 )
 
 func TestUser(t *testing.T) {
-	log.Println(os.Getwd())
-
-
 
 	userReq := users.CreateUserReq{
 		Username: "test",
@@ -45,6 +41,6 @@ func TestUser(t *testing.T) {
 }
 
 func TestMain(m *testing.M) {
-    exitCode := RunTests(m, "../../env")
+    exitCode := RunTests(m)
     os.Exit(exitCode)
 }
