@@ -1,11 +1,13 @@
 package root
 
 import (
-	"fmt"
-
 	"github.com/Smylet/symlet-backend/utilities/cli/populate"
+	"github.com/Smylet/symlet-backend/utilities/common"
+	"github.com/rs/zerolog"
 	"github.com/spf13/cobra"
 )
+
+var logger = common.NewLogger()
 
 var rootCmd = &cobra.Command{
 	Use:     `smy`,
@@ -14,7 +16,7 @@ var rootCmd = &cobra.Command{
 }
 
 func Execute() error {
-	fmt.Println("Executing root command")
+	logger.Print(zerolog.InfoLevel,"Executing root command")
 	return rootCmd.Execute()
 }
 

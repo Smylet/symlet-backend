@@ -1,16 +1,19 @@
 package reference
 
 import (
+	"context"
 	"encoding/json"
-	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 
 	"github.com/Smylet/symlet-backend/utilities/common"
 	"github.com/Smylet/symlet-backend/utilities/utils"
+	"github.com/rs/zerolog"
 	"gorm.io/gorm"
 )
+
+
+var logger = common.NewLogger()
 
 type ReferenceModelInterface interface {
 	common.ModelInterface
@@ -32,19 +35,20 @@ func (h ReferenceHostelAmmenities) Populate(db *gorm.DB) error {
 	// Populate the ammenities table with the data from the json file
 	config,err := utils.LoadConfig()
 	if err != nil {
-		log.Fatal(err)
+		logger.Error("Error loading config: ", err)
+		return err
 	}
 
 	file, err := os.Open(filepath.Clean(config.BasePath) + "/resources/amenities.json")
 	if err != nil {
-		fmt.Printf("Error opening file: %v", err)
+		logger.Error("Error opening file: ",err)
 		return err
 	}
 	defer file.Close()
 
 	err = db.First(&ReferenceHostelAmmenities{}).Error
 	if err == nil {
-		log.Print("Ammenities table already populated")
+		logger.Print( zerolog.InfoLevel, "Ammenities table already populated")
 		return nil
 	}
 
@@ -52,7 +56,7 @@ func (h ReferenceHostelAmmenities) Populate(db *gorm.DB) error {
 
 	decoder := json.NewDecoder(file)
 	if err := decoder.Decode(&amenities); err != nil {
-		fmt.Println("Error decoding JSON:", err)
+		logger.Error("Error decoding JSON", err)//Println("Error decoding JSON:", err)
 		return err
 	}
 
@@ -61,10 +65,10 @@ func (h ReferenceHostelAmmenities) Populate(db *gorm.DB) error {
 	for _, amenity := range amenities {
 		result := db.Create(amenity)
 		if result.Error != nil {
-			fmt.Println("Error inserting data:", result.Error)
+			logger.Error("Error inserting data:", result.Error)
 			return err
 		}
-		log.Printf("%v inserted\n", amenity.Name)
+		logger.Printf(context.Background(), "%v inserted\n", amenity.Name)
 	}
 	return nil
 }
@@ -86,32 +90,34 @@ func (u ReferenceUniversity) GetTableName() string {
 func (u ReferenceUniversity) Populate(db *gorm.DB) error {
 	config,err := utils.LoadConfig()
 	if err != nil {
-		log.Fatal(err)
+		logger.Error(err)
+		return err
 	}
+
 	file, err := os.Open(filepath.Clean(config.BasePath) + "/resources/universities.json")
 	if err != nil {
-		log.Fatal(err)
+		logger.Error(err)
 	}
 	defer file.Close()
 
 	err = db.First(&ReferenceUniversity{}).Error
 	if err == nil {
-		log.Print("University table already populated")
+		logger.Print(zerolog.InfoLevel,"University table already populated")
 		return nil
 	}
 
 	var universities []ReferenceUniversity
 	err = json.NewDecoder(file).Decode(&universities)
 	if err != nil {
-		log.Fatal(err)
+		logger.Error(err)
 	}
 
 	for _, uni := range universities {
 		result := db.Create(&uni)
 		if result.Error != nil {
-			log.Println(result.Error)
+			logger.Error(result.Error)
 		}
-		log.Printf("%v inserted\n", uni.Name)
+		logger.Printf(context.Background(),"%v inserted\n", uni.Name)
 
 	}
 	return nil

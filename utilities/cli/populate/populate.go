@@ -31,7 +31,6 @@ func GetDB() (*gorm.DB, error) {
 func PopulateReference(cmd *cobra.Command, args []string, referenceModelMap map[string]reference.ReferenceModelInterface, database *gorm.DB) error {
 	var models []reference.ReferenceModelInterface
 	flags, err := cmd.Flags().GetStringSlice("table")
-	fmt.Println(flags, len(flags))
 
 	if err != nil {
 		return err

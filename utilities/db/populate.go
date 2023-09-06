@@ -2,7 +2,6 @@ package db
 
 import (
 	"database/sql"
-	"fmt"
 	"time"
 
 	"github.com/Smylet/symlet-backend/api/booking"
@@ -170,7 +169,7 @@ func createHostelBooking(db *gorm.DB, hostel hostel.Hostel, student student.Stud
 
 func createHostelStudent(db *gorm.DB, hostel hostel.Hostel, student student.Student, hostelBooking booking.HostelBooking) (booking.HostelStudent, error) {
 	// Create and return a hostel student record
-	randomDate, err := time.Parse(time.DateOnly, faker.Date())
+	randomDate, err := time.Parse("2006/01/02", faker.Date())
 	if err != nil {
 		return booking.HostelStudent{}, err
 	}
@@ -221,7 +220,6 @@ func PopulateDatabase(db *gorm.DB) error {
 		if err != nil {
 			return err
 		}
-		fmt.Print(university)
 
 		err = db.Model(&ammenities).Limit(10).Find(&ammenities).Error
 		if err != nil {
