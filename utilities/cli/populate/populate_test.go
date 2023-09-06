@@ -1,9 +1,11 @@
 package populate
 
 import (
+	"os"
 	"testing"
 
-	"gorm.io/driver/sqlite"
+	"github.com/spf13/cobra"
+	"gorm.io/gorm"
 
 	"github.com/Smylet/symlet-backend/api/booking"
 	"github.com/Smylet/symlet-backend/api/hostel"
@@ -12,9 +14,8 @@ import (
 	"github.com/Smylet/symlet-backend/api/student"
 	"github.com/Smylet/symlet-backend/api/users"
 	"github.com/Smylet/symlet-backend/api/vendor"
+	test "github.com/Smylet/symlet-backend/tests"
 	"github.com/Smylet/symlet-backend/utilities/common"
-	"github.com/spf13/cobra"
-	"gorm.io/gorm"
 )
 
 func TestPopulate(t *testing.T) {
@@ -30,14 +31,8 @@ func TestPopulate(t *testing.T) {
 		"university": mockReferenceModel,
 	}
 
-	// Mock the database
-	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
-	if err != nil {
-		t.Fatalf("Failed to connect to database: %v", err)
-	}
-
 	// Execute the Populate function
-	err = PopulateReference(cmd, nil, referenceModelMap, db)
+	err := PopulateReference(cmd, nil, referenceModelMap, test.DB)
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
 	}
@@ -51,7 +46,7 @@ func TestPopulate(t *testing.T) {
 	mockFlagValue = []string{"invalid_table"}
 	cmd = &cobra.Command{}
 	cmd.Flags().StringSliceP("table", "T", mockFlagValue, "Mock flags")
-	err = PopulateReference(cmd, nil, referenceModelMap, db)
+	err = PopulateReference(cmd, nil, referenceModelMap, test.DB)
 	if err == nil || err.Error() != "invalid option invalid_table" {
 		t.Errorf("Expected error 'invalid option invalid_table', but got: %v", err)
 	}
@@ -62,13 +57,11 @@ func TestPopulateData(t *testing.T) {
 	cmd := &cobra.Command{}
 
 	// Mock the database for populating data
-	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
-	if err != nil {
-		t.Fatalf("Failed to connect to database: %v", err)
-	}
+
+	db := test.DB
 
 	// Execute the DataCommand to populate data
-	err = DataCommand.RunE(cmd, nil)
+	err := PopulateData(cmd, nil, db)
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
 	}
@@ -124,4 +117,9 @@ func (m *MockReferenceModel) Populate(db *gorm.DB) error {
 
 func (m *MockReferenceModel) GetTableName() string {
 	return "mock_reference_model"
+}
+
+func TestMain(m *testing.M) {
+	exitCode := test.RunTests(m)
+	os.Exit(exitCode)
 }

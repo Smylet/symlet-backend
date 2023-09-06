@@ -4,8 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	//"os"
 
 	"github.com/Smylet/symlet-backend/api/reference"
+	//"github.com/Smylet/symlet-backend/api/test"
 	"github.com/spf13/cobra"
 	"gorm.io/gorm"
 
@@ -14,7 +16,8 @@ import (
 )
 
 func GetDB() (*gorm.DB, error) {
-	config, err := utils.LoadConfig("../..")
+
+	config, err := utils.LoadConfig()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -28,7 +31,6 @@ func GetDB() (*gorm.DB, error) {
 func PopulateReference(cmd *cobra.Command, args []string, referenceModelMap map[string]reference.ReferenceModelInterface, database *gorm.DB) error {
 	var models []reference.ReferenceModelInterface
 	flags, err := cmd.Flags().GetStringSlice("table")
-	fmt.Println(flags, len(flags))
 
 	if err != nil {
 		return err
@@ -69,13 +71,7 @@ var PopulateCommand = &cobra.Command{
 	Example: `populate reference --table hostel_ammenities university`,
 	// Long:    `populate reference tables`,
 	// PreRunE: OptionsValidator(config, headers),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		database, err := GetDB()
-		if err != nil {
-			return err
-		}
-		return PopulateReference(cmd, args, reference.ReferenceModelMap, database)
-	},
+
 }
 
 var ReferenceCommand = &cobra.Command{
