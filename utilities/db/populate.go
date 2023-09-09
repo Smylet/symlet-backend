@@ -5,6 +5,9 @@ import (
 	"database/sql"
 	"time"
 
+	"github.com/go-faker/faker/v4"
+	"gorm.io/gorm"
+
 	"github.com/Smylet/symlet-backend/api/booking"
 	"github.com/Smylet/symlet-backend/api/hostel"
 	"github.com/Smylet/symlet-backend/api/manager"
@@ -13,10 +16,7 @@ import (
 	"github.com/Smylet/symlet-backend/api/users"
 	"github.com/Smylet/symlet-backend/api/vendor"
 	"github.com/Smylet/symlet-backend/utilities/common"
-	"github.com/go-faker/faker/v4"
-	"gorm.io/gorm"
 )
-
 
 func createVendor(ctx context.Context, db *gorm.DB) (vendor.Vendor, error) {
 	vendorUser := users.User{
@@ -37,7 +37,7 @@ func createVendor(ctx context.Context, db *gorm.DB) (vendor.Vendor, error) {
 		IsVerified:  true,
 	}
 
-	err := common.ExecTx(ctx ,db, func(tx *gorm.DB) error {
+	err := common.ExecTx(ctx, db, func(tx *gorm.DB) error {
 		if err := tx.Create(&vendorUser).Error; err != nil {
 			return err
 		}
@@ -74,8 +74,8 @@ func createHostelManager(ctx context.Context, db *gorm.DB) (manager.HostelManage
 	return hostelManager, err
 }
 
-func createHostel(ctx context.Context ,db *gorm.DB, university *reference.ReferenceUniversity, ammenities []*reference.ReferenceHostelAmmenities) (hostel.Hostel, error) {
-	hostelManager, err := createHostelManager(ctx ,db)
+func createHostel(ctx context.Context, db *gorm.DB, university *reference.ReferenceUniversity, ammenities []*reference.ReferenceHostelAmenities) (hostel.Hostel, error) {
+	hostelManager, err := createHostelManager(ctx, db)
 	if err != nil {
 		return hostel.Hostel{}, err
 	}
@@ -93,7 +93,7 @@ func createHostel(ctx context.Context ,db *gorm.DB, university *reference.Refere
 		NumberOfOccupiedUnits: 0,
 		NumberOfBedrooms:      1,
 		NumberOfBathrooms:     1,
-		Kitchen:               true,
+		Kitchen:               "detached",
 		FloorSpace:            100,
 		HostelFee: hostel.HostelFee{
 			TotalAmount: 100000,
@@ -105,7 +105,7 @@ func createHostel(ctx context.Context ,db *gorm.DB, university *reference.Refere
 				"agency_fee":     0,
 			},
 		},
-		Ammenities: ammenities,
+		Amenities: ammenities,
 	}
 
 	err = db.Create(&hostelObj).Error
@@ -133,7 +133,7 @@ func createStudent(ctx context.Context, db *gorm.DB, university reference.Refere
 		}
 		studentObj.User = studentUser
 		if err := tx.Create(&studentObj).Error; err != nil {
-			
+
 			return err
 		}
 		return nil
@@ -219,7 +219,7 @@ func PopulateDatabase(db *gorm.DB) error {
 	ctx := context.Background()
 
 	university := reference.ReferenceUniversity{}
-	ammenities := []*reference.ReferenceHostelAmmenities{}
+	ammenities := []*reference.ReferenceHostelAmenities{}
 
 	err := common.ExecTx(ctx, db, func(tx *gorm.DB) error {
 		err := db.Model(&university).Limit(1).First(&university).Error

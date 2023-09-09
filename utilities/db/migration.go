@@ -1,7 +1,6 @@
 package db
 
 import (
-
 	"github.com/Smylet/symlet-backend/api/booking"
 	"github.com/Smylet/symlet-backend/api/hostel"
 	"github.com/Smylet/symlet-backend/api/maintenance"
@@ -26,7 +25,7 @@ func Migrate(db *gorm.DB) {
 		student.Student{},
 
 		manager.HostelManager{},
-		reference.ReferenceHostelAmmenities{},
+		reference.ReferenceHostelAmenities{},
 		reference.ReferenceUniversity{},
 
 		// hostel
