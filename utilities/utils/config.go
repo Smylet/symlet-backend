@@ -33,8 +33,12 @@ type Config struct {
 	AWSRegion            string        `mapstructure:"AWS_REGION"`
 	AwsAccessKeyID       string        `mapstructure:"AWS_ACCESS_KEY_ID"`
 	AwsSecretAccessKey   string        `mapstructure:"AWS_SECRET_ACCESS_KEY"`
+	AWSBucketName        string        `mapstructure:"AWS_BUCKET_NAME"`
 	BasePath             string        `mapstructure:"BASE_PATH"`
+	MediaPath			string        `mapstructure:"MEDIA_PATH"`
 }
+
+var EnvConfig *Config 
 
 // LoadConfig reads configuration from file or environment variables.
 func LoadConfig() (config Config, err error) {
@@ -49,6 +53,6 @@ func LoadConfig() (config Config, err error) {
 		return
 	}
 
-	err = viper.Unmarshal(&config)
+	err = viper.Unmarshal(&EnvConfig)//&config)
 	return
 }
