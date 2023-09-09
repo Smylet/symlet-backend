@@ -29,16 +29,16 @@ type Hostel struct {
 	ManagerID uint                  `gorm:"not null"`
 	Manager   manager.HostelManager `gorm:"foreignKey:ManagerID"`
 
-	Ammenities []*reference.ReferenceHostelAmmenities `gorm:"many2many:hostel_ammenities;"`
-	Students   []*student.Student                     `gorm:"many2many:hostel_students;"`
+	Amenities []*reference.ReferenceHostelAmenities `gorm:"many2many:hostel_ammenities;"`
+	Students  []*student.Student                    `gorm:"many2many:hostel_students;"`
 
 	// Other features
-	NumberOfUnits         uint `gorm:"not null"`
-	NumberOfOccupiedUnits uint `gorm:"not null"`
-	NumberOfBedrooms      uint `gorm:"not null"`
-	NumberOfBathrooms     uint `gorm:"not null"`
-	Kitchen               bool `gorm:"not null"`
-	FloorSpace            uint `gorm:"not null"`
+	NumberOfUnits         uint   `gorm:"not null"`
+	NumberOfOccupiedUnits uint   `gorm:"not null"`
+	NumberOfBedrooms      uint   `gorm:"not null"`
+	NumberOfBathrooms     uint   `gorm:"not null"`
+	Kitchen               string `gorm:"not null; oneof=shared none private"`
+	FloorSpace            uint   `gorm:"not null"`
 	HostelFee             HostelFee
 	HostelImages          []HostelImage `gorm:"foreignKey:HostelID;constraint:OnDelete:CASCADE"`
 }
