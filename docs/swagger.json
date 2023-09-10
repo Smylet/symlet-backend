@@ -1,9 +1,480 @@
 {
     "swagger": "2.0",
     "info": {
-        "contact": {}
+        "description": "This are the Smylet APP APIs.",
+        "title": "Smylet API",
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {
+            "name": "API Support",
+            "url": "http://www.swagger.io/support",
+            "email": "support@swagger.io"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "1.0"
     },
+    "host": "localhost:8000",
+    "basePath": "/",
     "paths": {
+        "/hostel-managers": {
+            "post": {
+                "description": "Create a new hostel manager",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Hostel Managers"
+                ],
+                "summary": "Create a hostel manager",
+                "parameters": [
+                    {
+                        "description": "Hostel manager object to create",
+                        "name": "hostel_manager",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/manager.HostelManagerSerializer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/manager.HostelManagerSerializer"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorMessage"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorMessage"
+                        }
+                    }
+                }
+            }
+        },
+        "/hostels": {
+            "get": {
+                "description": "Get a list of hostels with optional filters",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Hostels"
+                ],
+                "summary": "List hostels with optional filters",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Hostel name",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Description",
+                        "name": "description",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "University ID",
+                        "name": "university_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Address",
+                        "name": "address",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "City",
+                        "name": "city",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "State",
+                        "name": "state",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Country",
+                        "name": "country",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Manager ID",
+                        "name": "manager_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of units",
+                        "name": "number_of_units",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of bedrooms",
+                        "name": "number_of_bedrooms",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of bathrooms",
+                        "name": "number_of_bathrooms",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Kitchen type (shared, none, private)",
+                        "name": "kitchen",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Floor space",
+                        "name": "floor_space",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "Minimum hostel fee total",
+                        "name": "hostel_fee_total_min",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "Maximum hostel fee total",
+                        "name": "hostel_fee_total_max",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Hostel fee plan",
+                        "name": "hostel_fee_plan",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Has amenities",
+                        "name": "has_amenities",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "Minimum security rating",
+                        "name": "security_rating_min",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "Maximum security rating",
+                        "name": "security_rating_max",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "Minimum location rating",
+                        "name": "location_rating_min",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "Maximum location rating",
+                        "name": "location_rating_max",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "Minimum general rating",
+                        "name": "general_rating_min",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "Maximum general rating",
+                        "name": "general_rating_max",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "Minimum amenities rating",
+                        "name": "amenities_rating_min",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "Maximum amenities rating",
+                        "name": "amenities_rating_max",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "Minimum water rating",
+                        "name": "water_rating_min",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "Maximum water rating",
+                        "name": "water_rating_max",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "Minimum electricity rating",
+                        "name": "electricity_rating_min",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "Maximum electricity rating",
+                        "name": "electricity_rating_max",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "Minimum caretaker rating",
+                        "name": "caretaker_rating_min",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "Maximum caretaker rating",
+                        "name": "caretaker_rating_max",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Hostels",
+                        "schema": {
+                            "$ref": "#/definitions/hostel.HostelSerializer"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorMessage"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorMessage"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new hostel",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Hostels"
+                ],
+                "summary": "Create a hostel",
+                "parameters": [
+                    {
+                        "description": "Hostel object to create",
+                        "name": "hostel",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/hostel.HostelSerializer"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "name": "filename",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "size",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created hostel",
+                        "schema": {
+                            "$ref": "#/definitions/hostel.HostelSerializer"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorMessage"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorMessage"
+                        }
+                    }
+                }
+            }
+        },
+        "/hostels/{uid}": {
+            "get": {
+                "description": "Get a hostel by uid",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Hostels"
+                ],
+                "summary": "Get a hostel",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Hostel uid",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Hostel",
+                        "schema": {
+                            "$ref": "#/definitions/hostel.HostelSerializer"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorMessage"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorMessage"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update a hostel by uid",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Hostels"
+                ],
+                "summary": "Update a hostel",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Hostel uid",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Hostel object to update",
+                        "name": "hostel",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/hostel.HostelSerializer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated hostel",
+                        "schema": {
+                            "$ref": "#/definitions/hostel.HostelSerializer"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorMessage"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorMessage"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a hostel by uid",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Hostels"
+                ],
+                "summary": "Delete a hostel",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Hostel uid",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No content"
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorMessage"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorMessage"
+                        }
+                    }
+                }
+            }
+        },
         "/users/confirm-email": {
             "post": {
                 "description": "Confirm a user's email using verification parameters.",
@@ -62,6 +533,52 @@
                 }
             }
         },
+        "/users/login": {
+            "post": {
+                "description": "Login a user with the system.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Login a user",
+                "parameters": [
+                    {
+                        "description": "User login information",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/users.LoginReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/utils.SuccessMessage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorMessage"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorMessage"
+                        }
+                    }
+                }
+            }
+        },
         "/users/register": {
             "post": {
                 "description": "Register a new user with the system.",
@@ -110,6 +627,129 @@
         }
     },
     "definitions": {
+        "hostel.AmmenitySerializer": {
+            "type": "object",
+            "required": [
+                "id",
+                "name"
+            ],
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "hostel.HostelFeeSerializer": {
+            "type": "object",
+            "required": [
+                "breakdown",
+                "payment_plan",
+                "total_amount"
+            ],
+            "properties": {
+                "breakdown": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "payment_plan": {
+                    "type": "string",
+                    "enum": [
+                        "monthly",
+                        "by_school_session",
+                        "annually"
+                    ]
+                },
+                "total_amount": {
+                    "type": "number"
+                }
+            }
+        },
+        "hostel.HostelSerializer": {
+            "type": "object",
+            "required": [
+                "address",
+                "city",
+                "country",
+                "kitchen",
+                "name",
+                "number_of_bathrooms",
+                "number_of_bedrooms",
+                "number_of_occupied_units",
+                "number_of_units",
+                "state",
+                "university_id"
+            ],
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "amenities": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/hostel.AmmenitySerializer"
+                    }
+                },
+                "city": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "floor_space": {
+                    "type": "integer"
+                },
+                "hostel_fee": {
+                    "$ref": "#/definitions/hostel.HostelFeeSerializer"
+                },
+                "kitchen": {
+                    "type": "string",
+                    "enum": [
+                        "shared",
+                        "none",
+                        "private"
+                    ]
+                },
+                "name": {
+                    "type": "string"
+                },
+                "number_of_bathrooms": {
+                    "type": "integer"
+                },
+                "number_of_bedrooms": {
+                    "type": "integer"
+                },
+                "number_of_occupied_units": {
+                    "type": "integer"
+                },
+                "number_of_units": {
+                    "type": "integer"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "university_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "manager.HostelManagerSerializer": {
+            "type": "object"
+        },
+        "textproto.MIMEHeader": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                }
+            }
+        },
         "users.CreateUserReq": {
             "type": "object",
             "required": [
@@ -125,6 +765,21 @@
                     "type": "string"
                 },
                 "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "users.LoginReq": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
                     "type": "string"
                 }
             }
@@ -149,5 +804,16 @@
                 }
             }
         }
+    },
+    "securityDefinitions": {
+        "JWT": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    },
+    "externalDocs": {
+        "description": "OpenAPI",
+        "url": "https://swagger.io/resources/open-api/"
     }
 }

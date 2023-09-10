@@ -52,7 +52,8 @@ func LoadConfig() (config Config, err error) {
 	if err != nil {
 		return
 	}
-
 	err = viper.Unmarshal(&EnvConfig)//&config)
+	config = *EnvConfig
+
 	return
 }

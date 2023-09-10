@@ -98,7 +98,7 @@ func createHostel(ctx context.Context, db *gorm.DB, university *reference.Refere
 		HostelFee: hostel.HostelFee{
 			TotalAmount: 100000,
 			PaymentPlan: "monthly",
-			Breakdown: map[string]interface{}{
+			Breakdown: map[string]float64{
 				"rent":           100000,
 				"service_charge": 0,
 				"caution_fee":    0,
