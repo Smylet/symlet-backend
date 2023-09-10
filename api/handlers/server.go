@@ -1,19 +1,19 @@
 package handlers
 
 import (
-	"github.com/Smylet/symlet-backend/api/users"
-	_ "github.com/Smylet/symlet-backend/docs"
-
-	"github.com/Smylet/symlet-backend/utilities/mail"
-	"github.com/Smylet/symlet-backend/utilities/token"
-	"github.com/Smylet/symlet-backend/utilities/utils"
-	"github.com/Smylet/symlet-backend/utilities/worker"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/gin-gonic/gin"
 	"github.com/robfig/cron"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"gorm.io/gorm"
+
+	"github.com/Smylet/symlet-backend/api/users"
+	_ "github.com/Smylet/symlet-backend/docs"
+	"github.com/Smylet/symlet-backend/utilities/mail"
+	"github.com/Smylet/symlet-backend/utilities/token"
+	"github.com/Smylet/symlet-backend/utilities/utils"
+	"github.com/Smylet/symlet-backend/utilities/worker"
 )
 
 type Server struct {
@@ -34,14 +34,17 @@ func NewServer(config utils.Config, db *gorm.DB, task worker.TaskDistributor, ma
 		return nil, err
 	}
 	server := &Server{
-		config:  config,
-		cron:    cron.New(),
-		db:      db,
-		task:    task,
-		mailer:  mailer,
-		session: session,
-		token:   tokenMaker,
+		config: config,
+		cron:   cron.New(),
+		db:     db,
+		task:   task,
+		mailer: mailer,
+		token:  tokenMaker,
 	}
+	if config.Environment == "production" {
+		server.session = session
+	}
+
 
 	gin.SetMode(gin.ReleaseMode)
 
@@ -52,6 +55,20 @@ func NewServer(config utils.Config, db *gorm.DB, task worker.TaskDistributor, ma
 
 func (server *Server) registerRoutes() {
 	r := gin.Default()
+
+	hostelRoutes := r.Group("/hostels")
+	{
+		hostelRoutes.POST("/", users.AuthMiddleware(server.token), server.CreateHostel)
+		hostelRoutes.GET("/:uid", server.GetHostel)
+		hostelRoutes.GET("/", server.ListHostels)
+		hostelRoutes.PATCH("/:uid", users.AuthMiddleware(server.token), server.UpdateHostel)
+		hostelRoutes.DELETE("/:uid", users.AuthMiddleware(server.token), server.DeleteHostel)
+	}
+
+	managerRoutes := r.Group("/hostel-managers")
+	{
+		managerRoutes.POST("/", users.AuthMiddleware(server.token), server.CreateHostelManager)
+	}
 
 	userRoutes := r.Group("/users")
 	{
