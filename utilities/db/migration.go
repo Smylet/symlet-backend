@@ -58,6 +58,6 @@ func Migrate(db *gorm.DB) {
 		review.VendorReview{},
 	)
 	if err != nil {
-		log.Info().Msg("Failed to m")//Fatal().Err(err).Msg("failed to migrate")
+		log.Fatal().Err(err).Msg("failed to migrate")
 	}
 }
