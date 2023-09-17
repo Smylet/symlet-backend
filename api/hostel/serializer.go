@@ -33,19 +33,19 @@ type AmmenitySerializer struct {
 type HostelSerializer struct {
 	ManagerID             uint   `json:"-" form:"-"`
 	UniversityID          uint   `json:"university_id" form:"university_id" custom_binding:"requiredForCreate"`
-	Name                  string `json:"name" form:"name" custom_binding:"requiredForCreate"`
-	Address               string `json:"address" form:"address" custom_binding:"requiredForCreate"`
-	City                  string `json:"city" form:"city" custom_binding:"requiredForCreate"`
-	State                 string `json:"state" form:"state" custom_binding:"requiredForCreate"`
-	Country               string `json:"country" form:"country" custom_binding:"requiredForCreate"`
-	Description           string `json:"description" form:"description" custom_binding:"requiredForCreate"`
-	NumberOfUnits         uint   `json:"number_of_units" form:"number_of_units" custom_binding:"requiredForCreate"`
-	NumberOfOccupiedUnits uint   `json:"number_of_occupied_units" form:"number_of_occupied_units" custom_binding:"requiredForCreate"`
-	NumberOfBedrooms      uint   `json:"number_of_bedrooms" form:"number_of_bedrooms" custom_binding:"requiredForCreate"`
-	NumberOfBathrooms     uint   `json:"number_of_bathrooms" form:"number_of_bathrooms" custom_binding:"requiredForCreate"`
-	Kitchen               string `json:"kitchen" form:"kitchen" custom_binding:"requiredForCreate" binding:"oneof=shared none private"`
+	Name                  *string `json:"name" form:"name" custom_binding:"requiredForCreate"`
+	Address               *string `json:"address" form:"address" custom_binding:"requiredForCreate"`
+	City                  *string `json:"city" form:"city" custom_binding:"requiredForCreate"`
+	State                 *string `json:"state" form:"state" custom_binding:"requiredForCreate"`
+	Country               *string `json:"country" form:"country" custom_binding:"requiredForCreate"`
+	Description           *string `json:"description" form:"description" custom_binding:"requiredForCreate"`
+	NumberOfUnits         *uint   `json:"number_of_units" form:"number_of_units" custom_binding:"requiredForCreate"`
+	NumberOfOccupiedUnits *uint   `json:"number_of_occupied_units" form:"number_of_occupied_units" custom_binding:"requiredForCreate"`
+	NumberOfBedrooms      *uint   `json:"number_of_bedrooms" form:"number_of_bedrooms" custom_binding:"requiredForCreate"`
+	NumberOfBathrooms     *uint   `json:"number_of_bathrooms" form:"number_of_bathrooms" custom_binding:"requiredForCreate"`
+	Kitchen               *string `json:"kitchen" form:"kitchen" custom_binding:"requiredForCreate" binding:"oneof=shared none private"`
 
-	FloorSpace uint                    `json:"floor_space" form:"floor_space" custom_binding:"requiredForCreate"`
+	FloorSpace *uint                    `json:"floor_space" form:"floor_space" custom_binding:"requiredForCreate"`
 	HostelFee  HostelFeeSerializer     `json:"hostel_fee" form:"hostel_fee"` //binding:"required"`
 	Amenities  []AmmenitySerializer    `json:"amenities" form:"amenities"`   //binding:"required"`
 	Images     []*multipart.FileHeader `form:"images" binding:"max=10" swaggerignore:"true"`
@@ -54,6 +54,27 @@ type HostelSerializer struct {
 
 func (h *HostelSerializer) AfterCreate() error {
 	return nil
+}
+
+func getManager(ctx *gin.Context, db *gorm.DB) (*manager.HostelManager, error){
+		// Get the manager id from the auth payload
+		authPayload, exist := ctx.Get(users.AuthorizationPayloadKey)
+		if !exist {
+			return nil, fmt.Errorf("authorization payload does not exist")
+		}
+		payload, ok := authPayload.(*token.Payload)
+		if !ok {
+			return nil, fmt.Errorf("authorization payload is not of type *token.Payload")
+		}
+	
+		var hostelManager manager.HostelManager
+	
+		err := db.Model(&manager.HostelManager{}).Where("user_id = ?", payload.UserID).First(&hostelManager).Error
+		if err != nil {
+			return nil, fmt.Errorf("failed to find manager with user id %d: %v", payload.UserID, err)
+		}
+		return &hostelManager, nil
+
 }
 
 // CreateTx creates a new hostel
@@ -65,14 +86,11 @@ func (h *HostelSerializer) CreateTx(ctx *gin.Context, db *gorm.DB, session *sess
 		return err
 	}
 	// Get the manager id from the auth payload
-	authPayload := ctx.MustGet(users.AuthorizationPayloadKey).(*token.Payload)
-	var hostelManager manager.HostelManager
-
-	err := db.Model(&manager.HostelManager{}).Where("user_id = ?", authPayload.UserID).First(&hostelManager).Error
+	hostelManager, err := getManager(ctx, db)
 	if err != nil {
-		return fmt.Errorf("failed to find manager with user id %d: %v", authPayload.UserID, err)
+		return err
 	}
-	logger.Printf(ctx, "Manager Retrieved %v", hostelManager.ID)
+
 	h.ManagerID = hostelManager.ID
 
 	//Process the uploaded images
@@ -87,19 +105,19 @@ func (h *HostelSerializer) CreateTx(ctx *gin.Context, db *gorm.DB, session *sess
 		logger.Info("Creating hostel in transaction")
 		hostel := Hostel{
 			ManagerID:             h.ManagerID,
-			Name:                  h.Name,
+			Name:                  *h.Name,
 			UniversityID:          h.UniversityID,
-			Address:               h.Address,
-			City:                  h.City,
-			State:                 h.State,
-			Country:               h.Country,
-			Description:           h.Description,
-			NumberOfUnits:         h.NumberOfUnits,
-			NumberOfOccupiedUnits: h.NumberOfOccupiedUnits,
-			NumberOfBedrooms:      h.NumberOfBedrooms,
-			NumberOfBathrooms:     h.NumberOfBathrooms,
-			Kitchen:               h.Kitchen,
-			FloorSpace:            h.FloorSpace,
+			Address:               *h.Address,
+			City:                  *h.City,
+			State:                 *h.State,
+			Country:               *h.Country,
+			Description:           *h.Description,
+			NumberOfUnits:         *h.NumberOfUnits,
+			NumberOfOccupiedUnits: *h.NumberOfOccupiedUnits,
+			NumberOfBedrooms:      *h.NumberOfBedrooms,
+			NumberOfBathrooms:     *h.NumberOfBathrooms,
+			Kitchen:               *h.Kitchen,
+			FloorSpace:            *h.FloorSpace,
 		}
 		//Create hostel together with image
 		if err := tx.Model(&Hostel{}).Create(&hostel).Error; err != nil {
@@ -265,16 +283,13 @@ func (h *HostelSerializer) UpdateHostelTx(ctx *gin.Context, db *gorm.DB, session
 	if err := h.Validate(); err != nil {
 		return err
 	}
-	authPayload := ctx.MustGet(users.AuthorizationPayloadKey).(*token.Payload)
-	var hostelManager manager.HostelManager
-
-	err := db.Model(&manager.HostelManager{}).Where("user_id = ?", authPayload.UserID).First(&hostelManager).Error
+	// Get the manager id from the auth payload
+	hostelManager, err := getManager(ctx, db)
 	if err != nil {
-		return fmt.Errorf("failed to find manager with user id %d: %v", authPayload.UserID, err)
+		return err
 	}
-	if h.ManagerID != hostel.ManagerID {
-		return fmt.Errorf("user is not authorized to update this hostel")
-	}
+
+
 
 	updatedFields := h.getUpdatedFields()
 	err = common.ExecTx(ctx, db, func(tx *gorm.DB) error {
@@ -282,11 +297,13 @@ func (h *HostelSerializer) UpdateHostelTx(ctx *gin.Context, db *gorm.DB, session
 		if err != nil {
 			return err
 		}
+		if hostel.ManagerID != hostelManager.ID {
+			return fmt.Errorf("hostel does not belong to manager")
+		}
 
 		if err := tx.Model(&hostel).Updates(updatedFields).Error; err != nil {
 			return err
 		}
-		logger.Info(h.Amenities)
 		if h.Amenities != nil {
 			logger.Info("Updating Amenities")
 			amenitiesArr, err := h.updateAmenities(&hostel, tx)
@@ -322,7 +339,7 @@ func (h *HostelSerializer) updateAmenities(hostel *Hostel, tx *gorm.DB) ([]uint,
 
 	// Create a map to track new amenities by ID and collect their IDs
 	newAmenities := make(map[uint]bool)
-	var amenitiesArr []uint
+	amenitiesArr := make([]uint, 0)
 
 	for _, newAmenity := range h.Amenities {
 		if !existingAmenities[newAmenity.ID] {

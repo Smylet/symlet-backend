@@ -24,7 +24,7 @@ func (server *Server) CreateHostelManager(c *gin.Context) {
 	var HostelManagerSerializer manager.HostelManagerSerializer
 
 	if err := c.ShouldBind(&HostelManagerSerializer); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.RespondWithError(c, http.StatusBadRequest, err.Error(), "Invalid hostel manager data; Failed to bind request body to HostelManagerSerializer")
 		return
 	}
 

@@ -3,7 +3,7 @@ package hostel
 import (
 	"database/sql/driver"
 	"encoding/json"
-	"errors"
+	"fmt"
 
 	"github.com/Smylet/symlet-backend/api/manager"
 	"github.com/Smylet/symlet-backend/api/reference"
@@ -19,8 +19,7 @@ import (
 // 	)
 // }
 
-type cusjsonb map[string]float64
-
+type Map map[string]float64
 
 type Hostel struct {
 	common.AbstractBaseModel
@@ -46,7 +45,7 @@ type Hostel struct {
 	NumberOfBathrooms     uint   `gorm:"not null"`
 	Kitchen               string `gorm:"not null; oneof=shared none private"`
 	FloorSpace            uint   `gorm:"not null"`
-	HostelFee             HostelFee
+	HostelFee             HostelFee `gorm:"foreignKey:HostelID;constraint:OnDelete:CASCADE"`
 	HostelImages          []HostelImage `gorm:"foreignKey:HostelID;constraint:OnDelete:CASCADE"`
 }
 
@@ -60,8 +59,8 @@ type HostelFee struct {
 	common.AbstractBaseModel
 	HostelID    uint
 	TotalAmount float64
-	PaymentPlan string                 `gorm:"oneof: 'monthly' 'by_school_session' 'annually'"`
-	Breakdown   cusjsonb `gorm:"type:jsonb;not null;default: '{}'::jsonb"`
+	PaymentPlan string `gorm:"oneof: 'monthly' 'by_school_session' 'annually'"`
+	Breakdown   Map    `gorm:"type:jsonb"`
 }
 
 type HostelAgreementTemplate struct {
@@ -70,26 +69,24 @@ type HostelAgreementTemplate struct {
 	DocumentURL string `gorm:"not null"`
 }
 
-// Returns the JSON-encoded representation
-func (a cusjsonb) Value() (driver.Value, error) {
-    // Convert to map[string]float32 from map[int]float32 
-    x := make(map[string]float64)
-
-    // Marshal into json 
-    return json.Marshal(x)
+func (m Map) Value() (driver.Value, error) {
+	byte, err := json.Marshal(m)
+	if err != nil {
+		return nil, err
+	}
+	return string(byte), nil
 }
 
-// Decodes a JSON-encoded value
-func (a *cusjsonb) Scan(value interface{}) error {
-    b, ok := value.([]byte)
-    if !ok {
-        return errors.New("type assertion to []byte failed")
-    }
-    // Unmarshal from json to map[string]float32
-    x := make(map[string]float64)
-    if err := json.Unmarshal(b, &x); err != nil {
-       return err
-    }
-
-    return nil
+func (m *Map) Scan(v interface{}) error {
+	if v == nil {
+		return nil
+	}
+	switch data := v.(type) {
+	case string:
+		return json.Unmarshal([]byte(data), &m)
+	case []byte:
+		return json.Unmarshal(data, &m)
+	default:
+		return fmt.Errorf("cannot scan type %t into Map", v)
+	}
 }

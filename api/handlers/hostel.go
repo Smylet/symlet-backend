@@ -23,13 +23,21 @@ import (
 // @Router /hostels [post]
 func (server *Server) CreateHostel(c *gin.Context) {
 	var HostelSerializer hostel.HostelSerializer
-
-	if err := c.ShouldBind(&HostelSerializer); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	//print header
+	file, err := c.FormFile("hostel_images")
+	if err != nil {
+		utils.RespondWithError(c, 400, err.Error(), "Invalid hostel images")
+		return
+	}
+	errs := utils.CustomBinder(c, &HostelSerializer)
+	if errs != nil {
+		utils.RespondWithError(c, http.StatusBadRequest, errs.Error(), "Invalid hostel data")
 		return
 	}
 
-	err := HostelSerializer.CreateTx(c, server.db, server.session)
+	HostelSerializer.Images = append(HostelSerializer.Images, file)
+	//Get uploaded file
+	err = HostelSerializer.CreateTx(c, server.db, server.session)
 
 	if err != nil {
 		utils.RespondWithError(c, 500, err.Error(), "Failed to create hostel")
@@ -52,7 +60,10 @@ func (server *Server) CreateHostel(c *gin.Context) {
 func (server *Server) GetHostel(c *gin.Context) {
 	var HostelSerializer hostel.HostelSerializer
 	uidString := c.Param("uid")
-
+	if uidString == "" {
+		utils.RespondWithError(c, 400, "Hostel uid is required", "")
+		return
+	}
 	uid, err := uuid.Parse(uidString)
 	if err != nil {
 		utils.RespondWithError(c, 400, err.Error(), "Invalid hostel uid")
@@ -120,7 +131,10 @@ func (server *Server) ListHostels(c *gin.Context) {
 		utils.RespondWithError(c, http.StatusInternalServerError, err.Error(), "Failed to get hostels")
 		return
 	}
-
+	if len(hostels) == 0 {
+		utils.RespondWithSuccess(c, http.StatusOK, nil, "No hostels found")
+		return
+	}
 	hostelsResponse := HostelSerializer.ResponseMany(hostels)
 	utils.RespondWithSuccess(c, http.StatusOK, hostelsResponse, "Hostels retrieved successfully")
 }
@@ -139,6 +153,11 @@ func (server *Server) ListHostels(c *gin.Context) {
 func (server *Server) UpdateHostel(c *gin.Context) {
 	var HostelSerializer hostel.HostelSerializer
 	uidString := c.Param("uid")
+	errs := utils.CustomBinder(c, &HostelSerializer)
+	if errs != nil {
+		utils.RespondWithError(c, http.StatusBadRequest, errs.Error(), "Invalid hostel data")
+		return
+	}
 
 	uid, err := uuid.Parse(uidString)
 	if err != nil {
@@ -168,9 +187,13 @@ func (server *Server) UpdateHostel(c *gin.Context) {
 func (server *Server) DeleteHostel(c *gin.Context) {
 	var hostel hostel.Hostel
 	uidString := c.Param("uid")
-	uid := uuid.MustParse(uidString)
+	uid, err := uuid.Parse(uidString)
+	if err != nil {
+		utils.RespondWithError(c, http.StatusBadRequest, err.Error(), "Invalid hostel uid")
+		return
+	}
 
-	err := server.db.Where("uid = ?", uid).First(&hostel).Error
+	err = server.db.Where("uid = ?", uid).First(&hostel).Error
 	if err != nil {
 		utils.RespondWithError(c, http.StatusInternalServerError, err.Error(), "Failed to get hostel")
 		return
@@ -183,5 +206,4 @@ func (server *Server) DeleteHostel(c *gin.Context) {
 	}
 	c.JSON(http.StatusNoContent, gin.H{})
 	utils.RespondWithSuccess(c, http.StatusNoContent, nil, "Hostel deleted successfully")
-	 
 }

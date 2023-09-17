@@ -3,15 +3,14 @@ package hostel
 import (
 	"fmt"
 	"io"
-	"math/rand"
 	"mime/multipart"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/google/uuid"
 
 	"github.com/Smylet/symlet-backend/utilities/utils"
 )
@@ -41,17 +40,16 @@ func uploadToS3(fileHeader *multipart.FileHeader, awsSession *session.Session) (
 		Body:   file,
 	})
 	
-	if err != nil {
-		return "",  err
-	}
+	if outPut == nil || err != nil {
+		return "", fmt.Errorf("failed to upload file to S3: %w", err)
+		}
 
 	return outPut.String(), nil
 }
 
 func generateUniqueFilename() string {
-	rand.Seed(time.Now().UnixNano())
 	// Generate a random string (e.g., a timestamp with a random number)
-	randomString := fmt.Sprintf("%d%d", time.Now().Unix(), rand.Intn(1000))
+	randomString := uuid.New().String()
 	return randomString
 }
 
@@ -72,7 +70,7 @@ func uploadImageLocally(file *multipart.FileHeader) (string, error) {
 	filename := fmt.Sprintf("%s%s", generateUniqueFilename(), filepath.Ext(file.Filename))
 	filePath := filepath.Join(mediaFolder, filename)
 
-	dst, err := os.Create(filePath)
+	dst, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 0666)	
 	if err != nil {
 		return "", err
 	}
@@ -91,7 +89,10 @@ func uploadImageLocally(file *multipart.FileHeader) (string, error) {
 	if err != nil {
 		return "", err
 	}
-
+	//Get server address and combine it with filename
+	serverAddress := utils.EnvConfig.HTTPServerAddress
+	filePath = fmt.Sprintf("%s/%s", serverAddress, filename)
+		
 	return filePath, nil
 }
 

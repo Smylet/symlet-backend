@@ -2,26 +2,27 @@ package hostel
 
 import (
 	"mime/multipart"
-	"path/filepath"
+	"net/http"
 
 	"github.com/go-playground/validator/v10"
 )
 
 
 func validateImageExtension(fl validator.FieldLevel) bool {
-    allowedExtensions := []string{".jpg", ".jpeg", ".png", ".gif"}
     fileHeader := fl.Field().Interface().([]*multipart.FileHeader)
 
     for _, file := range fileHeader {
-        ext := filepath.Ext(file.Filename)
-        valid := false
+        fileContent, _ := file.Open()
+        defer fileContent.Close()
 
-        for _, allowedExt := range allowedExtensions {
-            if ext == allowedExt {
-                valid = true
-                break
-            }
+        buffer := make([]byte, 512)
+        _, err := fileContent.Read(buffer)
+        if err != nil {
+            return false
         }
+
+        contentType := http.DetectContentType(buffer)
+        valid := contentType == "image/jpeg" || contentType == "image/png" || contentType == "image/gif"
 
         if !valid {
             return false

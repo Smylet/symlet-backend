@@ -2,6 +2,7 @@ package utils
 
 import (
 	"bytes"
+	"sync"
 	"time"
 
 	"github.com/spf13/viper"
@@ -38,22 +39,43 @@ type Config struct {
 	MediaPath			string        `mapstructure:"MEDIA_PATH"`
 }
 
-var EnvConfig *Config 
+var (
+	EnvConfig *Config 
+	configOnce sync.Once
+)
+
 
 // LoadConfig reads configuration from file or environment variables.
-func LoadConfig() (config Config, err error) {
-	config_bytes := env.GetEnv()
-	viper.SetConfigType("env")
+// LoadConfig initializes and returns the application configuration.
+func LoadConfig() (Config, error) {
+    configOnce.Do(func() {
+        // Initialize the configuration only once
+        loadedConfig, err := loadConfig()
+        if err != nil {
+            // Handle error, e.g., log and exit
+			panic(err)
+        }
+        EnvConfig = loadedConfig
+    })
+    return *EnvConfig, nil
+}
 
-	viper.AutomaticEnv()
-	err = viper.ReadConfig(bytes.NewReader(config_bytes))
 
-	//err = viper.ReadInConfig()
-	if err != nil {
-		return
-	}
-	err = viper.Unmarshal(&EnvConfig)//&config)
-	config = *EnvConfig
+func loadConfig() (*Config, error) {
+    config_bytes := env.GetEnv()
+    viper.SetConfigType("env")
 
-	return
+    viper.AutomaticEnv()
+    err := viper.ReadConfig(bytes.NewReader(config_bytes))
+    if err != nil {
+        return nil, err
+    }
+
+    var loadedConfig Config
+    err = viper.Unmarshal(&loadedConfig)
+    if err != nil {
+        return nil, err
+    }
+
+    return &loadedConfig, nil
 }

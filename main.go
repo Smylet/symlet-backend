@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -49,7 +48,6 @@ func main() {
 	if config.Environment == "development" {
 		log.SetOutput(zerolog.ConsoleWriter{Out: os.Stderr})
 	}
-	fmt.Println(config)
 	database, redisOption := db.GetDB(config),
 		asynq.RedisClientOpt{
 			Addr: config.RedisAddress,
