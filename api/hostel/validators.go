@@ -4,19 +4,22 @@ import (
 	"mime/multipart"
 	"net/http"
 
-	"github.com/go-playground/validator/v10"
+	"github.com/go-playground/validator"
 )
 
 
-func validateImageExtension(fl validator.FieldLevel) bool {
+func ValidateImageExtension(fl validator.FieldLevel) bool {
     fileHeader := fl.Field().Interface().([]*multipart.FileHeader)
 
     for _, file := range fileHeader {
-        fileContent, _ := file.Open()
+        fileContent, err := file.Open()
+        if err != nil {
+            return false
+        }
         defer fileContent.Close()
 
         buffer := make([]byte, 512)
-        _, err := fileContent.Read(buffer)
+        _, err = fileContent.Read(buffer)
         if err != nil {
             return false
         }
