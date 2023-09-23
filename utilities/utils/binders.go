@@ -10,11 +10,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 func CustomBinder(c *gin.Context, serializer any) error {
+	
 	fieldErrorMap := map[string]string{}
 
 	if err := c.ShouldBind(serializer); err == nil {
 		// Check if it's a create request
-		fmt.Println("Validating custom binders", err)
 		createRequest := c.Request.Method == http.MethodPost
 		updateRequest := c.Request.Method == http.MethodPatch
 
