@@ -16,7 +16,7 @@ import (
 )
 
 func uploadToS3(fileHeader *multipart.FileHeader, awsSession *session.Session) (string, error) {
-
+	
 	// Create an S3 service client
 	svc := s3.New(awsSession)
 

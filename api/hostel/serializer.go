@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"mime/multipart"
 	"reflect"
-	"sync"
 
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/gin-gonic/gin"
@@ -80,206 +79,67 @@ func getManager(ctx *gin.Context, db *gorm.DB) (*manager.HostelManager, error){
 
 
 
-// CreateTx creates a new hostel
-func (h *HostelSerializer) CreateTx(ctx *gin.Context, db *gorm.DB, session *session.Session) error {
-	logger := common.NewLogger()
-	var wg sync.WaitGroup
-
-	//Process the uploaded images
-
-	// Create a channel to send errors from Goroutine to main thread
-	errorChan := make(chan error, 1) // Buffer size 1 for single error
-
-	// Create a channel to send file paths from Goroutine to main thread
-	filePathsChan := make(chan string, len(h.Images))
-	wg.Add(1)
-	// Launch a Goroutine to process images concurrently
-	go func() {
-		defer wg.Done()
-		logger.Info("Processing images in goroutine")
-
-		// Process the uploaded images
-		filePaths, err := ProcessUploadedImages(h.Images, session)
-		if err != nil {
-			logger.Info("Image processing failed")
-			// Send the error to the main thread via the error channel
-			errorChan <- err
-			return
-		}
-		logger.Info(filePaths)
-
-		// Send the file paths to the main thread via the channel
-		for _, path := range filePaths {
-			filePathsChan <- path
-		}
-
-		// Close the channels to signal that processing is complete
-		close(errorChan)
-		close(filePathsChan)
-		logger.Info("Image processing complete")
-		}()
-
-	wg.Wait()
-	hostelImagesSlice := make([]string, len(h.Images))
-	logger.Info("Getting images from channel")
-	for path := range filePathsChan {
-		logger.Printf(ctx, "------> %v", path)
-		hostelImagesSlice = append(hostelImagesSlice, path)
-	}
-
-	// Validate the fields
-	// if err := h.Validate(); err != nil {
-	// 	return err
-	// }
-	// Get the manager id from the auth payload
-	authPayload := ctx.MustGet(users.AuthorizationPayloadKey).(*token.Payload)
-	var hostelManager manager.HostelManager
-
-	err := db.Model(&manager.HostelManager{}).Where("user_id = ?", authPayload.UserID).First(&hostelManager).Error
-	if err != nil {
-		return fmt.Errorf("failed to find manager with user id %d: %v", authPayload.UserID, err)
-	}
-	logger.Printf(ctx, "Manager Retrieved %v", hostelManager.ID)
-	h.ManagerID = hostelManager.ID
-
-	//Create the hostel
-	err = common.ExecTx(ctx, db, func(tx *gorm.DB) error {
-		logger.Info("Creating hostel in transaction")
-		hostel := Hostel{
-			ManagerID:             h.ManagerID,
-			Name:                  *h.Name,
-			UniversityID:          h.UniversityID,
-			Address:               *h.Address,
-			City:                  *h.City,
-			State:                 *h.State,
-			Country:               *h.Country,
-			Description:           *h.Description,
-			NumberOfUnits:         *h.NumberOfUnits,
-			NumberOfOccupiedUnits: *h.NumberOfOccupiedUnits,
-			NumberOfBedrooms:      *h.NumberOfBedrooms,
-			NumberOfBathrooms:     *h.NumberOfBathrooms,
-			Kitchen:               *h.Kitchen,
-			FloorSpace:            *h.FloorSpace,
-		}
-
-		//Create hostel together with image
-		if err := tx.Model(&Hostel{}).Create(&hostel).Error; err != nil {
-			logger.Error("Hostel creation failed")
-			return err
-		}
-		logger.Printf(ctx, "Hostel created %v", hostel.ID)
-		// Add the amenities
-
-		amenitiesArr := make([]uint, len(h.Amenities))
-		for _, ammenity := range h.Amenities {
-			amenitiesArr = append(amenitiesArr, ammenity.ID)
-		}
-		amenities := []reference.ReferenceHostelAmenities{}
-		if err := tx.Where("id IN ?", amenitiesArr).Find(&amenities).Error; err != nil {
-			return err
-		}
-
-		if err := tx.Model(&hostel).Association("Amenities").Append(amenities); err != nil {
-			return err
-		}
-		logger.Info("Amenities added")
-		// Add the hostel images
-
-		// Add the hostel fee
-		breakdown := make(map[string]float64)
-		for k, v := range h.HostelFee.Breakdown {
-			breakdown[k] = v
-		}
-
-		//convert the map to json
-
-		hostelFee := HostelFee{
-			HostelID:    hostel.ID,
-			TotalAmount: h.HostelFee.TotalAmount,
-			PaymentPlan: h.HostelFee.PaymentPlan,
-			Breakdown:   breakdown,
-		}
-		logger.Info(hostelFee.Breakdown)
-		if tx.Model(&HostelFee{}).Create(&hostelFee).Error != nil {
-			logger.Error("Hostel fee creation failed")
-			return err
-		}
-		logger.Info("Hostel fee created")
-
-
-		// In the main thread, receive file paths from the channel and create HostelImage records
-		hostelImages := make([]HostelImage, len(h.Images))
-		//logger.Info(filePathsChan)
-		for _, path := range hostelImagesSlice {
-			hostelImage := HostelImage{
-				HostelID: h.Hostel.ID,
-			}
-			hostelImage.ImageURL = path
-			//logger.Info(hostelImage)
-			hostelImages = append(hostelImages, hostelImage)
-		}
-		
-		// Create HostelImage records
-		if err := tx.Model(&HostelImage{}).Create(&hostelImages).Error; err != nil {
-			return err
-		}
-		logger.Info("Hostel images created")
-
-
-		h.Hostel = hostel
-
-		return nil
-	})
-	if err != nil {
-		return err
-	}
-
-	select {
-	case err := <-errorChan:
-		// Handle the error (e.g., log it)
-		logger.Error(err)
-		// Abort the request by returning an error response
-		return err
-	default:
-		// No error, continue processing
-		logger.Info("No error")}
-
-	// Get the hostel again so that the related fields a preloaded
-	logger.Info("Getting hostel")
-	err = db.Model(&Hostel{}).Preload(clause.Associations).Where("id = ?", h.Hostel.ID).First(&h.Hostel).Error
-	if err != nil {
-		return err
-	}
-
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-// CreateTx creates a new hostel
+// // CreateTx creates a new hostel
 // func (h *HostelSerializer) CreateTx(ctx *gin.Context, db *gorm.DB, session *session.Session) error {
 // 	logger := common.NewLogger()
-
-// 	//Validate the fields
-// 	if err := h.Validate(); err != nil {
-// 		return err
-// 	}
-// 	// Get the manager id from the auth payload
-// 	hostelManager, err := getManager(ctx, db)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	h.ManagerID = hostelManager.ID
+// 	var wg sync.WaitGroup
 
 // 	//Process the uploaded images
-	
-// 	filePaths, err := ProcessUploadedImages(h.Images, session)
-// 	if err != nil {
-// 		logger.Info("Image processing failed")
-// 		return err
+
+// 	// Create a channel to send errors from Goroutine to main thread
+// 	errorChan := make(chan error, 1) // Buffer size 1 for single error
+
+// 	// Create a channel to send file paths from Goroutine to main thread
+// 	filePathsChan := make(chan string, len(h.Images))
+// 	wg.Add(1)
+// 	// Launch a Goroutine to process images concurrently
+// 	go func() {
+// 		defer wg.Done()
+// 		logger.Info("Processing images in goroutine")
+
+// 		// Process the uploaded images
+// 		filePaths, err := ProcessUploadedImages(h.Images, session)
+// 		if err != nil {
+// 			logger.Info("Image processing failed")
+// 			// Send the error to the main thread via the error channel
+// 			errorChan <- err
+// 			return
+// 		}
+// 		logger.Info(filePaths)
+
+// 		// Send the file paths to the main thread via the channel
+// 		for _, path := range filePaths {
+// 			filePathsChan <- path
+// 		}
+
+// 		// Close the channels to signal that processing is complete
+// 		close(errorChan)
+// 		close(filePathsChan)
+// 		logger.Info("Image processing complete")
+// 		}()
+
+// 	wg.Wait()
+// 	hostelImagesSlice := make([]string, 0)
+// 	logger.Info("Getting images from channel")
+// 	for path := range filePathsChan {
+// 		logger.Printf(ctx, "------> %v", path)
+// 		hostelImagesSlice = append(hostelImagesSlice, path)
 // 	}
+
+// 	// Validate the fields
+// 	// if err := h.Validate(); err != nil {
+// 	// 	return err
+// 	// }
+// 	// Get the manager id from the auth payload
+// 	authPayload := ctx.MustGet(users.AuthorizationPayloadKey).(*token.Payload)
+// 	var hostelManager manager.HostelManager
+
+// 	err := db.Model(&manager.HostelManager{}).Where("user_id = ?", authPayload.UserID).First(&hostelManager).Error
+// 	if err != nil {
+// 		return fmt.Errorf("failed to find manager with user id %d: %v", authPayload.UserID, err)
+// 	}
+// 	logger.Printf(ctx, "Manager Retrieved %v", hostelManager.ID)
+// 	h.ManagerID = hostelManager.ID
 
 // 	//Create the hostel
 // 	err = common.ExecTx(ctx, db, func(tx *gorm.DB) error {
@@ -300,6 +160,7 @@ func (h *HostelSerializer) CreateTx(ctx *gin.Context, db *gorm.DB, session *sess
 // 			Kitchen:               *h.Kitchen,
 // 			FloorSpace:            *h.FloorSpace,
 // 		}
+
 // 		//Create hostel together with image
 // 		if err := tx.Model(&Hostel{}).Create(&hostel).Error; err != nil {
 // 			logger.Error("Hostel creation failed")
@@ -322,17 +183,7 @@ func (h *HostelSerializer) CreateTx(ctx *gin.Context, db *gorm.DB, session *sess
 // 		}
 // 		logger.Info("Amenities added")
 // 		// Add the hostel images
-// 		hostelImages := make([]HostelImage, len(filePaths))
 
-// 		for i, image := range filePaths {
-// 			hostelImages[i] = HostelImage{}
-// 			hostelImages[i].ImageURL = image
-// 			hostelImages[i].HostelID = hostel.ID
-// 		}
-
-// 		if err := tx.Model((&HostelImage{})).Create(&hostelImages).Error; err != nil {
-// 			return err
-// 		}
 // 		// Add the hostel fee
 // 		breakdown := make(map[string]float64)
 // 		for k, v := range h.HostelFee.Breakdown {
@@ -354,14 +205,48 @@ func (h *HostelSerializer) CreateTx(ctx *gin.Context, db *gorm.DB, session *sess
 // 		}
 // 		logger.Info("Hostel fee created")
 
+
+// 		// In the main thread, receive file paths from the channel and create HostelImage records
+// 		hostelImages := make([]HostelImage, len(h.Images))
+// 		//logger.Info(filePathsChan)
+// 		for _, path := range hostelImagesSlice {
+// 			hostelImage := HostelImage{
+// 				HostelID: h.Hostel.ID,
+// 			}
+// 			logger.Info("In transaction--->", path)
+// 			hostelImage.ImageURL = path
+// 			//logger.Info(hostelImage)
+// 			hostelImages = append(hostelImages, hostelImage)
+// 		}
+		
+// 		// Create HostelImage records
+// 		logger.Info("Creating hostel images", hostelImages)
+// 		if err := tx.Model(&HostelImage{}).Create(&hostelImages).Error; err != nil {
+// 			return err
+// 		}
+// 		logger.Info("Hostel images created")
+
+
 // 		h.Hostel = hostel
+
 // 		return nil
 // 	})
 // 	if err != nil {
 // 		return err
 // 	}
-// 	// Get the hostel again so that the related fields a preloaded
 
+// 	select {
+// 	case err := <-errorChan:
+// 		// Handle the error (e.g., log it)
+// 		logger.Error(err)
+// 		// Abort the request by returning an error response
+// 		return err
+// 	default:
+// 		// No error, continue processing
+// 		logger.Info("No error")}
+
+// 	// Get the hostel again so that the related fields a preloaded
+// 	logger.Info("Getting hostel")
 // 	err = db.Model(&Hostel{}).Preload(clause.Associations).Where("id = ?", h.Hostel.ID).First(&h.Hostel).Error
 // 	if err != nil {
 // 		return err
@@ -372,6 +257,122 @@ func (h *HostelSerializer) CreateTx(ctx *gin.Context, db *gorm.DB, session *sess
 // 	}
 // 	return nil
 // }
+
+// CreateTx creates a new hostel
+func (h *HostelSerializer) CreateTx(ctx *gin.Context, db *gorm.DB, session *session.Session) error {
+	logger := common.NewLogger()
+
+	//Validate the fields
+	if err := h.Validate(); err != nil {
+		return err
+	}
+	// Get the manager id from the auth payload
+	hostelManager, err := getManager(ctx, db)
+	if err != nil {
+		return err
+	}
+
+	h.ManagerID = hostelManager.ID
+
+	//Process the uploaded images
+	
+	filePaths, err := ProcessUploadedImages(h.Images, session)
+	if err != nil {
+		logger.Info("Image processing failed")
+		return err
+	}
+
+	//Create the hostel
+	err = common.ExecTx(ctx, db, func(tx *gorm.DB) error {
+		logger.Info("Creating hostel in transaction")
+		hostel := Hostel{
+			ManagerID:             h.ManagerID,
+			Name:                  *h.Name,
+			UniversityID:          h.UniversityID,
+			Address:               *h.Address,
+			City:                  *h.City,
+			State:                 *h.State,
+			Country:               *h.Country,
+			Description:           *h.Description,
+			NumberOfUnits:         *h.NumberOfUnits,
+			NumberOfOccupiedUnits: *h.NumberOfOccupiedUnits,
+			NumberOfBedrooms:      *h.NumberOfBedrooms,
+			NumberOfBathrooms:     *h.NumberOfBathrooms,
+			Kitchen:               *h.Kitchen,
+			FloorSpace:            *h.FloorSpace,
+		}
+		//Create hostel together with image
+		if err := tx.Model(&Hostel{}).Create(&hostel).Error; err != nil {
+			logger.Error("Hostel creation failed")
+			return err
+		}
+		logger.Printf(ctx, "Hostel created %v", hostel.ID)
+		// Add the amenities
+
+		amenitiesArr := make([]uint, len(h.Amenities))
+		for _, ammenity := range h.Amenities {
+			amenitiesArr = append(amenitiesArr, ammenity.ID)
+		}
+		amenities := []reference.ReferenceHostelAmenities{}
+		if err := tx.Where("id IN ?", amenitiesArr).Find(&amenities).Error; err != nil {
+			return err
+		}
+
+		if err := tx.Model(&hostel).Association("Amenities").Append(amenities); err != nil {
+			return err
+		}
+		logger.Info("Amenities added")
+		// Add the hostel images
+		hostelImages := make([]HostelImage, len(filePaths))
+
+		for i, image := range filePaths {
+			hostelImages[i] = HostelImage{}
+			hostelImages[i].ImageURL = image
+			hostelImages[i].HostelID = hostel.ID
+		}
+
+		if err := tx.Model((&HostelImage{})).Create(&hostelImages).Error; err != nil {
+			return err
+		}
+		// Add the hostel fee
+		breakdown := make(map[string]float64)
+		for k, v := range h.HostelFee.Breakdown {
+			breakdown[k] = v
+		}
+
+		//convert the map to json
+
+		hostelFee := HostelFee{
+			HostelID:    hostel.ID,
+			TotalAmount: h.HostelFee.TotalAmount,
+			PaymentPlan: h.HostelFee.PaymentPlan,
+			Breakdown:   breakdown,
+		}
+		logger.Info(hostelFee.Breakdown)
+		if tx.Model(&HostelFee{}).Create(&hostelFee).Error != nil {
+			logger.Error("Hostel fee creation failed")
+			return err
+		}
+		logger.Info("Hostel fee created")
+
+		h.Hostel = hostel
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	// Get the hostel again so that the related fields a preloaded
+
+	err = db.Model(&Hostel{}).Preload(clause.Associations).Where("id = ?", h.Hostel.ID).First(&h.Hostel).Error
+	if err != nil {
+		return err
+	}
+
+	if err != nil {
+		return err
+	}
+	return nil
+}
 
 // Validate validates the fields of the hostel
 func (h *HostelSerializer) Validate() error {
