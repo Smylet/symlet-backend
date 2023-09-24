@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/Smylet/symlet-backend/utilities/utils"
-	"github.com/rotisserie/eris"
 )
 
 // MakeDBProvider will create a DbProvider of the correct type from the parameters.
@@ -17,14 +16,7 @@ func ParseDSN(dsn string) (*url.URL, error) {
 
 // CreateDBProvider creates a DB provider based on the given URL.
 func CreateDBProvider(dsnURL *url.URL, slowThreshold time.Duration, poolMax int, reset bool) (DBProvider, error) {
-	switch dsnURL.Scheme {
-	case "sqlite":
-		return NewSqliteDBInstance(*dsnURL, slowThreshold, poolMax, reset)
-	case "postgres", "postgresql":
-		return NewPostgresDBInstance(*dsnURL, slowThreshold)
-	default:
-		return nil, eris.New("unsupported database type")
-	}
+	return NewPostgresDBInstance(*dsnURL, slowThreshold)
 }
 
 // LoadConfig loads the application configuration.
