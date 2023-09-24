@@ -4,6 +4,8 @@ FROM golang:1.20-alpine3.16 AS builder
 WORKDIR /app
 COPY . .
 
+# This step ensures that the directory structure under resources/env is preserved
+RUN mkdir -p resources/env && mv app_test.env app.env resources/env/
 
 RUN go build -o main main.go
 
