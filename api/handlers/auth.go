@@ -63,7 +63,9 @@ func (server *Server) Register(c *gin.Context) {
 			return server.task.DistributeTaskSendVerifyEmail(c, taskPayload, opts...)
 		},
 	}
-	txResult, err := users.CreateUserTx(c, server.db, arg)
+	userRepo := users.NewUserRepository(server.db)
+
+	txResult, err := userRepo.CreateUserTx(c, arg)
 	if err != nil {
 		utils.RespondWithError(c, 500, err.Error(), "Failed to create user")
 		return
@@ -94,7 +96,9 @@ func (server *Server) ConfirmEmail(c *gin.Context) {
 		return
 	}
 
-	if err := users.VerifyEmailTx(c, server.db, users.ConfirmVerifyEmailParams{
+	userRepo := users.NewUserRepository(server.db)
+
+	if err := userRepo.VerifyEmailTx(c, users.ConfirmVerifyEmailParams{
 		UserID:     req.UserID,
 		VerEmailID: req.VerEmailID,
 		SecretCode: req.SecretCode,
@@ -125,7 +129,8 @@ func (server *Server) Login(c *gin.Context) {
 		return
 	}
 
-	user, err := users.FindUser(c, server.db, users.FindUserParams{
+	userRepo := users.NewUserRepository(server.db)
+	user, err := userRepo.FindUser(c, users.FindUserParams{
 		User: users.User{
 			Email: req.Email,
 		},
@@ -161,7 +166,7 @@ func (server *Server) Login(c *gin.Context) {
 		return
 	}
 
-	session, err := users.CreateSession(c, server.db, users.CreateSessionParams{
+	session, err := userRepo.CreateSession(c, users.CreateSessionParams{
 		ID:           refreshPayload.ID,
 		Username:     user.Username,
 		RefreshToken: refreshToken,
