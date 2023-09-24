@@ -83,6 +83,8 @@ jobs:
         run: |
           cd $(pwd)/resources/env/
           echo $GH_ENV_FILE | base64 --decode > app_test.env
+          echo $GH_ENV_FILE | base64 --decode > app.env
+
 
       - name: Download mockery
         run: go install github.com/vektra/mockery/v2@v2.32.4
