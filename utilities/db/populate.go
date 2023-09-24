@@ -134,7 +134,6 @@ func createStudent(ctx context.Context, db *gorm.DB, university reference.Refere
 		}
 		studentObj.User = studentUser
 		if err := tx.Create(&studentObj).Error; err != nil {
-
 			return err
 		}
 		return nil
@@ -215,7 +214,6 @@ func createHostelStudent(ctx context.Context, db *gorm.DB, hostel hostel.Hostel,
 }
 
 func PopulateDatabase(db *gorm.DB) error {
-
 	config, err := utils.LoadConfig()
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to load config")

@@ -55,14 +55,20 @@ Conveniently secure **hostel accommodation** for Nigerian schools, with just a f
    ```bash
    git push -u origin feature/your-feature-name
    ```
+
 5. Ensure your code passes all automated checks and tests.
+
    ```bash
    docker-compose -f ./tests/integration/docker-compose.yml  up --build
    ```
 
-6. Create a Pull Request (or Merge Request) from your feature branch to `main`.
+6. Format your code before creating pull request
 
-7. Have at least one other team member review your code.
+```bash
+   make go-format
+```
 
-8. Ensure your Pull Request passes all automated checks and tests.
+7. Create a Pull Request (or Merge Request) from your feature branch to `main`.
+8. Have at least one other team member review your code.
+9. Ensure your Pull Request passes all automated checks and tests.
 

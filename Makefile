@@ -112,11 +112,11 @@ service-stop: ## stop service in container.
 .PHONY: service-restart
 service-restart: service-stop service-start ## restart service in container.
 
-.PHONY: service-test
-service-test: service-restart ## run integration tests in container.
-	@echo ">>> Running integration tests in container."
-	@COMPOSE_FILE=$(COMPOSE_FILE) COMPOSE_PROJECT_NAME=$(COMPOSE_PROJECT_NAME) \
-	    docker-compose run integration-tests
+# .PHONY: service-test
+# service-test: service-restart ## run integration tests in container.
+# 	@echo ">>> Running integration tests in container."
+# 	@COMPOSE_FILE=$(COMPOSE_FILE) COMPOSE_PROJECT_NAME=$(COMPOSE_PROJECT_NAME) \
+# 	    docker-compose run integration-tests
 
 .PHONY: service-clean
 service-clean: ## clean containers.

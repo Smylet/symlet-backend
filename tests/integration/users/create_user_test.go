@@ -26,7 +26,6 @@ func TestCreateUserTestSuite(t *testing.T) {
 }
 
 func (s *CreateUserTestSuite) SetupSuite() {
-
 	config, err := utils.LoadConfig()
 	if err != nil {
 		log.Fatal().Err(err).Msg("Error loading config")
@@ -47,7 +46,6 @@ func (s *CreateUserTestSuite) SetupSuite() {
 	}
 	s.Require().NoError(err)
 	s.userFixtures = fixtures
-
 }
 
 func (s *CreateUserTestSuite) TestOk() {

@@ -50,7 +50,7 @@ func LoadConfig() (config Config, err error) {
 	viper.AutomaticEnv()
 	err = viper.ReadConfig(bytes.NewReader(config_bytes))
 
-	//err = viper.ReadInConfig()
+	// err = viper.ReadInConfig()
 	if err != nil {
 		return
 	}

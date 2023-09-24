@@ -17,7 +17,6 @@ import (
 )
 
 func Migrate(db *gorm.DB, config utils.Config) error {
-
 	config, err := utils.LoadConfig()
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to load config")

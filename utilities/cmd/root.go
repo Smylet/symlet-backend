@@ -54,5 +54,4 @@ func init() {
 	// Adding your PopulateCmd here:
 	RootCmd.AddCommand(PopulateCmd)
 	PopulateCmd.Flags().StringSliceP("table", "T", nil, "-T amenities,university")
-
 }

@@ -14,7 +14,6 @@ type UserFixures struct {
 }
 
 func NewUserFixtures(db db.DBProvider) (*UserFixures, error) {
-
 	return &UserFixures{
 		baseFixtures:   baseFixtures{db: db.GormDB()},
 		userRepository: users.NewUserRepository(db.GormDB()),
