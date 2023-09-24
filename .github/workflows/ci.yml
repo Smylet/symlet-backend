@@ -1,6 +1,7 @@
 name: CI
 
 on:
+  workflow_dispatch:
   push:
   pull_request:
   schedule:
@@ -80,7 +81,8 @@ jobs:
         env:
           GH_ENV_FILE: ${{ secrets.APP_ENV_TEST }}
         run: |
-          cd /resources/env
+          pwd
+          cd /resources/env/
           echo $GH_ENV_FILE | base64 --decode > app_test.env
 
       - name: Download mockery
