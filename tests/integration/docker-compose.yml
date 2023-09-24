@@ -1,0 +1,75 @@
+services:
+  service:
+    build:
+      context: ../../
+      dockerfile: Dockerfile
+    volumes:
+      - ../../:/src
+      - go-cache:/cache
+      - tmp:/tmp
+    working_dir: /src
+    depends_on:
+      # minio:
+      #   condition: service_healthy
+      postgres:
+        condition: service_healthy
+
+    environment:
+      GOCACHE: /cache/go-build
+      GOMODCACHE: /cache/go-mod
+      ENV: test
+    ports:
+      - "8000:8000"
+
+
+  postgres:
+    image: postgres:latest
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      timeout: 5s
+    environment:
+      - POSTGRES_PASSWORD=postgres
+
+  redis:
+    image: redis:6.0.9-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - ../../:/src
+      - go-cache:/cache
+      - tmp:/tmp
+  # minio:
+  #   image: minio/minio:latest
+  #   entrypoint: sh
+  #   command: -c 'mkdir -p /data/{bucket1,bucket2,bucket3} && exec minio server /data'
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+  #     interval: 5s
+  #     timeout: 5s
+  #   environment:
+  #     MINIO_ROOT_USER: "user"
+  #     MINIO_ROOT_PASSWORD: "password"
+  #     MINIO_CONSOLE_ADDRESS: ":9001"
+
+  integration-tests:
+    image: golang:1.21
+    command: make test-go-integration
+    volumes:
+      - ../../:/src
+      - go-cache:/cache
+      - tmp:/tmp
+    working_dir: /src
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      GOCACHE: /cache/go-build
+      GOMODCACHE: /cache/go-mod
+      ENV: test
+      HTTP_SERVER_ADDRESS: "http://service:8000"
+
+volumes:
+  go-cache:
+  tmp:
