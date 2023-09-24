@@ -76,6 +76,13 @@ jobs:
         with:
           go-version: "1.21"
 
+      - name: Create .env from secrets
+        env:
+          GH_ENV_FILE: ${{ secrets.APP_ENV_TEST }}
+        run: |
+          cd /resources/env
+          echo $GH_ENV_FILE | base64 --decode > app_test.env
+
       - name: Download mockery
         run: go install github.com/vektra/mockery/v2@v2.32.4
 
