@@ -81,7 +81,7 @@ jobs:
         env:
           GH_ENV_FILE: ${{ secrets.APP_ENV_TEST }}
         run: |
-          cd $(pwd)/resource/env/
+          cd $(pwd)/resources/env/
           echo $GH_ENV_FILE | base64 --decode > app_test.env
 
       - name: Download mockery
