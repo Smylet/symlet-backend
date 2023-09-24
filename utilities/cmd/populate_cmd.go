@@ -27,9 +27,9 @@ func populateCmd(cmd *cobra.Command, args []string) error {
 	defer database.Close()
 
 	switch cmd.Use {
-	case "reference":
+	case args[0]:
 		return populateReference(cmd, args, reference.ReferenceModelMap, database.GormDB())
-	case "data":
+	case args[1]:
 		return populateData(cmd, args, database.GormDB())
 	default:
 		return errors.New("invalid command")
@@ -43,6 +43,9 @@ func initDB() (db.DBProvider, error) {
 	}
 	db, err := db.GetDB(config)
 	if err != nil {
+		if db != nil {
+			db.Close()
+		}
 		return nil, err
 	}
 
@@ -74,7 +77,7 @@ func populateReference(cmd *cobra.Command, args []string, referenceModelMap map[
 	for _, model := range models {
 		err := model.Populate(database)
 		if err != nil {
-			return errors.New("error populating " + model.GetTableName() + " table")
+			return fmt.Errorf("error populating %s table: %w", model.GetTableName(), err)
 		}
 	}
 	return nil

@@ -62,22 +62,18 @@ func (l *loggerAdaptor) Trace(
 	fc func() (sql string, rowsAffected int64),
 	err error,
 ) {
-	if l.Logger.GetLevel() <= logrus.FatalLevel {
-		return
-	}
-
 	// This logic is similar to the default logger in gorm.io/gorm/logger.
 	elapsed := time.Since(begin)
 	switch {
 	case err != nil &&
-		l.Logger.IsLevelEnabled(logrus.ErrorLevel) &&
+		(l.Logger.IsLevelEnabled(logrus.ErrorLevel) || l.Logger.IsLevelEnabled(logrus.FatalLevel)) &&
 		(!errors.Is(err, gorm.ErrRecordNotFound) || !l.Config.IgnoreRecordNotFoundError):
 		l.getLoggerEntryWithSql(ctx, elapsed, fc).WithError(err).Error("SQL error")
 	case elapsed > l.Config.SlowThreshold &&
 		l.Config.SlowThreshold != 0 &&
-		l.Logger.IsLevelEnabled(logrus.WarnLevel):
+		(l.Logger.IsLevelEnabled(logrus.WarnLevel) || l.Logger.IsLevelEnabled(logrus.FatalLevel)):
 		l.getLoggerEntryWithSql(ctx, elapsed, fc).Warnf("SLOW SQL >= %v", l.Config.SlowThreshold)
-	case l.Logger.IsLevelEnabled(logrus.DebugLevel):
+	case l.Logger.IsLevelEnabled(logrus.DebugLevel) || l.Logger.IsLevelEnabled(logrus.FatalLevel):
 		l.getLoggerEntryWithSql(ctx, elapsed, fc).Debug("SQL trace")
 	}
 }

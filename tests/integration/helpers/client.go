@@ -16,6 +16,7 @@ type HttpClient struct {
 	client   *http.Client
 	baseURL  string
 	basePath string
+	ctx      context.Context
 }
 
 // NewAimApiClient creates new HTTP client for the aim api
@@ -88,9 +89,9 @@ func (c HttpClient) DoStreamRequest(method, uri string, request interface{}) ([]
 	if err != nil {
 		return nil, eris.Wrap(err, "error doing request")
 	}
+	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
-	defer resp.Body.Close()
 	if err != nil {
 		return nil, eris.Wrap(err, "error reading streaming response")
 	}
@@ -126,13 +127,13 @@ func (c HttpClient) doRequest(httpMethod string, uri string, response interface{
 	if err != nil {
 		return eris.Wrap(err, "error doing request")
 	}
-
+	defer resp.Body.Close()
 	// 4. read and check response data.
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return eris.Wrap(err, "error reading response data")
 	}
-	defer resp.Body.Close()
+
 	if err := json.Unmarshal(body, response); err != nil {
 		return eris.Wrap(err, "error unmarshaling response data")
 	}

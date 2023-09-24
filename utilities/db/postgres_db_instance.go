@@ -34,7 +34,7 @@ func (pgdb PostgresDBInstance) Reset() error {
 
 // NewPostgresDBInstance will construct a Postgres DbInstance.
 func NewPostgresDBInstance(
-	dsnURL url.URL, slowThreshold time.Duration, poolMax int, reset bool,
+	dsnURL url.URL, slowThreshold time.Duration,
 ) (*PostgresDBInstance, error) {
 	pgdb := PostgresDBInstance{
 		DBInstance: DBInstance{dsn: dsnURL.String()},
@@ -81,6 +81,7 @@ func NewPostgresDBInstance(
 		log.Warnf("Failed to connect using provided host, retrying with localhost: %v", err)
 
 		postgresConfig.Host = "localhost"
+		sqlDB = stdlib.OpenDB(postgresConfig)
 		gormDB, err = gorm.Open(postgres.New(postgres.Config{Conn: sqlDB}), gormConfig)
 	}
 

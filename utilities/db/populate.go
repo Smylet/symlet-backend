@@ -13,10 +13,11 @@ import (
 	"github.com/Smylet/symlet-backend/api/users"
 	"github.com/Smylet/symlet-backend/api/vendor"
 	"github.com/Smylet/symlet-backend/utilities/common"
+	"github.com/Smylet/symlet-backend/utilities/utils"
 	"github.com/go-faker/faker/v4"
+	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 )
-
 
 func createVendor(ctx context.Context, db *gorm.DB) (vendor.Vendor, error) {
 	vendorUser := users.User{
@@ -37,7 +38,7 @@ func createVendor(ctx context.Context, db *gorm.DB) (vendor.Vendor, error) {
 		IsVerified:  true,
 	}
 
-	err := common.ExecTx(ctx ,db, func(tx *gorm.DB) error {
+	err := common.ExecTx(ctx, db, func(tx *gorm.DB) error {
 		if err := tx.Create(&vendorUser).Error; err != nil {
 			return err
 		}
@@ -74,8 +75,8 @@ func createHostelManager(ctx context.Context, db *gorm.DB) (manager.HostelManage
 	return hostelManager, err
 }
 
-func createHostel(ctx context.Context ,db *gorm.DB, university *reference.ReferenceUniversity, ammenities []*reference.ReferenceHostelAmmenities) (hostel.Hostel, error) {
-	hostelManager, err := createHostelManager(ctx ,db)
+func createHostel(ctx context.Context, db *gorm.DB, university *reference.ReferenceUniversity, ammenities []*reference.ReferenceHostelAmmenities) (hostel.Hostel, error) {
+	hostelManager, err := createHostelManager(ctx, db)
 	if err != nil {
 		return hostel.Hostel{}, err
 	}
@@ -133,7 +134,7 @@ func createStudent(ctx context.Context, db *gorm.DB, university reference.Refere
 		}
 		studentObj.User = studentUser
 		if err := tx.Create(&studentObj).Error; err != nil {
-			
+
 			return err
 		}
 		return nil
@@ -214,14 +215,20 @@ func createHostelStudent(ctx context.Context, db *gorm.DB, hostel hostel.Hostel,
 }
 
 func PopulateDatabase(db *gorm.DB) error {
-	Migrate(db)
+
+	config, err := utils.LoadConfig()
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to load config")
+		return err
+	}
+	Migrate(db, config)
 
 	ctx := context.Background()
 
 	university := reference.ReferenceUniversity{}
 	ammenities := []*reference.ReferenceHostelAmmenities{}
 
-	err := common.ExecTx(ctx, db, func(tx *gorm.DB) error {
+	err = common.ExecTx(ctx, db, func(tx *gorm.DB) error {
 		err := db.Model(&university).Limit(1).First(&university).Error
 		if err != nil {
 			return err

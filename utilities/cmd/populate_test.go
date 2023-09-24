@@ -15,7 +15,3 @@ type PopulateTestSuite struct {
 func TestPopulateTestSuite(t *testing.T) {
 	suite.Run(t, new(PopulateTestSuite))
 }
-
-func (suite *PopulateTestSuite) SetupSuite() {
-
-}

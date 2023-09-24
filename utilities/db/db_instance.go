@@ -14,9 +14,6 @@ type DBProvider interface {
 	Reset() error
 }
 
-// DB is a global gorm.DB reference
-var DB *gorm.DB
-
 // DBInstance is the base concrete type for DbProvider.
 type DBInstance struct {
 	*gorm.DB

@@ -28,6 +28,12 @@ func main() {
 	db, err := db.GetDB(config)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("failed to connect to database")
+		os.Exit(1)
+	}
+
+	if db == nil {
+		logger.Fatal().Msg("failed to connect to database - db is nil")
+		os.Exit(1)
 	}
 	database := db.GormDB()
 

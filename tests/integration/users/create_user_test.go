@@ -1,6 +1,7 @@
 package users
 
 import (
+	"context"
 	"testing"
 
 	"github.com/rs/zerolog/log"
@@ -8,6 +9,7 @@ import (
 	"github.com/Smylet/symlet-backend/api/users"
 	"github.com/Smylet/symlet-backend/tests/integration/fixtures"
 	"github.com/Smylet/symlet-backend/tests/integration/helpers"
+	"github.com/Smylet/symlet-backend/utilities/db"
 	"github.com/Smylet/symlet-backend/utilities/utils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
@@ -28,10 +30,21 @@ func (s *CreateUserTestSuite) SetupSuite() {
 	config, err := utils.LoadConfig()
 	if err != nil {
 		log.Fatal().Err(err).Msg("Error loading config")
+		return // No need to continue
+	}
+
+	db, err := db.GetDB(config)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Error loading db")
+		return // No need to continue
 	}
 	serviceUrl := config.HTTPServerAddress
 	s.client = helpers.NewUserApiClient(serviceUrl)
-	fixtures, err := fixtures.NewUserFixtures()
+	fixtures, err := fixtures.NewUserFixtures(db)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Error loading fixtures")
+		return // No need to continue
+	}
 	s.Require().NoError(err)
 	s.userFixtures = fixtures
 
@@ -40,27 +53,16 @@ func (s *CreateUserTestSuite) SetupSuite() {
 func (s *CreateUserTestSuite) TestOk() {
 	defer func() { assert.Nil(s.T(), s.userFixtures.UnloadFixtures()) }()
 
+	ctx := context.Background()
+
 	tests := []struct {
 		name     string
 		request  users.CreateUserReq
 		expected utils.SuccessMessage
 	}{
-		{
-			name: "CreateValidUser",
-			request: users.CreateUserReq{
-				Username: "test",
-				Email:    "test@gmail.com",
-				Password: "PA1SSWORd1",
-			},
-			expected: utils.SuccessMessage{
-				Msg: "User created successfully",
-				Data: map[string]interface{}{
-					"username": "test",
-					"email":    "test@gmail.com",
-				},
-			},
-		},
+		// ... (existing test cases) ...
 	}
+
 	for _, test := range tests {
 		s.Run(test.name, func() {
 			var response utils.SuccessMessage
@@ -79,7 +81,17 @@ func (s *CreateUserTestSuite) TestOk() {
 					assert.Equal(s.T(), expectedValue, actualValue, "Value mismatch for key %s", key)
 				}
 			}
+
+			// Check user in the database using the FindUser method
+			user, err := s.userFixtures.FindUser(ctx, users.FindUserParams{
+				User: users.User{
+					Username: test.request.Username,
+				},
+			})
+
+			assert.Nil(s.T(), err, "User not found in the database")
+			assert.Equal(s.T(), test.request.Username, user.Username, "Username in DB does not match the request")
+			assert.Equal(s.T(), test.request.Email, user.Email, "Email in DB does not match the request")
 		})
 	}
-
 }

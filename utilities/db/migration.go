@@ -16,7 +16,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func Migrate(db *gorm.DB) error {
+func Migrate(db *gorm.DB, config utils.Config) error {
 
 	config, err := utils.LoadConfig()
 	if err != nil {
@@ -66,7 +66,6 @@ func Migrate(db *gorm.DB) error {
 		review.VendorReview{},
 	)
 	if err != nil {
-		log.Fatal().Err(err).Msg("failed to migrate")
 		return err
 	}
 

@@ -11,10 +11,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-// const (
-// 	envPrefix = "SMYLET"
-// )
-
 var RootCmd = &cobra.Command{
 	Use:               filepath.Base(os.Args[0]),
 	Short:             "smy is the backend client for the smylet application",
@@ -24,23 +20,26 @@ var RootCmd = &cobra.Command{
 	SilenceErrors:     true,
 }
 
-func initCmd(cmd *cobra.Command, args []string) error {
+func initCmd(cmd *cobra.Command, _ []string) error {
 	if err := viper.BindPFlags(cmd.Flags()); err != nil {
 		return err
 	}
 
-	level, err := log.ParseLevel(viper.GetString("log-level"))
+	// Check if "log-level" flag is provided, else use a default value
+	logLevel := viper.GetString("log-level")
+	if logLevel == "" {
+		logLevel = "info" // Default to "info" log level or whatever default you deem appropriate
+	}
+
+	level, err := log.ParseLevel(logLevel)
 	if err != nil {
-		return fmt.Errorf(`invalid log level "%s"`, viper.GetString("log-level"))
+		return fmt.Errorf(`invalid log level "%s"`, logLevel)
 	}
 	log.SetLevel(level)
+
 	if log.IsLevelEnabled(log.DebugLevel) {
 		log.SetReportCaller(true)
 	}
-
-	// Using common.NewLogger() if required in your case
-	// logger := common.NewLogger()
-	// logger.Print("Executing root command")
 
 	return nil
 }
@@ -56,8 +55,4 @@ func init() {
 	RootCmd.AddCommand(PopulateCmd)
 	PopulateCmd.Flags().StringSliceP("table", "T", nil, "-T amenities,university")
 
-	// Uncomment and add other commands as required
-	// RootCmd.AddCommand(migrate.MigrateCommand)
-	// RootCmd.AddCommand(rollback.RollbackCommand)
-	// RootCmd.AddCommand(rollback.RollbackCommand)
 }

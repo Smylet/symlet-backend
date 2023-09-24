@@ -10,63 +10,60 @@ import (
 )
 
 // MakeDBProvider will create a DbProvider of the correct type from the parameters.
-func MakeDBProvider(
-	dsn string, slowThreshold time.Duration, poolMax int, reset bool,
-) (db DBProvider, err error) {
-	dsnURL, err := url.Parse(dsn)
-	if err != nil {
-		return nil, fmt.Errorf("invalid database URL: %w", err)
-	}
+// ParseDSN parses the provided DSN and returns a URL.
+func ParseDSN(dsn string) (*url.URL, error) {
+	return url.Parse(dsn)
+}
+
+// CreateDBProvider creates a DB provider based on the given URL.
+func CreateDBProvider(dsnURL *url.URL, slowThreshold time.Duration, poolMax int, reset bool) (DBProvider, error) {
 	switch dsnURL.Scheme {
 	case "sqlite":
-		db, err = NewSqliteDBInstance(
-			*dsnURL,
-			slowThreshold,
-			poolMax,
-			reset,
-		)
-		if err != nil {
-			return nil, eris.Wrap(err, "error creating sqlite provider")
-		}
+		return NewSqliteDBInstance(*dsnURL, slowThreshold, poolMax, reset)
 	case "postgres", "postgresql":
-		db, err = NewPostgresDBInstance(
-			*dsnURL,
-			slowThreshold,
-			poolMax,
-			reset,
-		)
-		if err != nil {
-			return nil, eris.Wrap(err, "error creating postgres provider")
-		}
+		return NewPostgresDBInstance(*dsnURL, slowThreshold)
 	default:
-		{
-			return nil, eris.New("unsupported database type")
-		}
+		return nil, eris.New("unsupported database type")
 	}
+}
 
-	config, err := utils.LoadConfig()
-	if err != nil {
-		return nil, fmt.Errorf("failed to load config: %w", err)
-	}
+// LoadConfig loads the application configuration.
+func LoadConfig() (utils.Config, error) {
+	return utils.LoadConfig()
+}
 
+// HandleResetAndMigration handles the reset and migration for the provided DB.
+func HandleResetAndMigration(config utils.Config, db DBProvider) error {
 	if config.Environment == "development" || config.Environment == "test" {
-		if reset {
+		if config.DatabaseReset {
 			if err := db.Reset(); err != nil {
-				db.Close()
-				return nil, err
+				return err
 			}
 		}
 
-		if err := Migrate(db.GormDB()); err != nil {
-			db.Close()
-			return nil, err
-		}
+		return Migrate(db.GormDB(), config)
+	}
+	return nil
+}
+
+// MakeDBProvider orchestrates the above functions.
+func MakeDBProvider(
+	config utils.Config,
+) (DBProvider, error) {
+	dsnURL, err := ParseDSN(config.DatabaseURI)
+	if err != nil {
+		return nil, fmt.Errorf("invalid database URL: %w", err)
 	}
 
-	// if err := checkAndMigrate(migrate, db); err != nil {
-	// 	db.Close()
-	// 	return nil, err
-	// }
+	db, err := CreateDBProvider(dsnURL, time.Duration(config.DatabaseSlowThreshold.Seconds()), config.DatabasePoolMax, config.DatabaseReset)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := HandleResetAndMigration(config, db); err != nil {
+		db.Close()
+		return nil, err
+	}
 
 	return db, nil
 }

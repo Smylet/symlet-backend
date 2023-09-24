@@ -66,7 +66,7 @@ go-get: ## get go modules.
 .PHONY: go-build
 go-build: ## build app binary.
 	@echo '>>> Building go binary.'
-	@CGO_ENABLED=1 go build -ldflags="$(GO_LDFLAGS)" -tags="$(GO_BUILDTAGS)" -o $(APP) ./main.go
+	@CGO_ENABLED=0 go build -ldflags="$(GO_LDFLAGS)" -tags="$(GO_BUILDTAGS)" -o $(APP) ./main.go
 
 .PHONY: go-format
 go-format: ## format go code.
@@ -92,7 +92,7 @@ test-go-unit: ## run go unit tests.
 .PHONY: test-go-integration
 test-go-integration: ## run go integration tests.
 	@echo ">>> Running integration tests."
-	ENV=test go test -v -p 1 -count=1 -tags="integration" ./tests/integration/...
+	ENV=test go test -v -count=1 -tags="integration" ./tests/integration/...
 
 #
 # Service test targets
@@ -154,4 +154,4 @@ format: go-format python-format ## format the code
 PHONY: run
 run:  ## run the Symlet app
 	@echo ">>> Running the Smylet app."
-	go run main.go
+	./$(APP)

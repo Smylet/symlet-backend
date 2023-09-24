@@ -2,12 +2,18 @@ package db
 
 import (
 	"testing"
-	"time"
 
+	"github.com/Smylet/symlet-backend/utilities/utils"
+	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestMakeDBProvider(t *testing.T) {
+	config, err := utils.LoadConfig()
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to load config")
+	}
+
 	tests := []struct {
 		name              string
 		dsn               string
@@ -15,19 +21,13 @@ func TestMakeDBProvider(t *testing.T) {
 	}{
 		{
 			name:              "WithSqliteURI",
-			dsn:               "sqlite:///tmp/smylet.db",
+			dsn:               config.DatabaseURI,
 			expectedDialector: "sqlite",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			DB = nil
-			db, err := MakeDBProvider(
-				tt.dsn,
-				time.Second*2,
-				2,
-				false, // ensure SQLite does not attempt a reset
-			)
+			db, err := MakeDBProvider(config)
 			assert.Nil(t, err)
 
 			if db != nil { // Only proceed if db is not nil
@@ -35,7 +35,7 @@ func TestMakeDBProvider(t *testing.T) {
 				assert.Equal(t, tt.expectedDialector, db.GormDB().Dialector.Name())
 
 				// expecting the global 'DB' not to be set
-				assert.Nil(t, DB)
+				assert.Nil(t, db.GormDB())
 				assert.Nil(t, db.Close())
 			}
 		})
