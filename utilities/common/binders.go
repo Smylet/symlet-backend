@@ -38,7 +38,7 @@ func CustomBinder(c *gin.Context, serializer any) error {
 
 				if (createRequest && tag == "requiredForCreate") || (updateRequest && tag == "requiredForUpdate") {
 					if field.Interface() == reflect.Zero(field.Type()).Interface() {
-						
+
 						fieldErrorMap[fieldName] = fmt.Sprintf("%s is required", fieldName)
 					}
 				}

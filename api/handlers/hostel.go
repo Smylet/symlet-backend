@@ -45,7 +45,7 @@ func (server *Server) CreateHostel(c *gin.Context) {
 		return
 	}
 
-	utils.RespondWithSuccess(c, 201, HostelSerializer.Response(), "Email confirmed")
+	utils.RespondWithSuccess(c, 201, HostelSerializer.Response(), "Hostel created successfully")
 }
 
 // @Summary Get a hostel
@@ -133,7 +133,7 @@ func (server *Server) ListHostels(c *gin.Context) {
 		return
 	}
 	if len(hostels) == 0 {
-		utils.RespondWithSuccess(c, http.StatusOK, nil, "No hostels found")
+		utils.RespondWithSuccess(c, http.StatusNoContent, nil, "No hostels found")
 		return
 	}
 	hostelsResponse := HostelSerializer.ResponseMany(hostels)
