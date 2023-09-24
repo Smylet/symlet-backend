@@ -11,7 +11,7 @@ WORKDIR /app
 COPY --from=builder /app/main .
 
 COPY . .
-
+COPY app.env app.env
 # Expose port 8080 to the outside world
 EXPOSE 8000
 
