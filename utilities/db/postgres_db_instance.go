@@ -41,6 +41,8 @@ func NewPostgresDBInstance(
 	}
 
 	port, err := strconv.ParseUint(dsnURL.Port(), 10, 16)
+	log.Println(dsnURL)
+	log.Println(port)
 	if err != nil {
 		return nil, fmt.Errorf("invalid port: %w", err)
 	}
