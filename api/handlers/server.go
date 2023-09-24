@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"strings"
+
 	"github.com/Smylet/symlet-backend/api/users"
 	_ "github.com/Smylet/symlet-backend/docs"
 
@@ -106,6 +108,8 @@ func (server *Server) registerRoutes() {
 		profileRoutes.GET("/:username", server.GetProfile)
 	}
 
+	// health check endpoint
+	r.GET("/health", server.HealthCheck)
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	server.router = r
@@ -113,5 +117,6 @@ func (server *Server) registerRoutes() {
 
 // Start runs the HTTP server on a specific address.
 func (server *Server) Start(address string) error {
+	address = strings.TrimPrefix(address, "http://")
 	return server.router.Run(address)
 }
