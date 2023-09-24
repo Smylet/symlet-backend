@@ -74,6 +74,11 @@ func uploadImageLocally(file *multipart.FileHeader) (string, error) {
 	filename := fmt.Sprintf("%s%s", generateUniqueFilename(), filepath.Ext(file.Filename))
 	filePath := filepath.Join(mediaFolder, filename)
 
+		// Check if the file already exists
+	if _, err := os.Stat(filePath); err == nil {
+		return "", fmt.Errorf("file %s already exists", filePath)
+	}
+
 	dst, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 0644)	
 	if err != nil {
 		return "", err
