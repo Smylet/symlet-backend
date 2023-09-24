@@ -11,7 +11,7 @@ import (
 
 
 
-const (
+var (
 	FIELD_A_ERROR string = `{"FieldA":"FieldA is required"}`
 	FIELD_B_ERROR string = `{"FieldB":"FieldB is required"}`
 )
@@ -22,61 +22,109 @@ type TestStruct struct {
 	FieldC float64
 }
 
-func TestCustomBinder(t *testing.T) {
+func BaseTestBinder(t *testing.T, expectedError bool) *gin.Engine {
 	// Create a test Gin context with a POST request
 	router := gin.Default()
 	router.POST("/test", func(c *gin.Context) {
 		var serializer TestStruct
-		result := CustomBinder(c, &serializer)
+		result := CustomBinder(c, &serializer)		
+		if expectedError && result == nil {
+			t.Errorf("Expected error but got nil")
+		}
 
 		// Perform assertions on the result (JSON error response)
-		if result.Error() != string(FIELD_A_ERROR) {
+		if expectedError && result.Error() != string(FIELD_A_ERROR) {
 			t.Errorf("Expected JSON error response does not match actual response: %s", result)
-
+			c.JSON(http.StatusBadRequest, gin.H{"error": result})
+			return
+		}else if expectedError && result.Error() == string(FIELD_A_ERROR) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": result})
+			return
 		}
-		c.JSON(http.StatusBadRequest, gin.H{"error": result})
+
+		c.JSON(http.StatusCreated, gin.H{"message": "success"})
 
 	})
 	router.PATCH("/test", func(c *gin.Context) {
 		var serializer TestStruct
 		result := CustomBinder(c, &serializer)
-		if result.Error() != string(FIELD_B_ERROR) {
+		if expectedError && result == nil {
+			t.Errorf("Expected error but got nil")
+		}
+
+		if expectedError && result.Error() != string(FIELD_B_ERROR) {
 			t.Errorf("Expected JSON error response does not match actual response: %s", result)
+			c.JSON(http.StatusBadRequest, gin.H{"error": result})
+			return
 
+		}else if expectedError && result.Error() == string(FIELD_B_ERROR) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": result})
+			return
 		}
-		c.JSON(http.StatusBadRequest, gin.H{"error": result})
+		c.JSON(http.StatusOK, gin.H{"message": "success"})
 	})
+	return router
 
-	// Create a test HTTP request with a request body
+}
+
+func TestCustomBinder_POST_MissingRequiredField(t *testing.T) {
+    // setup for POST request and assertions for missing FieldA
 	requestBody := `{"field_c": 1.0}`
-
-	for _, method := range []string{http.MethodPost, http.MethodPatch} {
-		w, req, err := sendRequest(method, requestBody)
-		if err != nil {
-			t.Errorf("Error sending request: %s", err.Error())
-		}
-		router.ServeHTTP(w, req)
-
-		if w.Code != http.StatusBadRequest {
-			t.Errorf("Expected HTTP status code %d, but got %d", http.StatusBadRequest, w.Code)
-		}
+	router := BaseTestBinder(t, true)
+	w, req, err := sendRequest(http.MethodPost, requestBody)
+	if err != nil {
+		t.Errorf("Error sending request: %s", err.Error())
 	}
+	router.ServeHTTP(w, req)
 
-	for _, method := range []string{http.MethodPost, http.MethodPatch} {
-		w, req, err := sendRequest(method, `{"field_a": "test", "field_b": 1, "field_c": 1.0}`)
-		if err != nil {
-			t.Errorf("Error sending request: %s", err.Error())
-		}
-		router.ServeHTTP(w, req)
-		if method == http.MethodPost && w.Code != http.StatusCreated {
-			t.Errorf("Expected HTTP status code %d, but got %d", http.StatusCreated, w.Code)
-		}
-		if method == http.MethodPatch && w.Code != http.StatusOK {
-			t.Errorf("Expected HTTP status code %d, but got %d", http.StatusOK, w.Code)
-		}
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("Expected HTTP status code %d, but got %d", http.StatusBadRequest, w.Code)
 	}
 
 }
+
+func TestCustomBinder_PATCH_MissingRequiredField(t *testing.T) {
+    // setup for PATCH request and assertions for missing FieldB
+	requestBody := `{"field_c": 1.0}`
+	router := BaseTestBinder(t, true)
+	w, req, err := sendRequest(http.MethodPatch, requestBody)
+	if err != nil {
+		t.Errorf("Error sending request: %s", err.Error())
+	}
+	router.ServeHTTP(w, req)
+
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("Expected HTTP status code %d, but got %d", http.StatusBadRequest, w.Code)
+	}
+}
+
+func TestCustomBinder_POST_AllFieldsPresent(t *testing.T) {
+    // setup for POST request and assertions for all fields present
+	router := BaseTestBinder(t, false)
+	w, req, err := sendRequest(http.MethodPost, `{"field_a": "test", "field_b": 1, "field_c": 1.0}`)
+	if err != nil {
+		t.Errorf("Error sending request: %s", err.Error())
+	}
+	router.ServeHTTP(w, req)
+	if w.Code != http.StatusCreated {
+		t.Errorf("Expected HTTP status code %d, but got %d", http.StatusCreated, w.Code)
+	}
+}
+
+func TestCustomBinder_PATCH_AllFieldsPresent(t *testing.T) {
+    // setup for PATCH request and assertions for all fields present
+	router := BaseTestBinder(t, false)
+	w, req, err := sendRequest(http.MethodPatch, `{"field_a": "test", "field_b": 1, "field_c": 1.0}`)
+	if err != nil {
+		t.Errorf("Error sending request: %s", err.Error())
+	}
+	router.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Errorf("Expected HTTP status code %d, but got %d", http.StatusOK, w.Code)
+	}
+	
+}
+
 func sendRequest(method string, reqBody string) (*httptest.ResponseRecorder, *http.Request, error) {
 
 	req, err := http.NewRequest(method, "/test", strings.NewReader(reqBody))

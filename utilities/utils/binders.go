@@ -10,7 +10,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 func CustomBinder(c *gin.Context, serializer any) error {
-	
+	// Check if serializer is a pointer to a struct
+   val := reflect.ValueOf(serializer)
+   if val.Kind() != reflect.Ptr || val.Elem().Kind() != reflect.Struct {
+       return errors.New("serializer must be a pointer to a struct")
+   }
+
 	fieldErrorMap := map[string]string{}
 
 	if err := c.ShouldBind(serializer); err == nil {
@@ -27,7 +32,6 @@ func CustomBinder(c *gin.Context, serializer any) error {
 				field := value.Field(i)
 				fieldName := typeOfValue.Field(i).Name
 				tag := typeOfValue.Field(i).Tag.Get("custom_binding")
-				fmt.Println(field)
 
 				if (createRequest && tag == "requiredForCreate") || (updateRequest && tag == "requiredForUpdate") {
 					if field.Interface() == reflect.Zero(field.Type()).Interface() {
@@ -37,7 +41,6 @@ func CustomBinder(c *gin.Context, serializer any) error {
 			}
 		}
 	}else {
-		fmt.Println("Validating custom binders", err)
 
 		fieldErrorMap["error"] = err.Error()
 	}
@@ -47,6 +50,7 @@ func CustomBinder(c *gin.Context, serializer any) error {
 		return err
 	}
 	if string(json_err) == "{}" {
+		fmt.Printf("No errors found")
 		return nil
 	}
 	return errors.New(string(json_err))

@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/google/uuid"
@@ -41,6 +42,9 @@ func uploadToS3(fileHeader *multipart.FileHeader, awsSession *session.Session) (
 	})
 	
 	if outPut == nil || err != nil {
+		if awsErr, ok := err.(awserr.Error); ok {
+			return "", fmt.Errorf("failed to upload file to S3: %s - %s", awsErr.Code(), awsErr.Message())
+		}
 		return "", fmt.Errorf("failed to upload file to S3: %w", err)
 		}
 
@@ -70,7 +74,7 @@ func uploadImageLocally(file *multipart.FileHeader) (string, error) {
 	filename := fmt.Sprintf("%s%s", generateUniqueFilename(), filepath.Ext(file.Filename))
 	filePath := filepath.Join(mediaFolder, filename)
 
-	dst, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 0666)	
+	dst, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 0644)	
 	if err != nil {
 		return "", err
 	}
@@ -98,6 +102,7 @@ func uploadImageLocally(file *multipart.FileHeader) (string, error) {
 
 func ProcessUploadedImages(Images []*multipart.FileHeader, awsSession *session.Session) ([]string, error){
 	filePaths:= []string{}
+
 	for _, fileHeader := range Images {
 		// Process each uploaded file here (e.g., save to storage)
 		fmt.Printf("Received file: %s\n", fileHeader.Filename)
