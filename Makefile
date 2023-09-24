@@ -84,6 +84,7 @@ go-dist: go-build ## archive app binary.
 #
 # Tests targets.
 #
+
 .PHONY: test-go-unit
 test-go-unit: ## run go unit tests.
 	@echo ">>> Running unit tests."
@@ -95,7 +96,7 @@ test-go-integration: ## run go integration tests.
 	ENV=test go test -v -count=1 -tags="integration" ./tests/integration/...
 
 #
-# Service test targets
+# Service test targ
 #
 .PHONY: service-start
 service-start: ## start service in container.
