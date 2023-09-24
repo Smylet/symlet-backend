@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/Smylet/symlet-backend/api/hostel"
+	"github.com/Smylet/symlet-backend/utilities/common"
 	"github.com/Smylet/symlet-backend/utilities/utils"
 )
 
@@ -29,7 +30,7 @@ func (server *Server) CreateHostel(c *gin.Context) {
 		utils.RespondWithError(c, 400, err.Error(), "Invalid hostel images")
 		return
 	}
-	errs := utils.CustomBinder(c, &HostelSerializer)
+	errs := common.CustomBinder(c, &HostelSerializer)
 	if errs != nil {
 		utils.RespondWithError(c, http.StatusBadRequest, errs.Error(), "Invalid hostel data")
 		return
@@ -153,7 +154,7 @@ func (server *Server) ListHostels(c *gin.Context) {
 func (server *Server) UpdateHostel(c *gin.Context) {
 	var HostelSerializer hostel.HostelSerializer
 	uidString := c.Param("uid")
-	errs := utils.CustomBinder(c, &HostelSerializer)
+	errs := common.CustomBinder(c, &HostelSerializer)
 	if errs != nil {
 		utils.RespondWithError(c, http.StatusBadRequest, errs.Error(), "Invalid hostel data")
 		return

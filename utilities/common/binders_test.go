@@ -1,4 +1,4 @@
-package utils
+package common
 
 import (
 	"net/http"
@@ -24,6 +24,7 @@ type TestStruct struct {
 
 func BaseTestBinder(t *testing.T, expectedError bool) *gin.Engine {
 	// Create a test Gin context with a POST request
+	
 	router := gin.Default()
 	router.POST("/test", func(c *gin.Context) {
 		var serializer TestStruct
