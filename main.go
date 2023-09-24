@@ -25,10 +25,15 @@ func main() {
 		log.SetOutput(zerolog.ConsoleWriter{Out: os.Stderr})
 	}
 
-	database, redisOption := db.GetDB(config),
-		asynq.RedisClientOpt{
-			Addr: config.RedisAddress,
-		}
+	db, err := db.GetDB(config)
+	if err != nil {
+		logger.Fatal().Err(err).Msg("failed to connect to database")
+	}
+	database := db.GormDB()
+
+	redisOption := asynq.RedisClientOpt{
+		Addr: config.RedisAddress,
+	}
 
 	awsSession, err := common.CreateAWSSession(&config)
 	if err != nil {
