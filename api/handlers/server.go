@@ -110,6 +110,11 @@ func (server *Server) registerRoutes() {
 		userRoutes.PUT("/:username/privacy", users.AuthMiddleware(server.token), server.UpdatePrivacySettings)
 
 	}
+	referenceRoutes := r.Group("/references")
+	{
+		referenceRoutes.GET("/amenities", server.ListAmenities)
+		referenceRoutes.GET("/universities", server.ListUniversities)
+	}
 
 	userRoute := r.Group("/user")
 	{

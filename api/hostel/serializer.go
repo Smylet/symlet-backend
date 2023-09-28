@@ -552,7 +552,7 @@ func (h *HostelSerializer) FilterHostels(db *gorm.DB, queryParams HostelQueryPar
 	// Initialize the query with the Hostel model
 	var hostels []Hostel
 
-	query := db.Model(&Hostel{})
+	query := db.Model(&Hostel{}).Preload(clause.Associations)
 
 	// Apply filters based on the queryParams fields
 	// University ID Filter
@@ -623,7 +623,6 @@ func (h *HostelSerializer) FilterHostels(db *gorm.DB, queryParams HostelQueryPar
 		query = query.Where("general_rating <= ?", *queryParams.GeneralRatingMax)
 	}
 
-	// Continue with similar logic for other rating fields...
 
 	// You can also apply other filters such as name, address, etc., as needed
 	err := query.Preload(clause.Associations).Find(&hostels).Error
