@@ -4,13 +4,14 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Smylet/symlet-backend/utilities/utils"
 	"github.com/jackc/pgx"
 	"github.com/jackc/pgx/stdlib"
 	"github.com/rs/zerolog/log"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+
+	"github.com/Smylet/symlet-backend/utilities/utils"
 )
 
 // Database struct represents the database connection.
@@ -57,9 +58,9 @@ func InitDB(config utils.Config) *gorm.DB {
 	}
 
 	// Only migrate if their is a change in schema - development or test mode
-	if config.Environment == "development" || config.Environment == "test" {
-		Migrate(db)
-	}
+	// if config.Environment == "development" || config.Environment == "test" {
+	// 	Migrate(config)
+	// }
 
 	return db
 }

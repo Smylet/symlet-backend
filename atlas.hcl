@@ -9,7 +9,7 @@ data "external_schema" "gorm" {
 
 env "gorm" {
   src = data.external_schema.gorm.url
-  dev = "docker://postgres/15/dev"
+  dev = "docker://postgres/15"
   migration {
     dir = "file://migrations"
   }
