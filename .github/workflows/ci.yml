@@ -26,6 +26,14 @@ jobs:
         with:
           go-version: "1.21"
 
+      - name: Create .env from secrets
+        env:
+          GH_ENV_FILE: ${{ secrets.APP_ENV_TEST }}
+        run: |
+          cd $(pwd)/resources/env/
+          echo $GH_ENV_FILE | base64 --decode > app_test.env
+          echo $GH_ENV_FILE | base64 --decode > app.env
+
       - name: Read build tags
         id: tags
         run: echo tags=$(cat .go-build-tags) >> $GITHUB_OUTPUT
