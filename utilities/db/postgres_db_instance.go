@@ -68,6 +68,7 @@ func NewPostgresDBInstance(
 	sqlDB.SetMaxIdleConns(10)
 	sqlDB.SetMaxOpenConns(20)
 	sqlDB.SetConnMaxLifetime(time.Hour * 2)
+	log.Info(config.DBPass, dsnURL.User.Username())
 
 	log.Infof("Using database %s", dsnURL.String())
 
