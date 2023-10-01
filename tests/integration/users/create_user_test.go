@@ -43,7 +43,7 @@ func (s *CreateUserTestSuite) SetupSuite() {
 	s.client = helpers.NewUserApiClient(serviceUrl)
 	fixtures, err := fixtures.NewUserFixtures(db)
 	if err != nil {
-		log.Fatal().Err(err).Msg("Error loading user fixtures: ")
+		log.Fatal().Msg("Error loading user fixtures: ")
 		return // No need to continue
 	}
 	s.userFixtures = fixtures
