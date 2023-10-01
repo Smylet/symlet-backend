@@ -1,6 +1,8 @@
 package main
 
 import (
+	"errors"
+	"fmt"
 	"log"
 	"os"
 
@@ -10,9 +12,11 @@ import (
 	"github.com/Smylet/symlet-backend/utilities/mail"
 	"github.com/Smylet/symlet-backend/utilities/utils"
 	"github.com/Smylet/symlet-backend/utilities/worker"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/hibiken/asynq"
 	"github.com/rs/zerolog"
 	logger "github.com/rs/zerolog/log"
+	"gorm.io/gorm"
 )
 
 func main() {
@@ -25,14 +29,46 @@ func main() {
 		log.SetOutput(zerolog.ConsoleWriter{Out: os.Stderr})
 	}
 
-	database, redisOption := db.GetDB(config),
-		asynq.RedisClientOpt{
-			Addr: config.RedisAddress,
+	// Define a channel to communicate errors from goroutines.
+	errCh := make(chan error, 2)
+
+	var database *gorm.DB
+	go func() {
+		db, err := db.GetDB(config)
+		if err != nil {
+			errCh <- fmt.Errorf("failed to connect to database: %w", err)
+			if db != nil {
+				db.Close()
+			}
+			return
 		}
 
-	awsSession, err := common.CreateAWSSession(&config)
-	if err != nil {
-		logger.Fatal().Err(err).Msg("failed to create AWS session")
+		if db == nil {
+			errCh <- errors.New("failed to connect to database - db is nil")
+			return
+		}
+
+		database = db.GormDB()
+		errCh <- nil // Send nil to signify successful completion.
+	}()
+
+	redisOption := asynq.RedisClientOpt{Addr: config.RedisAddress}
+	var awsSession *session.Session
+	go func() {
+		awsSession, err = common.CreateAWSSession(&config)
+		if err != nil {
+			errCh <- fmt.Errorf("failed to create AWS session: %w", err)
+			return
+		}
+		errCh <- nil // Send nil to signify successful completion.
+	}()
+
+	// Wait for both goroutines to complete and check for errors.
+	for i := 0; i < 2; i++ {
+		if err := <-errCh; err != nil {
+			logger.Fatal().Err(err)
+			os.Exit(1)
+		}
 	}
 
 	mailer, task := mail.NewSESEmailSender(
@@ -41,11 +77,9 @@ func main() {
 		config),
 		worker.NewRedisTaskDistributor(redisOption)
 
-	go worker.RunTaskProcessor(config, redisOption,
-		database, mailer)
+	go worker.RunTaskProcessor(config, redisOption, database, mailer)
 
-	server, err := handlers.NewServer(config, database,
-		task, mailer, awsSession)
+	server, err := handlers.NewServer(config, database, task, mailer, awsSession)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("failed to create server")
 	}

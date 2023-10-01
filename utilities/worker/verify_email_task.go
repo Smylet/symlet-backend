@@ -49,12 +49,15 @@ func (processor *RedisTaskProcessor) ProcessTaskSendVerifyEmail(ctx context.Cont
 		User:           users.User{Username: payload.Username},
 		IncludeProfile: false,
 	}
-	user, err := users.FindUser(ctx, processor.db, arg)
+
+	userRepo := users.NewUserRepository(processor.db)
+
+	user, err := userRepo.FindUser(ctx, arg)
 	if err != nil {
 		return fmt.Errorf("failed to get user: %w", err)
 	}
 
-	verifyEmail, err := users.CreateVerifyEmail(ctx, processor.db, users.CreateVerifyEmailParams{
+	verifyEmail, err := userRepo.CreateVerifyEmail(ctx, users.CreateVerifyEmailParams{
 		UserID:     user.ID,
 		Email:      user.Email,
 		SecretCode: utils.RandomString(32),

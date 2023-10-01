@@ -1,6 +1,7 @@
 package mail
 
 import (
+	"os"
 	"testing"
 
 	"github.com/Smylet/symlet-backend/api/users"
@@ -19,7 +20,7 @@ func TestSendEmailWithGmail(t *testing.T) {
 
 	sess, err := common.CreateAWSSession(&config)
 	require.NoError(t, err)
-
+	os.Setenv("AWS_REGION", "us-east-1") // Replace with your desired region
 	sender := NewSESEmailSender(
 		config.EmailSenderAddress,
 		sess,
