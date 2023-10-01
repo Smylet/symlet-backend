@@ -2,12 +2,8 @@ package db
 
 import (
 	"fmt"
-	"net/url"
-	"strconv"
 	"time"
 
-	"github.com/Smylet/symlet-backend/utilities/utils"
-	"github.com/jackc/pgx"
 	"github.com/jackc/pgx/stdlib"
 	"github.com/rotisserie/eris"
 	log "github.com/sirupsen/logrus"
@@ -34,33 +30,15 @@ func (pgdb PostgresDBInstance) Reset() error {
 
 // NewPostgresDBInstance will construct a Postgres DbInstance.
 func NewPostgresDBInstance(
-	dsnURL url.URL, slowThreshold time.Duration,
+	dsnURL string, slowThreshold time.Duration,
 ) (*PostgresDBInstance, error) {
 	pgdb := PostgresDBInstance{
-		DBInstance: DBInstance{dsn: dsnURL.String()},
+		DBInstance: DBInstance{dsn: dsnURL},
 	}
 
-	port, err := strconv.ParseUint(dsnURL.Port(), 10, 16)
-	log.Println(dsnURL)
-	log.Println(port)
+	postgresConfig, err := DSNToConnConfig(dsnURL)
 	if err != nil {
-		return nil, fmt.Errorf("invalid port: %w", err)
-	}
-
-	config, err := utils.LoadConfig()
-	if err != nil {
-		return nil, fmt.Errorf("failed to load config: %w", err)
-	}
-
-	postgresConfig := pgx.ConnConfig{
-		Host:                 dsnURL.Hostname(),
-		Port:                 uint16(port),
-		User:                 dsnURL.User.Username(),
-		Database:             dsnURL.Path[1:],
-		Password:             config.DBPass,
-		PreferSimpleProtocol: true,
-		LogLevel:             pgx.LogLevelWarn,
-		RuntimeParams:        map[string]string{"search_path": "public"},
+		return nil, fmt.Errorf("failed to parse dsn: %w", err)
 	}
 
 	sqlDB := stdlib.OpenDB(postgresConfig)
@@ -68,9 +46,6 @@ func NewPostgresDBInstance(
 	sqlDB.SetMaxIdleConns(10)
 	sqlDB.SetMaxOpenConns(20)
 	sqlDB.SetConnMaxLifetime(time.Hour * 2)
-	log.Info(config.DBPass, dsnURL.User.Username())
-
-	log.Infof("Using database %s", dsnURL.String())
 
 	gormConfig := &gorm.Config{
 		Logger: NewLoggerAdaptor(log.StandardLogger(), LoggerAdaptorConfig{
