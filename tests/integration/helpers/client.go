@@ -16,7 +16,7 @@ type HttpClient struct {
 	client   *http.Client
 	baseURL  string
 	basePath string
-	ctx      context.Context
+	// ctx      context.Context
 }
 
 // NewAimApiClient creates new HTTP client for the aim api

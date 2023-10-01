@@ -70,7 +70,8 @@ go-build: ## build app binary.
 
 .PHONY: go-format
 go-format: ## format go code.
-	@echo '>>> Formatting go code.'
+	@echo '>>> Frmatting go code.'
+	@gofumpt -l .
 	@gofumpt -w .
 	@goimports -w -local github.com/Symlet/smylet-backend .
 

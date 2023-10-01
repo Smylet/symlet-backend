@@ -47,7 +47,7 @@ jobs:
         run: |
           unformatted=$(
             gofumpt -l .
-            goimports -l --local github.com/G-Research/fasttrackml .
+            goimports -l --local github.com/Smylet/symlet-backend .
           )
           if [ -n "$unformatted" ]; then
             for file in $unformatted; do
