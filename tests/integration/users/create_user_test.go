@@ -36,7 +36,7 @@ func (s *CreateUserTestSuite) SetupSuite() {
 
 	db, err := db.GetDB(config)
 	if err != nil {
-		log.Fatal().Err(err).Msg("Error establishing database connection: ", err)
+		log.Fatal().Msg("Error establishing database connection: ", err)
 		return // No need to continue
 	}
 	serviceUrl := config.HTTPServerAddress
