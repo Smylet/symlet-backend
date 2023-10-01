@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/jackc/pgx/stdlib"
+	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/rotisserie/eris"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"

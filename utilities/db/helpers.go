@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/jackc/pgx"
+	"github.com/jackc/pgx/v5"
 )
 
 // DSNToConnConfig converts a DSN string to pgx.ConnConfig.
@@ -23,14 +23,20 @@ func DSNToConnConfig(dsn string) (pgx.ConnConfig, error) {
 
 	password, _ := parsedURL.User.Password()
 
-	return pgx.ConnConfig{
-		Host:                 parsedURL.Hostname(),
-		Port:                 uint16(port),
-		User:                 parsedURL.User.Username(),
-		Password:             password,
-		Database:             strings.TrimLeft(parsedURL.Path, "/"),
-		PreferSimpleProtocol: true,
-	}, nil
+	connString := fmt.Sprintf(
+		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		parsedURL.Hostname(),
+		port,
+		parsedURL.User.Username(),
+		password,
+		strings.TrimLeft(parsedURL.Path, "/"),
+	)
+
+	config, err := pgx.ParseConfig(connString)
+	if err != nil {
+		return pgx.ConnConfig{}, err
+	}
+	return *config, nil
 }
 
 // ConnConfigToDSN converts a pgx.ConnConfig to a DSN string.
