@@ -30,23 +30,22 @@ func TestCreateUserTestSuite(t *testing.T) {
 func (s *CreateUserTestSuite) SetupSuite() {
 	config, err := utils.LoadConfig()
 	if err != nil {
-		s.T().Fatal()
+		s.T().Fatal("Error loading config: ", err)
 		return // No need to continue
 	}
 
 	db, err := db.GetDB(config)
 	if err != nil {
-		log.Fatal().Err(err).Msg("Error loading db")
+		log.Fatal().Err(err).Msg("Error establishing database connection: ", err)
 		return // No need to continue
 	}
 	serviceUrl := config.HTTPServerAddress
 	s.client = helpers.NewUserApiClient(serviceUrl)
 	fixtures, err := fixtures.NewUserFixtures(db)
 	if err != nil {
-		log.Fatal().Err(err).Msg("Error loading fixtures")
+		log.Fatal().Err(err).Msg("Error loading user fixtures: ", err)
 		return // No need to continue
 	}
-	s.Require().NoError(err)
 	s.userFixtures = fixtures
 }
 

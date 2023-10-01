@@ -37,6 +37,9 @@ func main() {
 		db, err := db.GetDB(config)
 		if err != nil {
 			errCh <- fmt.Errorf("failed to connect to database: %w", err)
+			if db != nil {
+				db.Close()
+			}
 			return
 		}
 

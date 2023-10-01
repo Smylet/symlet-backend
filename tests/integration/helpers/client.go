@@ -29,20 +29,20 @@ func NewUserApiClient(baseURL string) *HttpClient {
 
 // DoPostRequest do POST request.
 func (c HttpClient) DoPostRequest(uri string, request interface{}, response interface{}) error {
-	data, err := json.Marshal(request)
-	if err != nil {
-		return eris.Wrap(err, "error marshaling request")
-	}
-	return c.doRequest(http.MethodPost, uri, response, bytes.NewBuffer(data))
+	return c.doTypedRequest(http.MethodPost, uri, request, response)
 }
 
 // DoPutRequest do PUT request.
 func (c HttpClient) DoPutRequest(uri string, request interface{}, response interface{}) error {
+	return c.doTypedRequest(http.MethodPut, uri, request, response)
+}
+
+func (c HttpClient) doTypedRequest(method, uri string, request interface{}, response interface{}) error {
 	data, err := json.Marshal(request)
 	if err != nil {
 		return eris.Wrap(err, "error marshaling request")
 	}
-	return c.doRequest(http.MethodPut, uri, response, bytes.NewBuffer(data))
+	return c.doRequest(method, uri, response, bytes.NewBuffer(data))
 }
 
 // DoGetRequest do GET request.
