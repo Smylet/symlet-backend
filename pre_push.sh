@@ -12,7 +12,7 @@
 
 #!/bin/bash
 
-base64 -i /Users/dranonymous/Smylet/symlet-backend/resources/env/app_test.env -o gh.txt
+base64 -i /Users/Abdulrahman/Smylet/symlet-backend/resources/env/app_test.env -o gh.txt
 
 # Update the GitHub secret using the GitHub CLI
 

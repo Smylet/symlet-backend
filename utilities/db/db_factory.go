@@ -41,7 +41,6 @@ func HandleResetAndMigration(config utils.Config, db DBProvider) error {
 func MakeDBProvider(
 	config utils.Config,
 ) (DBProvider, error) {
-
 	db, err := CreateDBProvider(config.DatabaseURI, time.Duration(config.DatabaseSlowThreshold.Seconds()), config.DatabasePoolMax, config.DatabaseReset)
 	if err != nil {
 		return nil, err
