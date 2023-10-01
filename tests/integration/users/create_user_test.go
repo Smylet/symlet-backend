@@ -30,7 +30,7 @@ func TestCreateUserTestSuite(t *testing.T) {
 func (s *CreateUserTestSuite) SetupSuite() {
 	config, err := utils.LoadConfig()
 	if err != nil {
-		log.Fatal().Err(err).Msg("Error loading config")
+		s.T().Fatal()
 		return // No need to continue
 	}
 
@@ -64,6 +64,7 @@ func (s *CreateUserTestSuite) TestOk() {
 	}
 
 	for _, test := range tests {
+		test := test // Capture range variable.
 		s.Run(test.name, func() {
 			var response utils.SuccessMessage
 			err := s.client.DoPostRequest("/register", test.request, &response)

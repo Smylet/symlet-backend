@@ -16,7 +16,6 @@ type HttpClient struct {
 	client   *http.Client
 	baseURL  string
 	basePath string
-	// ctx      context.Context
 }
 
 // NewAimApiClient creates new HTTP client for the aim api
@@ -64,19 +63,23 @@ func (c HttpClient) DoStreamRequest(method, uri string, request interface{}) ([]
 	}
 
 	// 1. create actual request object.
+	str, err := StrReplace(
+		fmt.Sprintf(
+			"%s%s%s",
+			c.baseURL,
+			c.basePath,
+			uri,
+		),
+		[]string{},
+		[]interface{}{},
+	)
+	if err != nil {
+		return nil, eris.Wrap(err, "error replacing string")
+	}
 	req, err := http.NewRequestWithContext(
 		context.Background(),
 		method,
-		StrReplace(
-			fmt.Sprintf(
-				"%s%s%s",
-				c.baseURL,
-				c.basePath,
-				uri,
-			),
-			[]string{},
-			[]interface{}{},
-		),
+		str,
 		bytes.NewBuffer(data),
 	)
 	if err != nil {
@@ -91,6 +94,17 @@ func (c HttpClient) DoStreamRequest(method, uri string, request interface{}) ([]
 	}
 	defer resp.Body.Close()
 
+	// Check status code for errors
+	if resp.StatusCode >= 400 {
+		var errMsg string
+		if resp.StatusCode >= 500 {
+			errMsg = "server error"
+		} else {
+			errMsg = "client error"
+		}
+		return nil, eris.Errorf("HTTP request failed with status %d: %s", resp.StatusCode, errMsg)
+	}
+
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, eris.Wrap(err, "error reading streaming response")
@@ -102,19 +116,23 @@ func (c HttpClient) DoStreamRequest(method, uri string, request interface{}) ([]
 // doRequest do request of any http method
 func (c HttpClient) doRequest(httpMethod string, uri string, response interface{}, requestBody io.Reader) error {
 	// 1. create actual request object.
+	str, err := StrReplace(
+		fmt.Sprintf(
+			"%s%s%s",
+			c.baseURL,
+			c.basePath,
+			uri,
+		),
+		[]string{},
+		[]interface{}{},
+	)
+	if err != nil {
+		return eris.Wrap(err, "error replacing string")
+	}
 	req, err := http.NewRequestWithContext(
 		context.Background(),
 		httpMethod,
-		StrReplace(
-			fmt.Sprintf(
-				"%s%s%s",
-				c.baseURL,
-				c.basePath,
-				uri,
-			),
-			[]string{},
-			[]interface{}{},
-		),
+		str,
 		requestBody,
 	)
 	if err != nil {
@@ -128,6 +146,18 @@ func (c HttpClient) doRequest(httpMethod string, uri string, response interface{
 		return eris.Wrap(err, "error doing request")
 	}
 	defer resp.Body.Close()
+
+	// Check status code for errors
+	if resp.StatusCode >= 400 {
+		var errMsg string
+		if resp.StatusCode >= 500 {
+			errMsg = "server error"
+		} else {
+			errMsg = "client error"
+		}
+		return eris.Wrapf(err, "HTTP request failed with status %d: %s", resp.StatusCode, errMsg)
+	}
+
 	// 4. read and check response data.
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {

@@ -21,7 +21,7 @@ func GetDB(config utils.Config) (DBProvider, error) {
 
 	database, err := MakeDBProvider(config)
 	if err != nil {
-		log.Error().Msg("failed to get db")
+		log.Error().Err(err).Msg("failed to get db")
 		return nil, fmt.Errorf("error connecting to DB: %w", err)
 	}
 
