@@ -46,8 +46,8 @@ jobs:
       - name: Check formatting
         run: |
           unformatted=$(
-            gofumpt -l .
-            goimports -l --local github.com/Smylet/symlet-backend .
+            gofumpt -w .
+            goimports -w --local github.com/Smylet/symlet-backend .
           )
           if [ -n "$unformatted" ]; then
             for file in $unformatted; do
