@@ -55,28 +55,3 @@ func GetMigrateModels() []interface{} {
 		review.VendorReview{},
 	}
 }
-
-// func Migrate(config utils.Config) {
-// 	// Define the execution context, supplying a migration directory
-// 	// and potentially an `atlas.hcl` configuration file using `atlasexec.WithHCL`.
-// 	// Initialize the client.
-// 	client, err := atlasexec.NewClient(fmt.Sprintf("%v/migrations", config.BasePath), "atlas")
-// 	if err != nil {
-// 		log.Fatalf("failed to initialize client: %v", err)
-// 	}
-
-// 	// Run `atlas migrate apply` on a SQLite database under /tmp.
-// 	res, err := client.Apply(context.Background(), &atlasexec.ApplyParams{
-// 		URL: fmt.Sprintf("postgresql://%s:%s@%s:%s/%s?sslmode=disable",
-// 			config.DBUser,
-// 			config.DBPass,
-// 			config.DBHost,
-// 			config.DBPort,
-// 			config.DBName,
-// 		),
-// 	})
-// 	if err != nil {
-// 		log.Fatalf("failed to apply migrations: %v", err)
-// 	}
-// 	fmt.Printf("Applied %d migrations\n", len(res.Applied))
-// }
