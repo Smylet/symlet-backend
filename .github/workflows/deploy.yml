@@ -14,6 +14,15 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v2
 
+
+    - name: Create .env from secrets
+      env:
+        GH_ENV_FILE: ${{ secrets.APP_ENV_TEST }}
+      run: |
+        cd $(pwd)/resources/env/
+        echo $GH_ENV_FILE | base64 --decode > app_test.env
+        echo $GH_ENV_FILE | base64 --decode > app.env
+        
     - name: Install kubectl
       uses: azure/setup-kubectl@v1
       with:
