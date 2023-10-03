@@ -46,7 +46,6 @@ var (
 
 
 // LoadConfig reads configuration from file or environment variables.
-// LoadConfig initializes and returns the application configuration.
 func LoadConfig() (Config, error) {
     configOnce.Do(func() {
         // Initialize the configuration only once

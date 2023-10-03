@@ -6,10 +6,11 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/Smylet/symlet-backend/utilities/common"
-	"github.com/Smylet/symlet-backend/utilities/utils"
 	"github.com/rs/zerolog"
 	"gorm.io/gorm"
+
+	"github.com/Smylet/symlet-backend/utilities/common"
+	"github.com/Smylet/symlet-backend/utilities/utils"
 )
 
 var logger = common.NewLogger()
@@ -55,7 +56,7 @@ func (h ReferenceHostelAmenities) Populate(db *gorm.DB) error {
 
 	decoder := json.NewDecoder(file)
 	if err := decoder.Decode(&amenities); err != nil {
-		logger.Error("Error decoding JSON", err) //Println("Error decoding JSON:", err)
+		logger.Error("Error decoding JSON", err) // Println("Error decoding JSON:", err)
 		return err
 	}
 

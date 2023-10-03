@@ -67,7 +67,7 @@ func (sender *SESEmailSender) SendEmail(
 			}
 
 			// Send email
-			if sender.config.Environment == "development" {
+			if sender.config.Environment == "development" || sender.config.Environment == "test" {
 				err = SendEmailDev(data.Subject, content, []string{data.User.Email}, sender.fromEmailAddress)
 				if err != nil {
 					errorsChan <- err

@@ -1,9 +1,6 @@
 package db
 
 import (
-	"github.com/rs/zerolog/log"
-	"gorm.io/gorm"
-
 	"github.com/Smylet/symlet-backend/api/booking"
 	"github.com/Smylet/symlet-backend/api/hostel"
 	"github.com/Smylet/symlet-backend/api/maintenance"
@@ -16,8 +13,8 @@ import (
 	"github.com/Smylet/symlet-backend/api/vendor"
 )
 
-func Migrate(db *gorm.DB) {
-	err := db.AutoMigrate(
+func GetMigrateModels() []interface{} {
+	return []interface{}{
 
 		users.User{},
 		users.Profile{},
@@ -56,8 +53,5 @@ func Migrate(db *gorm.DB) {
 		review.HostelReview{},
 		review.HostelManagerReview{},
 		review.VendorReview{},
-	)
-	if err != nil {
-		log.Error().Err(err).Msg("failed to migrate")
 	}
 }

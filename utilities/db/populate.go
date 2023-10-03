@@ -214,7 +214,7 @@ func createHostelStudent(ctx context.Context, db *gorm.DB, hostel hostel.Hostel,
 }
 
 func PopulateDatabase(db *gorm.DB) error {
-	Migrate(db)
+	// Migrate DB With Atlas
 
 	ctx := context.Background()
 
