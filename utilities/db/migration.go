@@ -1,12 +1,6 @@
 package db
 
 import (
-	// "context"
-	// "fmt"
-	// "log"
-
-	// "ariga.io/atlas-go-sdk/atlasexec"
-
 	"github.com/Smylet/symlet-backend/api/booking"
 	"github.com/Smylet/symlet-backend/api/hostel"
 	"github.com/Smylet/symlet-backend/api/maintenance"
@@ -21,7 +15,7 @@ import (
 
 func GetMigrateModels() []interface{} {
 	return []interface{}{
-		// List of models to be migrated
+
 		users.User{},
 		users.Profile{},
 		users.VerificationEmail{},
@@ -70,7 +64,7 @@ func GetMigrateModels() []interface{} {
 // 	if err != nil {
 // 		log.Fatalf("failed to initialize client: %v", err)
 // 	}
-	
+
 // 	// Run `atlas migrate apply` on a SQLite database under /tmp.
 // 	res, err := client.Apply(context.Background(), &atlasexec.ApplyParams{
 // 		URL: fmt.Sprintf("postgresql://%s:%s@%s:%s/%s?sslmode=disable",

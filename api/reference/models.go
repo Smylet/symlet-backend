@@ -12,7 +12,6 @@ import (
 	"gorm.io/gorm"
 )
 
-
 var logger = common.NewLogger()
 
 type ReferenceModelInterface interface {
@@ -33,7 +32,7 @@ func (h ReferenceHostelAmmenities) GetTableName() string {
 
 func (h ReferenceHostelAmmenities) Populate(db *gorm.DB) error {
 	// Populate the ammenities table with the data from the json file
-	config,err := utils.LoadConfig()
+	config, err := utils.LoadConfig()
 	if err != nil {
 		logger.Error("Error loading config: ", err)
 		return err
@@ -41,14 +40,14 @@ func (h ReferenceHostelAmmenities) Populate(db *gorm.DB) error {
 
 	file, err := os.Open(filepath.Clean(config.BasePath) + "/resources/amenities.json")
 	if err != nil {
-		logger.Error("Error opening file: ",err)
+		logger.Error("Error opening file: ", err)
 		return err
 	}
 	defer file.Close()
 
 	err = db.First(&ReferenceHostelAmmenities{}).Error
 	if err == nil {
-		logger.Print( zerolog.InfoLevel, "Ammenities table already populated")
+		logger.Print(zerolog.InfoLevel, "Ammenities table already populated")
 		return nil
 	}
 
@@ -56,7 +55,7 @@ func (h ReferenceHostelAmmenities) Populate(db *gorm.DB) error {
 
 	decoder := json.NewDecoder(file)
 	if err := decoder.Decode(&amenities); err != nil {
-		logger.Error("Error decoding JSON", err)//Println("Error decoding JSON:", err)
+		logger.Error("Error decoding JSON", err) // Println("Error decoding JSON:", err)
 		return err
 	}
 
@@ -88,7 +87,7 @@ func (u ReferenceUniversity) GetTableName() string {
 }
 
 func (u ReferenceUniversity) Populate(db *gorm.DB) error {
-	config,err := utils.LoadConfig()
+	config, err := utils.LoadConfig()
 	if err != nil {
 		logger.Error(err)
 		return err
@@ -102,7 +101,7 @@ func (u ReferenceUniversity) Populate(db *gorm.DB) error {
 
 	err = db.First(&ReferenceUniversity{}).Error
 	if err == nil {
-		logger.Print(zerolog.InfoLevel,"University table already populated")
+		logger.Print(zerolog.InfoLevel, "University table already populated")
 		return nil
 	}
 
@@ -117,7 +116,7 @@ func (u ReferenceUniversity) Populate(db *gorm.DB) error {
 		if result.Error != nil {
 			logger.Error(result.Error)
 		}
-		logger.Printf(context.Background(),"%v inserted\n", uni.Name)
+		logger.Printf(context.Background(), "%v inserted\n", uni.Name)
 
 	}
 	return nil
