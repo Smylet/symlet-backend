@@ -5,7 +5,10 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+
+	"github.com/Smylet/symlet-backend/utilities/token"
 )
 
 type Args struct {
@@ -29,4 +32,16 @@ func buildQueryFromUser(ctx context.Context, database *gorm.DB, arg Args) *gorm.
 		}
 	}
 	return query
+}
+
+func GetAuthPayloadFromCtx(ctx *gin.Context) (*token.Payload, error) {
+	payload, exist := ctx.Get(AuthorizationPayloadKey)
+	if !exist {
+		return nil, fmt.Errorf("authorization payload does not exist")
+	}
+	authPayload, ok := payload.(*token.Payload)
+	if !ok {
+		return nil, fmt.Errorf("authorization payload is not of type *token.Payload")
+	}
+	return authPayload, nil
 }
