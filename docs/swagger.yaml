@@ -13,26 +13,19 @@ definitions:
   hostel.HostelFeeSerializer:
     properties:
       breakdown:
-        additionalProperties: true
-        type: object
+        $ref: '#/definitions/hostel.Map'
       payment_plan:
-        enum:
-        - monthly
-        - by_school_session
-        - annually
+        description: binding:"oneof=monthly by_school_session annually"`
         type: string
       total_amount:
         type: number
-    required:
-    - breakdown
-    - payment_plan
-    - total_amount
     type: object
   hostel.HostelSerializer:
     properties:
       address:
         type: string
       amenities:
+        description: binding:"required"`
         items:
           $ref: '#/definitions/hostel.AmmenitySerializer'
         type: array
@@ -45,7 +38,9 @@ definitions:
       floor_space:
         type: integer
       hostel_fee:
-        $ref: '#/definitions/hostel.HostelFeeSerializer'
+        allOf:
+        - $ref: '#/definitions/hostel.HostelFeeSerializer'
+        description: binding:"required"`
       kitchen:
         enum:
         - shared
@@ -66,26 +61,34 @@ definitions:
         type: string
       university_id:
         type: integer
-    required:
-    - address
-    - city
-    - country
-    - kitchen
-    - name
-    - number_of_bathrooms
-    - number_of_bedrooms
-    - number_of_occupied_units
-    - number_of_units
-    - state
-    - university_id
+    type: object
+  hostel.Map:
+    additionalProperties:
+      type: number
     type: object
   manager.HostelManagerSerializer:
     type: object
-  textproto.MIMEHeader:
-    additionalProperties:
-      items:
+  reference.AmenitySerializer:
+    properties:
+      id:
+        type: integer
+      name:
         type: string
-      type: array
+    type: object
+  reference.UniversitySerializer:
+    properties:
+      city:
+        type: string
+      code:
+        type: string
+      country:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      state:
+        type: string
     type: object
   users.CreateUserReq:
     properties:
@@ -109,6 +112,15 @@ definitions:
     required:
     - email
     - password
+    type: object
+  users.ProfileSerializer:
+    properties:
+      bio:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
     type: object
   utils.ErrorMessage:
     properties:
@@ -329,12 +341,6 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/hostel.HostelSerializer'
-      - in: formData
-        name: filename
-        type: string
-      - in: formData
-        name: size
-        type: integer
       produces:
       - application/json
       responses:
@@ -442,6 +448,87 @@ paths:
       summary: Update a hostel
       tags:
       - Hostels
+  /references/amenities:
+    get:
+      description: List all amenities
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/reference.AmenitySerializer'
+      summary: List amenities
+      tags:
+      - Amenities
+  /references/universities:
+    get:
+      description: List all universities
+      parameters:
+      - description: University name
+        in: query
+        name: name
+        type: string
+      - description: University code
+        in: query
+        name: code
+        type: string
+      - description: University city
+        in: query
+        name: city
+        type: string
+      - description: University country
+        in: query
+        name: country
+        type: string
+      - description: University state
+        in: query
+        name: state
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/reference.UniversitySerializer'
+      summary: List universities
+      tags:
+      - Universities
+  /users/{uid}/profile:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Create a new user profile
+      parameters:
+      - description: Profile object to create
+        in: body
+        name: profile
+        required: true
+        schema:
+          $ref: '#/definitions/users.ProfileSerializer'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/users.ProfileSerializer'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/utils.ErrorMessage'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.ErrorMessage'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorMessage'
+      summary: Create a new user profile
+      tags:
+      - Profile
   /users/confirm-email:
     post:
       consumes:

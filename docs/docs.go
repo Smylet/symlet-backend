@@ -314,16 +314,6 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/hostel.HostelSerializer"
                         }
-                    },
-                    {
-                        "type": "string",
-                        "name": "filename",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "integer",
-                        "name": "size",
-                        "in": "formData"
                     }
                 ],
                 "responses": {
@@ -482,6 +472,78 @@ const docTemplate = `{
                 }
             }
         },
+        "/references/amenities": {
+            "get": {
+                "description": "List all amenities",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Amenities"
+                ],
+                "summary": "List amenities",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/reference.AmenitySerializer"
+                        }
+                    }
+                }
+            }
+        },
+        "/references/universities": {
+            "get": {
+                "description": "List all universities",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Universities"
+                ],
+                "summary": "List universities",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "University name",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "University code",
+                        "name": "code",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "University city",
+                        "name": "city",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "University country",
+                        "name": "country",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "University state",
+                        "name": "state",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/reference.UniversitySerializer"
+                        }
+                    }
+                }
+            }
+        },
         "/users/confirm-email": {
             "post": {
                 "description": "Confirm a user's email using verification parameters.",
@@ -631,6 +693,58 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/users/{uid}/profile": {
+            "post": {
+                "description": "Create a new user profile",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Create a new user profile",
+                "parameters": [
+                    {
+                        "description": "Profile object to create",
+                        "name": "profile",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/users.ProfileSerializer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/users.ProfileSerializer"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorMessage"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorMessage"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorMessage"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -651,23 +765,13 @@ const docTemplate = `{
         },
         "hostel.HostelFeeSerializer": {
             "type": "object",
-            "required": [
-                "breakdown",
-                "payment_plan",
-                "total_amount"
-            ],
             "properties": {
                 "breakdown": {
-                    "type": "object",
-                    "additionalProperties": true
+                    "$ref": "#/definitions/hostel.Map"
                 },
                 "payment_plan": {
-                    "type": "string",
-                    "enum": [
-                        "monthly",
-                        "by_school_session",
-                        "annually"
-                    ]
+                    "description": "binding:\"oneof=monthly by_school_session annually\"` + "`" + `",
+                    "type": "string"
                 },
                 "total_amount": {
                     "type": "number"
@@ -676,24 +780,12 @@ const docTemplate = `{
         },
         "hostel.HostelSerializer": {
             "type": "object",
-            "required": [
-                "address",
-                "city",
-                "country",
-                "kitchen",
-                "name",
-                "number_of_bathrooms",
-                "number_of_bedrooms",
-                "number_of_occupied_units",
-                "number_of_units",
-                "state",
-                "university_id"
-            ],
             "properties": {
                 "address": {
                     "type": "string"
                 },
                 "amenities": {
+                    "description": "binding:\"required\"` + "`" + `",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/hostel.AmmenitySerializer"
@@ -712,7 +804,12 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "hostel_fee": {
-                    "$ref": "#/definitions/hostel.HostelFeeSerializer"
+                    "description": "binding:\"required\"` + "`" + `",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/hostel.HostelFeeSerializer"
+                        }
+                    ]
                 },
                 "kitchen": {
                     "type": "string",
@@ -745,14 +842,45 @@ const docTemplate = `{
                 }
             }
         },
+        "hostel.Map": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "number"
+            }
+        },
         "manager.HostelManagerSerializer": {
             "type": "object"
         },
-        "textproto.MIMEHeader": {
+        "reference.AmenitySerializer": {
             "type": "object",
-            "additionalProperties": {
-                "type": "array",
-                "items": {
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "reference.UniversitySerializer": {
+            "type": "object",
+            "properties": {
+                "city": {
+                    "type": "string"
+                },
+                "code": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "state": {
                     "type": "string"
                 }
             }
@@ -787,6 +915,20 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "users.ProfileSerializer": {
+            "type": "object",
+            "properties": {
+                "bio": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "last_name": {
                     "type": "string"
                 }
             }
