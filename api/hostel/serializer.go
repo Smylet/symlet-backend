@@ -16,7 +16,7 @@ import (
 	"github.com/Smylet/symlet-backend/api/reference"
 	"github.com/Smylet/symlet-backend/api/users"
 	"github.com/Smylet/symlet-backend/utilities/common"
-	"github.com/Smylet/symlet-backend/utilities/token"
+	"github.com/Smylet/symlet-backend/utilities/utils"
 )
 
 type HostelFeeSerializer struct {
@@ -31,8 +31,8 @@ type AmmenitySerializer struct {
 }
 
 type HostelSerializer struct {
-	ManagerID             uint   `json:"-" form:"-"`
-	UniversityID          uint   `json:"university_id" form:"university_id" custom_binding:"requiredForCreate"`
+	ManagerID             uint    `json:"-" form:"-"`
+	UniversityID          uint    `json:"university_id" form:"university_id" custom_binding:"requiredForCreate"`
 	Name                  *string `json:"name" form:"name" custom_binding:"requiredForCreate"`
 	Address               *string `json:"address" form:"address" custom_binding:"requiredForCreate"`
 	City                  *string `json:"city" form:"city" custom_binding:"requiredForCreate"`
@@ -45,7 +45,7 @@ type HostelSerializer struct {
 	NumberOfBathrooms     *uint   `json:"number_of_bathrooms" form:"number_of_bathrooms" custom_binding:"requiredForCreate"`
 	Kitchen               *string `json:"kitchen" form:"kitchen" custom_binding:"requiredForCreate" binding:"oneof=shared none private"`
 
-	FloorSpace *uint                    `json:"floor_space" form:"floor_space" custom_binding:"requiredForCreate"`
+	FloorSpace *uint                   `json:"floor_space" form:"floor_space" custom_binding:"requiredForCreate"`
 	HostelFee  HostelFeeSerializer     `json:"hostel_fee" form:"hostel_fee"` //binding:"required"`
 	Amenities  []AmmenitySerializer    `json:"amenities" form:"amenities"`   //binding:"required"`
 	Images     []*multipart.FileHeader `form:"images" binding:"max=10" swaggerignore:"true" validate:"ValidateImageExtension"`
@@ -56,28 +56,22 @@ func (h *HostelSerializer) AfterCreate() error {
 	return nil
 }
 
-func getManager(ctx *gin.Context, db *gorm.DB) (*manager.HostelManager, error){
-		// Get the manager id from the auth payload
-		authPayload, exist := ctx.Get(users.AuthorizationPayloadKey)
-		if !exist {
-			return nil, fmt.Errorf("authorization payload does not exist")
-		}
-		payload, ok := authPayload.(*token.Payload)
-		if !ok {
-			return nil, fmt.Errorf("authorization payload is not of type *token.Payload")
-		}
-	
-		var hostelManager manager.HostelManager
-	
-		err := db.Model(&manager.HostelManager{}).Where("user_id = ?", payload.UserID).First(&hostelManager).Error
-		if err != nil {
-			return nil, fmt.Errorf("failed to find manager with user id %d: %v", payload.UserID, err)
-		}
-		return &hostelManager, nil
+func getManager(ctx *gin.Context, db *gorm.DB) (*manager.HostelManager, error) {
+	// Get the manager id from the auth payload
+	payload, err := users.GetAuthPayloadFromCtx(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var hostelManager manager.HostelManager
+
+	err = db.Model(&manager.HostelManager{}).Where("user_id = ?", payload.UserID).First(&hostelManager).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to find manager with user id %d: %v", payload.UserID, err)
+	}
+	return &hostelManager, nil
 
 }
-
-
 
 // // CreateTx creates a new hostel
 // func (h *HostelSerializer) CreateTx(ctx *gin.Context, db *gorm.DB, session *session.Session) error {
@@ -205,7 +199,6 @@ func getManager(ctx *gin.Context, db *gorm.DB) (*manager.HostelManager, error){
 // 		}
 // 		logger.Info("Hostel fee created")
 
-
 // 		// In the main thread, receive file paths from the channel and create HostelImage records
 // 		hostelImages := make([]HostelImage, len(h.Images))
 // 		//logger.Info(filePathsChan)
@@ -218,14 +211,13 @@ func getManager(ctx *gin.Context, db *gorm.DB) (*manager.HostelManager, error){
 // 			//logger.Info(hostelImage)
 // 			hostelImages = append(hostelImages, hostelImage)
 // 		}
-		
+
 // 		// Create HostelImage records
 // 		logger.Info("Creating hostel images", hostelImages)
 // 		if err := tx.Model(&HostelImage{}).Create(&hostelImages).Error; err != nil {
 // 			return err
 // 		}
 // 		logger.Info("Hostel images created")
-
 
 // 		h.Hostel = hostel
 
@@ -258,8 +250,8 @@ func getManager(ctx *gin.Context, db *gorm.DB) (*manager.HostelManager, error){
 // 	return nil
 // }
 
-// CreateTx creates a new hostel
-func (h *HostelSerializer) CreateTx(ctx *gin.Context, db *gorm.DB, session *session.Session) error {
+// Create creates a new hostel
+func (h *HostelSerializer) Create(ctx *gin.Context, db *gorm.DB, session *session.Session) error {
 	logger := common.NewLogger()
 
 	//Validate the fields
@@ -275,8 +267,8 @@ func (h *HostelSerializer) CreateTx(ctx *gin.Context, db *gorm.DB, session *sess
 	h.ManagerID = hostelManager.ID
 
 	//Process the uploaded images
-	
-	filePaths, err := ProcessUploadedImages(h.Images, session)
+
+	filePaths, err := utils.ProcessUploadedImages(h.Images, session)
 	if err != nil {
 		logger.Info("Image processing failed")
 		return err
@@ -380,8 +372,8 @@ func (h *HostelSerializer) Validate() error {
 	var errorMessage string
 	validate := validator.New()
 
-    // Register the custom validation function
-    validate.RegisterValidation("ValidateImageExtension", ValidateImageExtension)
+	// Register the custom validation function
+	validate.RegisterValidation("ValidateImageExtension", ValidateImageExtension)
 
 	if err := validate.Struct(h); err != nil {
 		validationErrors := err.(validator.ValidationErrors)
@@ -416,6 +408,8 @@ func (h *HostelSerializer) Response() map[string]interface{} {
 
 	return map[string]interface{}{
 		"uid":                      h.Hostel.UID,
+		"created_at":               h.Hostel.CreatedAt,
+		"updated_at":               h.Hostel.UpdatedAt,
 		"manager_uid":              h.Hostel.Manager.UID,
 		"name":                     h.Hostel.Name,
 		"university":               h.Hostel.University.Name,
@@ -436,7 +430,7 @@ func (h *HostelSerializer) Response() map[string]interface{} {
 	}
 }
 
-func (h *HostelSerializer) GetHostelTx(db *gorm.DB, hostelUID uuid.UUID) error {
+func (h *HostelSerializer) Get(db *gorm.DB, hostelUID uuid.UUID) error {
 	err := db.Model(&Hostel{}).Preload(clause.Associations).Where("uid = ?", hostelUID).First(&h.Hostel).Error
 	if err != nil {
 		return err
@@ -444,8 +438,8 @@ func (h *HostelSerializer) GetHostelTx(db *gorm.DB, hostelUID uuid.UUID) error {
 	return nil
 }
 
-func (h *HostelSerializer) ListHostelsTx(db *gorm.DB, queryParams HostelQueryParams) ([]Hostel, error) {
-	hostels, err := h.FilterHostels(db, queryParams)
+func (h *HostelSerializer) List(db *gorm.DB, queryParams HostelQueryParams) ([]Hostel, error) {
+	hostels, err := h.Filter(db, queryParams)
 	if err != nil {
 		return nil, err
 	}
@@ -462,7 +456,7 @@ func (h HostelSerializer) ResponseMany(hostels []Hostel) []map[string]interface{
 	return hostelsResponse
 }
 
-func (h *HostelSerializer) UpdateHostelTx(ctx *gin.Context, db *gorm.DB, session *session.Session, hostelUID uuid.UUID) error {
+func (h *HostelSerializer) Update(ctx *gin.Context, db *gorm.DB, session *session.Session, hostelUID uuid.UUID) error {
 	logger := common.NewLogger()
 	var hostel Hostel
 
@@ -474,8 +468,6 @@ func (h *HostelSerializer) UpdateHostelTx(ctx *gin.Context, db *gorm.DB, session
 	if err != nil {
 		return err
 	}
-
-
 
 	updatedFields := h.getUpdatedFields()
 	err = common.ExecTx(ctx, db, func(tx *gorm.DB) error {
@@ -548,7 +540,7 @@ func (h *HostelSerializer) updateAmenities(hostel *Hostel, tx *gorm.DB) ([]uint,
 }
 
 // Function to filter hostels based on query parameters
-func (h *HostelSerializer) FilterHostels(db *gorm.DB, queryParams HostelQueryParams) ([]Hostel, error) {
+func (h *HostelSerializer) Filter(db *gorm.DB, queryParams HostelQueryParams) ([]Hostel, error) {
 	// Initialize the query with the Hostel model
 	var hostels []Hostel
 
@@ -622,7 +614,6 @@ func (h *HostelSerializer) FilterHostels(db *gorm.DB, queryParams HostelQueryPar
 	if queryParams.GeneralRatingMax != nil {
 		query = query.Where("general_rating <= ?", *queryParams.GeneralRatingMax)
 	}
-
 
 	// You can also apply other filters such as name, address, etc., as needed
 	err := query.Preload(clause.Associations).Find(&hostels).Error

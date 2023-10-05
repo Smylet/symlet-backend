@@ -13,9 +13,8 @@ import (
 // @Description List all amenities
 // @Tags Amenities
 // @Produce json
-// @Success 200 {object} AmenitySerializer
-// @Failure 500 {object} ErrorMessage
-// @Router /amenities [get]
+// @Success 200 {object} reference.AmenitySerializer
+// @Router /references/amenities [get]
 func (server *Server) ListAmenities(c *gin.Context) {
 	var amenitySerializer reference.AmenitySerializer
 
@@ -40,9 +39,8 @@ func (server *Server) ListAmenities(c *gin.Context) {
 // @Param city query string false "University city"
 // @Param country query string false "University country"
 // @Param state query string false "University state"
-// @Success 200 {object} UniversitySerializer
-// @Failure 500 {object} ErrorMessage
-// @Router /universities [get]
+// @Success 200 {object} reference.UniversitySerializer
+// @Router /references/universities [get]
 func (server *Server) ListUniversities(c *gin.Context) {
 	var universitySerializer reference.UniversitySerializer
 	var queryParams reference.UniversityQueryParams

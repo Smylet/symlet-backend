@@ -17,7 +17,6 @@ import (
 // @Accept multipart/form-data
 // @Produce json
 // @Param hostel body hostel.HostelSerializer true "Hostel object to create"
-// @Param hostel_images formData multipart.FileHeader false "Hostel images"
 // @Success 201 {object} hostel.HostelSerializer "Created hostel"
 // @Failure 400 {object} utils.ErrorMessage "Bad request"
 // @Failure 500 {object} utils.ErrorMessage "Internal server error"
@@ -38,7 +37,7 @@ func (server *Server) CreateHostel(c *gin.Context) {
 
 	HostelSerializer.Images = append(HostelSerializer.Images, file)
 	//Get uploaded file
-	err = HostelSerializer.CreateTx(c, server.db, server.session)
+	err = HostelSerializer.Create(c, server.db, server.session)
 
 	if err != nil {
 		utils.RespondWithError(c, 500, err.Error(), "Failed to create hostel")
@@ -70,7 +69,7 @@ func (server *Server) GetHostel(c *gin.Context) {
 		utils.RespondWithError(c, 400, err.Error(), "Invalid hostel uid")
 		return
 	}
-	err = HostelSerializer.GetHostelTx(server.db, uid)
+	err = HostelSerializer.Get(server.db, uid)
 	if err != nil {
 		utils.RespondWithError(c, 500, err.Error(), "Failed to get hostel")
 		return
@@ -127,7 +126,7 @@ func (server *Server) ListHostels(c *gin.Context) {
 		return
 	}
 
-	hostels, err := HostelSerializer.ListHostelsTx(server.db, queryParams)
+	hostels, err := HostelSerializer.List(server.db, queryParams)
 	if err != nil {
 		utils.RespondWithError(c, http.StatusInternalServerError, err.Error(), "Failed to get hostels")
 		return
@@ -166,7 +165,7 @@ func (server *Server) UpdateHostel(c *gin.Context) {
 		return
 	}
 
-	err = HostelSerializer.UpdateHostelTx(c, server.db, server.session, uid)
+	err = HostelSerializer.Update(c, server.db, server.session, uid)
 	if err != nil {
 		utils.RespondWithError(c, http.StatusInternalServerError, err.Error(), "Failed to update hostel")
 		return
