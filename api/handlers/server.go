@@ -118,7 +118,10 @@ func (server *Server) registerRoutes() {
 		referenceRoutes.GET("/amenities", server.ListAmenities)
 		referenceRoutes.GET("/universities", server.ListUniversities)
 	}
-
+	studentRoutes := r.Group("/students")
+	{
+		studentRoutes.POST("/", users.AuthMiddleware(server.token), server.CreateStudent)
+	}
 	userRoute := r.Group("/user")
 	{
 		// USER 2FA ENDPOINTS

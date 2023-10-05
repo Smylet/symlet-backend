@@ -58,7 +58,7 @@ func main() {
 
 	var database *gorm.DB
 	go func() {
-		db, err := db.GetDB(config)
+		db, err := db.GetDB()
 		if err != nil {
 			errCh <- fmt.Errorf("failed to connect to database: %w", err)
 			if db != nil {

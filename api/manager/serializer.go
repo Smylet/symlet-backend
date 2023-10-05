@@ -1,6 +1,8 @@
 package manager
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -15,12 +17,16 @@ type HostelManagerSerializer struct {
 }
 
 func (m *HostelManagerSerializer) CreateTx(ctx *gin.Context, db *gorm.DB) error {
-
+	var user users.User
 	authPayload := ctx.MustGet(users.AuthorizationPayloadKey).(*token.Payload)
-	hostelManager := HostelManager{
-		UserID: authPayload.UserID,
+	err := db.Model(&users.User{}).Where("id = ", authPayload.UserID).First(&user).Error
+	if err != nil{
+		return fmt.Errorf("unable to retrieve user with id %v %w", authPayload.UserID, err)
 	}
-	if err := db.Create(&hostelManager).Error; err != nil {
+	hostelManager := HostelManager{
+		User: user,
+	}
+	if err = db.Create(&hostelManager).Error; err != nil {
 		return err
 	}
 	m.hostelManager = hostelManager
