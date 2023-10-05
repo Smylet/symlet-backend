@@ -3,9 +3,6 @@ package populate
 import (
 	"errors"
 	"fmt"
-	"log"
-
-	//"os"
 
 	"github.com/spf13/cobra"
 	"gorm.io/gorm"
@@ -13,20 +10,19 @@ import (
 	"github.com/Smylet/symlet-backend/api/reference"
 	//"github.com/Smylet/symlet-backend/api/test"
 	"github.com/Smylet/symlet-backend/utilities/db"
-	"github.com/Smylet/symlet-backend/utilities/utils"
 )
 
 func GetDB() (*gorm.DB, error) {
 
-	config, err := utils.LoadConfig()
+	database, err := db.GetDB()
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-	database := db.GetDB(config)
+
 	if database == nil {
 		return nil, errors.New("error connecting to database")
 	}
-	return database, nil
+	return database.GormDB(), nil
 }
 
 func PopulateReference(cmd *cobra.Command, args []string, referenceModelMap map[string]reference.ReferenceModelInterface, database *gorm.DB) error {

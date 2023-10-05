@@ -3,13 +3,12 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"log"
+
+	"github.com/spf13/cobra"
+	"gorm.io/gorm"
 
 	"github.com/Smylet/symlet-backend/api/reference"
 	"github.com/Smylet/symlet-backend/utilities/db"
-	"github.com/Smylet/symlet-backend/utilities/utils"
-	"github.com/spf13/cobra"
-	"gorm.io/gorm"
 )
 
 var PopulateCmd = &cobra.Command{
@@ -37,11 +36,8 @@ func populateCmd(cmd *cobra.Command, args []string) error {
 }
 
 func initDB() (db.DBProvider, error) {
-	config, err := utils.LoadConfig()
-	if err != nil {
-		log.Fatal(err)
-	}
-	db, err := db.GetDB(config)
+
+	db, err := db.GetDB()
 	if err != nil {
 		if db != nil {
 			db.Close()

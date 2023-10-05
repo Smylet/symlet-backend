@@ -37,6 +37,11 @@ type Config struct {
 	AWSBucketName        string        `mapstructure:"AWS_BUCKET_NAME"`
 	BasePath             string        `mapstructure:"BASE_PATH"`
 	MediaPath			string        `mapstructure:"MEDIA_PATH"`
+	DatabaseURI          string        `mapstructure:"DATABASE_URI"`
+	DatabaseSlowThreshold time.Duration `mapstructure:"DATABASE_SLOW_THRESHOLD"`
+	DatabasePoolMax      int           `mapstructure:"DATABASE_POOL_MAX"`
+	DatabaseReset        bool          `mapstructure:"DATABASE_RESET"`
+	
 }
 
 var (
