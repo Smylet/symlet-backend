@@ -1,4 +1,4 @@
-package hostel
+package utils
 
 import (
 	"fmt"
@@ -12,17 +12,15 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/google/uuid"
-
-	"github.com/Smylet/symlet-backend/utilities/utils"
 )
 
 func uploadToS3(fileHeader *multipart.FileHeader, awsSession *session.Session) (string, error) {
-	
+
 	// Create an S3 service client
 	svc := s3.New(awsSession)
 
 	// Specify your S3 bucket name
-	bucketName := utils.EnvConfig.AWSBucketName
+	bucketName := EnvConfig.AWSBucketName
 
 	// Specify the target location in S3
 	key := fmt.Sprintf("hostels/%s%s", generateUniqueFilename(), filepath.Ext(fileHeader.Filename))
@@ -40,13 +38,13 @@ func uploadToS3(fileHeader *multipart.FileHeader, awsSession *session.Session) (
 		Key:    aws.String(key),
 		Body:   file,
 	})
-	
+
 	if outPut == nil || err != nil {
 		if awsErr, ok := err.(awserr.Error); ok {
 			return "", fmt.Errorf("failed to upload file to S3: %s - %s", awsErr.Code(), awsErr.Message())
 		}
 		return "", fmt.Errorf("failed to upload file to S3: %w", err)
-		}
+	}
 
 	return outPut.String(), nil
 }
@@ -57,10 +55,9 @@ func generateUniqueFilename() string {
 	return randomString
 }
 
-
 func uploadImageLocally(file *multipart.FileHeader) (string, error) {
 	// Save to media folder with a unique filename
-	mediaFolder := utils.EnvConfig.MediaPath
+	mediaFolder := EnvConfig.MediaPath
 
 	// Create the media folder if it doesn't exist
 	if _, err := os.Stat(mediaFolder); os.IsNotExist(err) {
@@ -74,12 +71,12 @@ func uploadImageLocally(file *multipart.FileHeader) (string, error) {
 	filename := fmt.Sprintf("%s%s", generateUniqueFilename(), filepath.Ext(file.Filename))
 	filePath := filepath.Join(mediaFolder, filename)
 
-		// Check if the file already exists
+	// Check if the file already exists
 	if _, err := os.Stat(filePath); err == nil {
 		return "", fmt.Errorf("file %s already exists", filePath)
 	}
 
-	dst, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 0644)	
+	dst, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
 		return "", err
 	}
@@ -99,38 +96,45 @@ func uploadImageLocally(file *multipart.FileHeader) (string, error) {
 		return "", err
 	}
 	//Get server address and combine it with filename
-	serverAddress := utils.EnvConfig.HTTPServerAddress
+	serverAddress := EnvConfig.HTTPServerAddress
 	filePath = fmt.Sprintf("%s/%s", serverAddress, filename)
-		
+
 	return filePath, nil
 }
 
-func ProcessUploadedImages(Images []*multipart.FileHeader, awsSession *session.Session) ([]string, error){
-	filePaths:= []string{}
-
-	for _, fileHeader := range Images {
-		// Process each uploaded file here (e.g., save to storage)
-		fmt.Printf("Received file: %s\n", fileHeader.Filename)
-
-		// Decide whether to upload to AWS S3 or save locally
-		if utils.EnvConfig.Environment == "production" {
-			// In production, upload to AWS S3
-			filePath, err := uploadToS3(fileHeader, awsSession)
-			if err != nil {
-				return nil, err
-			}
-			filePaths = append(filePaths, filePath)
-
-		} else {
-			// In development, save locally in the media folder
-			filePath , err := uploadImageLocally(fileHeader)//saveLocally(fileHeader)
-			if err != nil {
-				return nil , err
-			}
-			filePaths = append(filePaths, filePath)
+func ProcessUploadedImage(Image *multipart.FileHeader, awsSession *session.Session)(string, error){
+	// Decide whether to upload to AWS S3 or save locally
+	if EnvConfig.Environment == "production" {
+		// In production, upload to AWS S3
+		filePath, err := uploadToS3(Image, awsSession)
+		if err != nil {
+			return "", fmt.Errorf("unable to upload image to AWS S3 %w", err)
 		}
+		return filePath, nil
+
+	} else {
+		// In development, save locally in the media folder
+		filePath, err := uploadImageLocally(Image) //saveLocally(fileHeader)
+		if err != nil {
+			return "", fmt.Errorf("unable to upload image locally, %w", err)
+		}
+		return filePath, nil
+	}
+}
+func ProcessUploadedImages(Images []*multipart.FileHeader, awsSession *session.Session) ([]string, error) {
+	filePaths := []string{}
+
+	for _, Image := range Images {
+		// Process each uploaded file here (e.g., save to storage)
+		fmt.Printf("Received file: %s\n", Image.Filename)
+		filePath, err := ProcessUploadedImage(Image, awsSession) 
+		if err != nil{
+			return nil, fmt.Errorf("unable to process images %w", err)
+		}
+		filePaths = append(filePaths, filePath)
+	
 	}
 
 	return filePaths, nil
-	
+
 }
