@@ -5,6 +5,8 @@
 # Project-specific variables
 #
 # App name.
+include ./resources/env/app.env
+
 APP=symlet-backend
 ifeq ($(shell go env GOOS),windows)
   APP:=$(APP).exe
@@ -38,6 +40,7 @@ ARCHIVE_FILES=$(APP) LICENSE README.md
 COMPOSE_FILE=tests/integration/docker-compose.yml
 # Docker compose project name.
 COMPOSE_PROJECT_NAME=$(APP)-integration-tests
+
 
 #
 # Default target (help)
@@ -82,6 +85,17 @@ go-dist: go-build ## archive app binary.
 	@if [ -f $(ARCHIVE_NAME) ]; then rm -f $(ARCHIVE_NAME); fi
 	@$(ARCHIVE_CMD) $(ARCHIVE_NAME) $(ARCHIVE_FILES)
 
+
+# Migratio targets.
+
+.PHONY: create-migrate
+create-migrate: ## create migration files.
+	@echo ">>> Creating migration files."
+	@atlas migrate diff --env gorm
+
+migrate: ## run migrations.
+	@echo ">>> Running migrations."
+	@atlas migrate apply --dir file://./migrations --url "postgresql://$(DB_USER):$(DB_PASS)@:$(DB_PORT)/$(DB_NAME)?sslmode=disable"
 #
 # Tests targets.
 #

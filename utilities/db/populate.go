@@ -5,6 +5,9 @@ import (
 	"database/sql"
 	"time"
 
+	"github.com/go-faker/faker/v4"
+	"gorm.io/gorm"
+
 	"github.com/Smylet/symlet-backend/api/booking"
 	"github.com/Smylet/symlet-backend/api/hostel"
 	"github.com/Smylet/symlet-backend/api/manager"
@@ -13,10 +16,6 @@ import (
 	"github.com/Smylet/symlet-backend/api/users"
 	"github.com/Smylet/symlet-backend/api/vendor"
 	"github.com/Smylet/symlet-backend/utilities/common"
-	"github.com/Smylet/symlet-backend/utilities/utils"
-	"github.com/go-faker/faker/v4"
-	"github.com/rs/zerolog/log"
-	"gorm.io/gorm"
 )
 
 func createVendor(ctx context.Context, db *gorm.DB) (vendor.Vendor, error) {
@@ -134,6 +133,7 @@ func createStudent(ctx context.Context, db *gorm.DB, university reference.Refere
 		}
 		studentObj.User = studentUser
 		if err := tx.Create(&studentObj).Error; err != nil {
+
 			return err
 		}
 		return nil
@@ -214,19 +214,14 @@ func createHostelStudent(ctx context.Context, db *gorm.DB, hostel hostel.Hostel,
 }
 
 func PopulateDatabase(db *gorm.DB) error {
-	config, err := utils.LoadConfig()
-	if err != nil {
-		log.Fatal().Err(err).Msg("failed to load config")
-		return err
-	}
-	Migrate(db, config)
+	// Migrate DB With Atlas
 
 	ctx := context.Background()
 
 	university := reference.ReferenceUniversity{}
 	ammenities := []*reference.ReferenceHostelAmmenities{}
 
-	err = common.ExecTx(ctx, db, func(tx *gorm.DB) error {
+	err := common.ExecTx(ctx, db, func(tx *gorm.DB) error {
 		err := db.Model(&university).Limit(1).First(&university).Error
 		if err != nil {
 			return err

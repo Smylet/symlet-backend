@@ -11,20 +11,10 @@ import (
 	"github.com/Smylet/symlet-backend/api/student"
 	"github.com/Smylet/symlet-backend/api/users"
 	"github.com/Smylet/symlet-backend/api/vendor"
-	"github.com/Smylet/symlet-backend/utilities/utils"
-	"github.com/rs/zerolog/log"
-	"gorm.io/gorm"
 )
 
-func Migrate(db *gorm.DB, config utils.Config) error {
-	config, err := utils.LoadConfig()
-	if err != nil {
-		log.Fatal().Err(err).Msg("failed to load config")
-		return err
-	}
-	log.Info().Str("database", config.DatabaseURI).Msg("migrating database")
-
-	err = db.AutoMigrate(
+func GetMigrateModels() []interface{} {
+	return []interface{}{
 
 		users.User{},
 		users.Profile{},
@@ -63,10 +53,5 @@ func Migrate(db *gorm.DB, config utils.Config) error {
 		review.HostelReview{},
 		review.HostelManagerReview{},
 		review.VendorReview{},
-	)
-	if err != nil {
-		return err
 	}
-
-	return nil
 }

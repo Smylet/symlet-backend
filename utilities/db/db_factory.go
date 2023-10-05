@@ -23,19 +23,19 @@ func LoadConfig() (utils.Config, error) {
 	return utils.LoadConfig()
 }
 
-// HandleResetAndMigration handles the reset and migration for the provided DB.
-func HandleResetAndMigration(config utils.Config, db DBProvider) error {
-	if config.Environment == "development" || config.Environment == "test" {
-		if config.DatabaseReset {
-			if err := db.Reset(); err != nil {
-				return err
-			}
-		}
+// // HandleResetAndMigration handles the reset and migration for the provided DB.
+// func HandleResetAndMigration(config utils.Config, db DBProvider) error {
+// 	if config.Environment == "development" || config.Environment == "test" {
+// 		if config.DatabaseReset {
+// 			if err := db.Reset(); err != nil {
+// 				return err
+// 			}
+// 		}
 
-		return Migrate(db.GormDB(), config)
-	}
-	return nil
-}
+// 		return Migrate(db.GormDB(), config)
+// 	}
+// 	return nil
+// }
 
 // MakeDBProvider orchestrates the above functions.
 func MakeDBProvider(
@@ -46,10 +46,10 @@ func MakeDBProvider(
 		return nil, err
 	}
 
-	if err := HandleResetAndMigration(config, db); err != nil {
-		db.Close()
-		return nil, err
-	}
+	// if err := HandleResetAndMigration(config, db); err != nil {
+	// 	db.Close()
+	// 	return nil, err
+	// }
 
 	return db, nil
 }
