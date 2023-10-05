@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/go-faker/faker/v4"
 	"gorm.io/gorm"
 
 	"github.com/Smylet/symlet-backend/api/booking"
@@ -16,6 +15,7 @@ import (
 	"github.com/Smylet/symlet-backend/api/users"
 	"github.com/Smylet/symlet-backend/api/vendor"
 	"github.com/Smylet/symlet-backend/utilities/common"
+	"github.com/go-faker/faker/v4"
 )
 
 func createVendor(ctx context.Context, db *gorm.DB) (vendor.Vendor, error) {

@@ -6,6 +6,10 @@
 #
 # App name.
 include ./resources/env/app.env
+export
+
+include ./resources/env/app_test.env
+export
 
 APP=symlet-backend
 ifeq ($(shell go env GOOS),windows)
@@ -88,15 +92,21 @@ go-dist: go-build ## archive app binary.
 
 # Migratio targets.
 
-.PHONY: create-migrate
-create-migrate: ## create migration files.
-	@echo ">>> Creating migration files."
-	@atlas migrate diff --env gorm
+.PHONY: install-atlas
+install-atlas: ## Install atlas CLI tool
+	@echo ">>> Installing atlas..."
+	@curl -sSf https://atlasgo.sh | sh
 
-migrate: ## run migrations.
+
+.PHONY: create-migrate
+create-migrate: install-atlas ## create migration files.
+	@echo ">>> Creating migration files."
+	@bash -c 'source ./resources/env/app_test.env && @atlas migrate diff --env gorm
+
+migrate:  ## run migrations.
 	@echo ">>> Running migrations."
-	@atlas migrate apply --dir file://./migrations --url "postgresql://$(DB_USER):$(DB_PASS)@:$(DB_PORT)/$(DB_NAME)?sslmode=disable"
-#
+	@bash -c 'source ./resources/env/app_test.env && atlas migrate apply --dir file://./migrations --url "postgresql://$${DB_USER}:$${DB_PASS}@$${DB_PORT}/$${DB_NAME}?sslmode=disable"'
+
 # Tests targets.
 #
 
@@ -106,9 +116,9 @@ test-go-unit: ## run go unit tests.
 	go test -v ./...
 
 .PHONY: test-go-integration
-test-go-integration: ## run go integration tests.
+test-go-integration:  ## run go integration tests.
 	@echo ">>> Running integration tests."
-	ENV=test go test -v -count=1 -tags="integration" ./tests/integration/...
+	docker-compose -f ./tests/integration/docker-compose.yml  up --build
 
 #
 # Service test targ

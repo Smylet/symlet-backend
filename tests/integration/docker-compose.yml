@@ -30,7 +30,11 @@ services:
       timeout: 5s
     environment:
       - POSTGRES_PASSWORD=postgres
-
+  migrate:
+    image: arigaio/atlas:latest
+    command: >
+      migrate apply
+      --url postgres://postgres:postgres@postgres:5432/smylet_test --dir file://./migrations 
   redis:
     image: redis:6.0.9-alpine
     restart: always
@@ -55,7 +59,7 @@ services:
 
   integration-tests:
     image: golang:1.21
-    command: make test-go-integration
+    command: go test -v -count=1 -tags="integration" ./tests/integration/...
     volumes:
       - ../../:/src
       - go-cache:/cache
