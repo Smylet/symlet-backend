@@ -15,6 +15,11 @@ type User struct {
 	Email              string `gorm:"unique;not null"`
 	Password           string `sql:"not null"`
 	Is_email_confirmed bool   `gorm:"default:false"`
+
+	//Polymorphic relationship with Student, Vendor and Hostel Owner
+	UserID uint
+	UserType string  
+	
 	ProfileID 		uint
 	Profile 		  Profile
 }
@@ -26,6 +31,7 @@ type Profile struct {
 	Image  string
 	FirstName string
 	LastName string
+
 }
 
 type VerificationEmail struct {
