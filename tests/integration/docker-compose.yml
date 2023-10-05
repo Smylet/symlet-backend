@@ -59,7 +59,7 @@ services:
 
   integration-tests:
     image: golang:1.21
-    command: go test -v -count=1 -tags="integration" ./tests/integration/...
+    command: go test -count=1 -tags="integration" ./tests/integration/...
     volumes:
       - ../../:/src
       - go-cache:/cache
