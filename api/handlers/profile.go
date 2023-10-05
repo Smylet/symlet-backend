@@ -1,14 +1,73 @@
 // USER PROFILE MANAGEMENT ENDPOINTS
 package handlers
 
-import "github.com/gin-gonic/gin"
+import (
+	"fmt"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+
+	"github.com/Smylet/symlet-backend/api/users"
+	"github.com/Smylet/symlet-backend/utilities/common"
+	"github.com/Smylet/symlet-backend/utilities/utils"
+)
 
 // USER PROFILE MANAGEMENT ENDPOINTS
+
+// @Summary Create a new user profile
+// @Description Create a new user profile
+// @Tags Profile
+// @Accept multipart/form-data
+// @Produce json
+// @Param profile body users.ProfileSerializer true "Profile object to create"
+// @Success 201 {object} users.ProfileSerializer
+// @Failure 401 {object} utils.ErrorMessage
+// @Failure 400 {object} utils.ErrorMessage "Bad request"
+// @Failure 500 {object} utils.ErrorMessage "Internal server error"
+// @Router /users/{uid}/profile [post]
+func (server *Server)CreateUserProfile(c *gin.Context){
+	var profileSerializer users.ProfileSerializer
+	fmt.Print("Creating profile")
+	//print header
+	file, err := c.FormFile("image")
+	if err != nil {
+		utils.RespondWithError(c, 400, err.Error(), "Invalid profile image")
+		return
+	}
+	errs := common.CustomBinder(c, &profileSerializer)
+	if errs != nil {
+		utils.RespondWithError(c, http.StatusBadRequest, errs.Error(), "Invalid profile data")
+		return
+	}
+	profileSerializer.Image = file
+
+	err = profileSerializer.Create(c, server.db, server.session)
+
+	if err != nil {
+		utils.RespondWithError(c, 500, err.Error(), "Failed to create profile")
+		return
+	}
+
+	utils.RespondWithSuccess(c, 201, profileSerializer.Response(), "Profile created successfully")
+}
+
+
 func (server *Server) GetUserProfile(c *gin.Context) {
 	// Handle logic to retrieve the user profile
-	c.JSON(200, gin.H{
-		"message": "User profile retrieved successfully",
-	})
+	var profileSerializer users.ProfileSerializer
+	uidString := c.Param("uid")
+	if uidString == "" {
+		utils.RespondWithError(c, 400, "profile uid is required", "")
+		return
+	}
+
+	err := profileSerializer.Get(c, server.db, uidString)
+	if err != nil {
+		utils.RespondWithError(c, 500, err.Error(), "Failed to retrieve profile")
+		return
+	}
+	utils.RespondWithSuccess(c, 200, profileSerializer.Response(), "Profile retrieved successfully")
+
 }
 
 func (server *Server) EditUserProfile(c *gin.Context) {
