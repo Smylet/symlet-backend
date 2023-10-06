@@ -17,6 +17,7 @@ import (
 // @Accept multipart/form-data
 // @Produce json
 // @Param hostel body hostel.HostelSerializer true "Hostel object to create"
+// @Param file formData file true "Image file to upload"
 // @Success 201 {object} hostel.HostelSerializer "Created hostel"
 // @Failure 400 {object} utils.ErrorMessage "Bad request"
 // @Failure 500 {object} utils.ErrorMessage "Internal server error"
@@ -149,7 +150,7 @@ func (server *Server) ListHostels(c *gin.Context) {
 // @Success 200 {object} hostel.HostelSerializer "Updated hostel"
 // @Failure 400 {object} utils.ErrorMessage "Bad request"
 // @Failure 500 {object} utils.ErrorMessage "Internal server error"
-// @Router /hostels/{uid} [put]
+// @Router /hostels/{uid} [patch]
 func (server *Server) UpdateHostel(c *gin.Context) {
 	var HostelSerializer hostel.HostelSerializer
 	uidString := c.Param("uid")

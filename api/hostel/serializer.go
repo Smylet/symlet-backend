@@ -31,6 +31,7 @@ type AmmenitySerializer struct {
 }
 
 type HostelSerializer struct {
+
 	ManagerID             uint    `json:"-" form:"-"`
 	UniversityID          uint    `json:"university_id" form:"university_id" custom_binding:"requiredForCreate"`
 	Name                  *string `json:"name" form:"name" custom_binding:"requiredForCreate"`
@@ -64,10 +65,16 @@ func getManager(ctx *gin.Context, db *gorm.DB) (*manager.HostelManager, error) {
 	}
 
 	var hostelManager manager.HostelManager
+	user := users.User{}
 
-	err = db.Model(&manager.HostelManager{}).Where("user_id = ?", payload.UserID).First(&hostelManager).Error
+	err = db.Model(users.User{}).Where("id = ? AND role_type = ?", payload.UserID, "hostel_managers").First(&user).Error
 	if err != nil {
-		return nil, fmt.Errorf("failed to find manager with user id %d: %v", payload.UserID, err)
+		return nil, fmt.Errorf("failed to find user with id %d and role_type hostel_managers: %v", payload.UserID, err)
+	}
+
+	err = db.Model(&manager.HostelManager{}).Where("id = ?", user.RoleID).First(&hostelManager).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to find manager with user id %d: %w", payload.UserID, err)
 	}
 	return &hostelManager, nil
 

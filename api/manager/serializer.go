@@ -8,7 +8,6 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/Smylet/symlet-backend/api/users"
-	"github.com/Smylet/symlet-backend/utilities/token"
 )
 
 type HostelManagerSerializer struct {
@@ -16,12 +15,15 @@ type HostelManagerSerializer struct {
 	hostelManager HostelManager `json:"-"`
 }
 
-func (m *HostelManagerSerializer) CreateTx(ctx *gin.Context, db *gorm.DB) error {
+func (m *HostelManagerSerializer) Create(ctx *gin.Context, db *gorm.DB) error {
 	var user users.User
-	authPayload := ctx.MustGet(users.AuthorizationPayloadKey).(*token.Payload)
-	err := db.Model(&users.User{}).Where("id = ", authPayload.UserID).First(&user).Error
-	if err != nil{
-		return fmt.Errorf("unable to retrieve user with id %v %w", authPayload.UserID, err)
+	payload, err := users.GetAuthPayloadFromCtx(ctx)
+	if err != nil {
+		return  err
+	}
+	err = db.Model(&users.User{}).Where("id = ?", payload.UserID).First(&user).Error
+	if err != nil {
+		return fmt.Errorf("unable to retrieve user with id %v %w", payload.UserID, err)
 	}
 	hostelManager := HostelManager{
 		User: user,

@@ -17,11 +17,11 @@ type User struct {
 	Is_email_confirmed bool   `gorm:"default:false"`
 
 	//Polymorphic relationship with Student, Vendor and Hostel Owner
-	UserID uint
-	UserType string  
+	RoleID uint
+	RoleType string  
 	
 	ProfileID 		uint
-	Profile 		  Profile
+	Profile 		  Profile `gorm:"foreignKey:ProfileID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }
 
 type Profile struct {

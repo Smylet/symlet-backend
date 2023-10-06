@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -57,7 +56,6 @@ func NewServer(config utils.Config, db *gorm.DB, task worker.TaskDistributor, ma
 
 func (server *Server) registerRoutes() {
 	r := gin.Default()
-	fmt.Println("Hellow world")
 	hostelRoutes := r.Group("/hostels")
 	{
 		hostelRoutes.POST("/", users.AuthMiddleware(server.token), server.CreateHostel)
@@ -83,7 +81,7 @@ func (server *Server) registerRoutes() {
 		userRoutes.PUT("/password-change", users.AuthMiddleware(server.token), server.ChangePassword)
 
 		// USER PROFILE MANAGEMENT ENDPOINTS
-		userRoutes.POST("/profile", users.AuthMiddleware(server.token), server.CreateUserProfile)
+		//userRoutes.POST("/profile", users.AuthMiddleware(server.token), server.CreateUserProfile)
 		userRoutes.GET("/profile/:uid", users.AuthMiddleware(server.token), server.GetUserProfile)
 		userRoutes.PUT("/profile/:uid", users.AuthMiddleware(server.token), server.EditUserProfile)
 		userRoutes.DELETE("/:uid", users.AuthMiddleware(server.token), server.DeleteUserProfile)

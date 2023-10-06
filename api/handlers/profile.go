@@ -2,55 +2,52 @@
 package handlers
 
 import (
-	"fmt"
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 
 	"github.com/Smylet/symlet-backend/api/users"
-	"github.com/Smylet/symlet-backend/utilities/common"
 	"github.com/Smylet/symlet-backend/utilities/utils"
 )
 
-// USER PROFILE MANAGEMENT ENDPOINTS
+// )
 
-// @Summary Create a new user profile
-// @Description Create a new user profile
-// @Tags Profile
-// @Accept multipart/form-data
-// @Produce json
-// @Param profile body users.ProfileSerializer true "Profile object to create"
-// @Success 201 {object} users.ProfileSerializer
-// @Failure 401 {object} utils.ErrorMessage
-// @Failure 400 {object} utils.ErrorMessage "Bad request"
-// @Failure 500 {object} utils.ErrorMessage "Internal server error"
-// @Router /users/{uid}/profile [post]
-func (server *Server)CreateUserProfile(c *gin.Context){
-	var profileSerializer users.ProfileSerializer
-	fmt.Print("Creating profile")
-	//print header
-	file, err := c.FormFile("image")
-	if err != nil {
-		utils.RespondWithError(c, 400, err.Error(), "Invalid profile image")
-		return
-	}
-	errs := common.CustomBinder(c, &profileSerializer)
-	if errs != nil {
-		utils.RespondWithError(c, http.StatusBadRequest, errs.Error(), "Invalid profile data")
-		return
-	}
-	profileSerializer.Image = file
+// // USER PROFILE MANAGEMENT ENDPOINTS
 
-	err = profileSerializer.Create(c, server.db, server.session)
+// // @Summary Create a new user profile
+// // @Description Create a new user profile
+// // @Tags Profile
+// // @Accept multipart/form-data
+// // @Produce json
+// // @Param profile body users.ProfileSerializer true "Profile object to create"
+// // @Success 201 {object} users.ProfileSerializer
+// // @Failure 401 {object} utils.ErrorMessage
+// // @Failure 400 {object} utils.ErrorMessage "Bad request"
+// // @Failure 500 {object} utils.ErrorMessage "Internal server error"
+// // @Router /users/{uid}/profile [post]
+// func (server *Server)CreateUserProfile(c *gin.Context){
+// 	var profileSerializer users.ProfileSerializer
+// 	fmt.Print("Creating profile")
+// 	//print header
+// 	file, err := c.FormFile("image")
+// 	if err != nil {
+// 		utils.RespondWithError(c, 400, err.Error(), "Invalid profile image")
+// 		return
+// 	}
+// 	errs := common.CustomBinder(c, &profileSerializer)
+// 	if errs != nil {
+// 		utils.RespondWithError(c, http.StatusBadRequest, errs.Error(), "Invalid profile data")
+// 		return
+// 	}
+// 	profileSerializer.Image = file
 
-	if err != nil {
-		utils.RespondWithError(c, 500, err.Error(), "Failed to create profile")
-		return
-	}
+// 	err = profileSerializer.Create(c, server.db, server.session)
 
-	utils.RespondWithSuccess(c, 201, profileSerializer.Response(), "Profile created successfully")
-}
+// 	if err != nil {
+// 		utils.RespondWithError(c, 500, err.Error(), "Failed to create profile")
+// 		return
+// 	}
 
+// 	utils.RespondWithSuccess(c, 201, profileSerializer.Response(), "Profile created successfully")
+// }
 
 func (server *Server) GetUserProfile(c *gin.Context) {
 	// Handle logic to retrieve the user profile

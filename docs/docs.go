@@ -314,6 +314,13 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/hostel.HostelSerializer"
                         }
+                    },
+                    {
+                        "type": "file",
+                        "description": "Image file to upload",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -381,7 +388,46 @@ const docTemplate = `{
                     }
                 }
             },
-            "put": {
+            "delete": {
+                "description": "Delete a hostel by uid",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Hostels"
+                ],
+                "summary": "Delete a hostel",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Hostel uid",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No content"
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorMessage"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorMessage"
+                        }
+                    }
+                }
+            },
+            "patch": {
                 "description": "Update a hostel by uid",
                 "consumes": [
                     "application/json"
@@ -417,45 +463,6 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/hostel.HostelSerializer"
                         }
-                    },
-                    "400": {
-                        "description": "Bad request",
-                        "schema": {
-                            "$ref": "#/definitions/utils.ErrorMessage"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/utils.ErrorMessage"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Delete a hostel by uid",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Hostels"
-                ],
-                "summary": "Delete a hostel",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Hostel uid",
-                        "name": "uid",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No content"
                     },
                     "400": {
                         "description": "Bad request",

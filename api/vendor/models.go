@@ -7,7 +7,7 @@ import (
 
 type Vendor struct {
 	common.AbstractBaseModel
-	User   users.User `gorm:"polymorphic:User"`
+	User   users.User `gorm:"polymorphic:Role"`
 
 	CompanyName string  `gorm:"not null"`
 	Address     string  `gorm:"not null"`
@@ -20,3 +20,5 @@ type Vendor struct {
 	Rating      float64 `gorm:"not null"`
 	IsVerified  bool    `gorm:"default:false"`
 }
+
+

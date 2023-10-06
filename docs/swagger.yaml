@@ -341,6 +341,11 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/hostel.HostelSerializer'
+      - description: Image file to upload
+        in: formData
+        name: file
+        required: true
+        type: file
       produces:
       - application/json
       responses:
@@ -414,7 +419,7 @@ paths:
       summary: Get a hostel
       tags:
       - Hostels
-    put:
+    patch:
       consumes:
       - application/json
       description: Update a hostel by uid

@@ -37,8 +37,8 @@ func (h *StudentSerializer) Create(ctx *gin.Context, db *gorm.DB, AWSsession *se
 	if err != nil {
 		return err
 	}
-	if h.Student.User.UserID != 0 {
-		return fmt.Errorf("user is already associated with a %v", h.Student.User.UserType)
+	if h.Student.User.RoleID != 0 {
+		return fmt.Errorf("user is already associated with a %v", h.Student.User.RoleType)
 	}
 
 	err = db.Model(&reference.ReferenceUniversity{}).Where("uid = ?", h.UniversityUID).First(&h.Student.University).Error

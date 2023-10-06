@@ -7,5 +7,5 @@ import (
 
 type HostelManager struct {
 	common.AbstractBaseModel
-	User   users.User `gorm:"polymorphic:User"`
+	User   users.User `gorm:"polymorphic:Role"`
 }

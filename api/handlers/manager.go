@@ -9,7 +9,6 @@ import (
 	"github.com/Smylet/symlet-backend/utilities/utils"
 )
 
-
 // @Summary Create a hostel manager
 // @Description Create a new hostel manager
 // @Tags Hostel Managers
@@ -28,7 +27,7 @@ func (server *Server) CreateHostelManager(c *gin.Context) {
 		return
 	}
 
-	err := HostelManagerSerializer.CreateTx(c, server.db)
+	err := HostelManagerSerializer.Create(c, server.db)
 
 	if err != nil {
 		utils.RespondWithError(c, 500, err.Error(), "Failed to create hostel manager")

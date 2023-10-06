@@ -30,7 +30,7 @@ type Hostel struct {
 	ManagerID uint                  `gorm:"not null"`
 	Manager   manager.HostelManager `gorm:"foreignKey:ManagerID;constraint:OnDelete:CASCADE,OnUpdate:CASCADE"`
 
-	Amenities []*reference.ReferenceHostelAmenities `gorm:"many2many:hostel_ammenities;"`
+	Amenities []*reference.ReferenceHostelAmenities `gorm:"many2many:hostel_ammenities;constraint:OnDelete:CASCADE"`
 	Students  []*student.Student                    `gorm:"many2many:hostel_students;"`
 
 	// Other features
