@@ -148,7 +148,7 @@ jobs:
           echo $GH_ENV_FILE | base64 --decode > app.env
 
       - name: Run Integration Tests
-        run: make test-go-integration
+        run: docker-compose -f ./tests/integration/docker-compose.yml  up --build
         env:
           DOCKER_BUILDKIT: 1
           FML_DATABASE_URI: ${{ matrix.database-uri }}
