@@ -6,10 +6,11 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/Smylet/symlet-backend/utilities/common"
-	"github.com/Smylet/symlet-backend/utilities/utils"
 	"github.com/rs/zerolog"
 	"gorm.io/gorm"
+
+	"github.com/Smylet/symlet-backend/utilities/common"
+	"github.com/Smylet/symlet-backend/utilities/utils"
 )
 
 var logger = common.NewLogger()
@@ -20,17 +21,17 @@ type ReferenceModelInterface interface {
 	GetTableName() string
 }
 
-type ReferenceHostelAmmenities struct {
+type ReferenceHostelAmenities struct {
 	common.AbstractBaseReferenceModel
 	Name        string
 	Description string
 }
 
-func (h ReferenceHostelAmmenities) GetTableName() string {
+func (h ReferenceHostelAmenities) GetTableName() string {
 	return "reference_hostel_ammenities"
 }
 
-func (h ReferenceHostelAmmenities) Populate(db *gorm.DB) error {
+func (h ReferenceHostelAmenities) Populate(db *gorm.DB) error {
 	// Populate the ammenities table with the data from the json file
 	config, err := utils.LoadConfig()
 	if err != nil {
@@ -45,13 +46,13 @@ func (h ReferenceHostelAmmenities) Populate(db *gorm.DB) error {
 	}
 	defer file.Close()
 
-	err = db.First(&ReferenceHostelAmmenities{}).Error
+	err = db.First(&ReferenceHostelAmenities{}).Error
 	if err == nil {
 		logger.Print(zerolog.InfoLevel, "Ammenities table already populated")
 		return nil
 	}
 
-	var amenities []*ReferenceHostelAmmenities
+	var amenities []*ReferenceHostelAmenities
 
 	decoder := json.NewDecoder(file)
 	if err := decoder.Decode(&amenities); err != nil {
@@ -123,6 +124,6 @@ func (u ReferenceUniversity) Populate(db *gorm.DB) error {
 }
 
 var ReferenceModelMap = map[string]ReferenceModelInterface{
-	"amenities":  ReferenceHostelAmmenities{},
+	"amenities":  ReferenceHostelAmenities{},
 	"university": ReferenceUniversity{},
 }

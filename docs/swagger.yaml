@@ -1,4 +1,95 @@
+basePath: /
 definitions:
+  hostel.AmmenitySerializer:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+    required:
+    - id
+    - name
+    type: object
+  hostel.HostelFeeSerializer:
+    properties:
+      breakdown:
+        $ref: '#/definitions/hostel.Map'
+      payment_plan:
+        description: binding:"oneof=monthly by_school_session annually"`
+        type: string
+      total_amount:
+        type: number
+    type: object
+  hostel.HostelSerializer:
+    properties:
+      address:
+        type: string
+      amenities:
+        description: binding:"required"`
+        items:
+          $ref: '#/definitions/hostel.AmmenitySerializer'
+        type: array
+      city:
+        type: string
+      country:
+        type: string
+      description:
+        type: string
+      floor_space:
+        type: integer
+      hostel_fee:
+        allOf:
+        - $ref: '#/definitions/hostel.HostelFeeSerializer'
+        description: binding:"required"`
+      kitchen:
+        enum:
+        - shared
+        - none
+        - private
+        type: string
+      name:
+        type: string
+      number_of_bathrooms:
+        type: integer
+      number_of_bedrooms:
+        type: integer
+      number_of_occupied_units:
+        type: integer
+      number_of_units:
+        type: integer
+      state:
+        type: string
+      university_id:
+        type: integer
+    type: object
+  hostel.Map:
+    additionalProperties:
+      type: number
+    type: object
+  manager.HostelManagerSerializer:
+    type: object
+  reference.AmenitySerializer:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  reference.UniversitySerializer:
+    properties:
+      city:
+        type: string
+      code:
+        type: string
+      country:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      state:
+        type: string
+    type: object
   users.CreateUserReq:
     properties:
       email:
@@ -11,6 +102,25 @@ definitions:
     - email
     - password
     - username
+    type: object
+  users.LoginReq:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  users.ProfileSerializer:
+    properties:
+      bio:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
     type: object
   utils.ErrorMessage:
     properties:
@@ -25,9 +135,405 @@ definitions:
       msg:
         type: string
     type: object
+externalDocs:
+  description: OpenAPI
+  url: https://swagger.io/resources/open-api/
+host: localhost:8000
 info:
-  contact: {}
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: This are the Smylet APP APIs.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Smylet API
+  version: "1.0"
 paths:
+  /hostel-managers:
+    post:
+      consumes:
+      - application/json
+      description: Create a new hostel manager
+      parameters:
+      - description: Hostel manager object to create
+        in: body
+        name: hostel_manager
+        required: true
+        schema:
+          $ref: '#/definitions/manager.HostelManagerSerializer'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/manager.HostelManagerSerializer'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.ErrorMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.ErrorMessage'
+      summary: Create a hostel manager
+      tags:
+      - Hostel Managers
+  /hostels:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of hostels with optional filters
+      parameters:
+      - description: Hostel name
+        in: query
+        name: name
+        type: string
+      - description: Description
+        in: query
+        name: description
+        type: string
+      - description: University ID
+        in: query
+        name: university_id
+        type: integer
+      - description: Address
+        in: query
+        name: address
+        type: string
+      - description: City
+        in: query
+        name: city
+        type: string
+      - description: State
+        in: query
+        name: state
+        type: string
+      - description: Country
+        in: query
+        name: country
+        type: string
+      - description: Manager ID
+        in: query
+        name: manager_id
+        type: integer
+      - description: Number of units
+        in: query
+        name: number_of_units
+        type: integer
+      - description: Number of bedrooms
+        in: query
+        name: number_of_bedrooms
+        type: integer
+      - description: Number of bathrooms
+        in: query
+        name: number_of_bathrooms
+        type: integer
+      - description: Kitchen type (shared, none, private)
+        in: query
+        name: kitchen
+        type: string
+      - description: Floor space
+        in: query
+        name: floor_space
+        type: integer
+      - description: Minimum hostel fee total
+        in: query
+        name: hostel_fee_total_min
+        type: number
+      - description: Maximum hostel fee total
+        in: query
+        name: hostel_fee_total_max
+        type: number
+      - description: Hostel fee plan
+        in: query
+        name: hostel_fee_plan
+        type: string
+      - description: Has amenities
+        in: query
+        name: has_amenities
+        type: boolean
+      - description: Minimum security rating
+        in: query
+        name: security_rating_min
+        type: number
+      - description: Maximum security rating
+        in: query
+        name: security_rating_max
+        type: number
+      - description: Minimum location rating
+        in: query
+        name: location_rating_min
+        type: number
+      - description: Maximum location rating
+        in: query
+        name: location_rating_max
+        type: number
+      - description: Minimum general rating
+        in: query
+        name: general_rating_min
+        type: number
+      - description: Maximum general rating
+        in: query
+        name: general_rating_max
+        type: number
+      - description: Minimum amenities rating
+        in: query
+        name: amenities_rating_min
+        type: number
+      - description: Maximum amenities rating
+        in: query
+        name: amenities_rating_max
+        type: number
+      - description: Minimum water rating
+        in: query
+        name: water_rating_min
+        type: number
+      - description: Maximum water rating
+        in: query
+        name: water_rating_max
+        type: number
+      - description: Minimum electricity rating
+        in: query
+        name: electricity_rating_min
+        type: number
+      - description: Maximum electricity rating
+        in: query
+        name: electricity_rating_max
+        type: number
+      - description: Minimum caretaker rating
+        in: query
+        name: caretaker_rating_min
+        type: number
+      - description: Maximum caretaker rating
+        in: query
+        name: caretaker_rating_max
+        type: number
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Hostels
+          schema:
+            $ref: '#/definitions/hostel.HostelSerializer'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/utils.ErrorMessage'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorMessage'
+      summary: List hostels with optional filters
+      tags:
+      - Hostels
+    post:
+      consumes:
+      - multipart/form-data
+      description: Create a new hostel
+      parameters:
+      - description: Hostel object to create
+        in: body
+        name: hostel
+        required: true
+        schema:
+          $ref: '#/definitions/hostel.HostelSerializer'
+      - description: Image file to upload
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created hostel
+          schema:
+            $ref: '#/definitions/hostel.HostelSerializer'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/utils.ErrorMessage'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorMessage'
+      summary: Create a hostel
+      tags:
+      - Hostels
+  /hostels/{uid}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a hostel by uid
+      parameters:
+      - description: Hostel uid
+        in: path
+        name: uid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No content
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/utils.ErrorMessage'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorMessage'
+      summary: Delete a hostel
+      tags:
+      - Hostels
+    get:
+      consumes:
+      - application/json
+      description: Get a hostel by uid
+      parameters:
+      - description: Hostel uid
+        in: path
+        name: uid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Hostel
+          schema:
+            $ref: '#/definitions/hostel.HostelSerializer'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/utils.ErrorMessage'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorMessage'
+      summary: Get a hostel
+      tags:
+      - Hostels
+    patch:
+      consumes:
+      - application/json
+      description: Update a hostel by uid
+      parameters:
+      - description: Hostel uid
+        in: path
+        name: uid
+        required: true
+        type: string
+      - description: Hostel object to update
+        in: body
+        name: hostel
+        required: true
+        schema:
+          $ref: '#/definitions/hostel.HostelSerializer'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated hostel
+          schema:
+            $ref: '#/definitions/hostel.HostelSerializer'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/utils.ErrorMessage'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorMessage'
+      summary: Update a hostel
+      tags:
+      - Hostels
+  /references/amenities:
+    get:
+      description: List all amenities
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/reference.AmenitySerializer'
+      summary: List amenities
+      tags:
+      - Amenities
+  /references/universities:
+    get:
+      description: List all universities
+      parameters:
+      - description: University name
+        in: query
+        name: name
+        type: string
+      - description: University code
+        in: query
+        name: code
+        type: string
+      - description: University city
+        in: query
+        name: city
+        type: string
+      - description: University country
+        in: query
+        name: country
+        type: string
+      - description: University state
+        in: query
+        name: state
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/reference.UniversitySerializer'
+      summary: List universities
+      tags:
+      - Universities
+  /users/{uid}/profile:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Create a new user profile
+      parameters:
+      - description: Profile object to create
+        in: body
+        name: profile
+        required: true
+        schema:
+          $ref: '#/definitions/users.ProfileSerializer'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/users.ProfileSerializer'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/utils.ErrorMessage'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.ErrorMessage'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorMessage'
+      summary: Create a new user profile
+      tags:
+      - Profile
   /users/confirm-email:
     post:
       consumes:
@@ -67,6 +573,36 @@ paths:
       summary: Confirm a user's email
       tags:
       - users
+  /users/login:
+    post:
+      consumes:
+      - application/json
+      description: Login a user with the system.
+      parameters:
+      - description: User login information
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/users.LoginReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.SuccessMessage'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.ErrorMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.ErrorMessage'
+      summary: Login a user
+      tags:
+      - users
   /users/register:
     post:
       consumes:
@@ -97,4 +633,9 @@ paths:
       summary: Register a new user
       tags:
       - users
+securityDefinitions:
+  JWT:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

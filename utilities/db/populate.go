@@ -74,7 +74,7 @@ func createHostelManager(ctx context.Context, db *gorm.DB) (manager.HostelManage
 	return hostelManager, err
 }
 
-func createHostel(ctx context.Context, db *gorm.DB, university *reference.ReferenceUniversity, ammenities []*reference.ReferenceHostelAmmenities) (hostel.Hostel, error) {
+func createHostel(ctx context.Context, db *gorm.DB, university *reference.ReferenceUniversity, ammenities []*reference.ReferenceHostelAmenities) (hostel.Hostel, error) {
 	hostelManager, err := createHostelManager(ctx, db)
 	if err != nil {
 		return hostel.Hostel{}, err
@@ -93,19 +93,19 @@ func createHostel(ctx context.Context, db *gorm.DB, university *reference.Refere
 		NumberOfOccupiedUnits: 0,
 		NumberOfBedrooms:      1,
 		NumberOfBathrooms:     1,
-		Kitchen:               true,
+		Kitchen:               "detached",
 		FloorSpace:            100,
 		HostelFee: hostel.HostelFee{
 			TotalAmount: 100000,
 			PaymentPlan: "monthly",
-			Breakdown: map[string]interface{}{
+			Breakdown: map[string]float64{
 				"rent":           100000,
 				"service_charge": 0,
 				"caution_fee":    0,
 				"agency_fee":     0,
 			},
 		},
-		Ammenities: ammenities,
+		Amenities: ammenities,
 	}
 
 	err = db.Create(&hostelObj).Error
@@ -219,7 +219,7 @@ func PopulateDatabase(db *gorm.DB) error {
 	ctx := context.Background()
 
 	university := reference.ReferenceUniversity{}
-	ammenities := []*reference.ReferenceHostelAmmenities{}
+	ammenities := []*reference.ReferenceHostelAmenities{}
 
 	err := common.ExecTx(ctx, db, func(tx *gorm.DB) error {
 		err := db.Model(&university).Limit(1).First(&university).Error

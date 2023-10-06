@@ -3,19 +3,19 @@ package handlers
 import (
 	"strings"
 
-	"github.com/Smylet/symlet-backend/api/users"
-	_ "github.com/Smylet/symlet-backend/docs"
-
-	"github.com/Smylet/symlet-backend/utilities/mail"
-	"github.com/Smylet/symlet-backend/utilities/token"
-	"github.com/Smylet/symlet-backend/utilities/utils"
-	"github.com/Smylet/symlet-backend/utilities/worker"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/gin-gonic/gin"
 	"github.com/robfig/cron"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"gorm.io/gorm"
+
+	"github.com/Smylet/symlet-backend/api/users"
+	_ "github.com/Smylet/symlet-backend/docs"
+	"github.com/Smylet/symlet-backend/utilities/mail"
+	"github.com/Smylet/symlet-backend/utilities/token"
+	"github.com/Smylet/symlet-backend/utilities/utils"
+	"github.com/Smylet/symlet-backend/utilities/worker"
 )
 
 type Server struct {
@@ -36,13 +36,15 @@ func NewServer(config utils.Config, db *gorm.DB, task worker.TaskDistributor, ma
 		return nil, err
 	}
 	server := &Server{
-		config:  config,
-		cron:    cron.New(),
-		db:      db,
-		task:    task,
-		mailer:  mailer,
-		session: session,
-		token:   tokenMaker,
+		config: config,
+		cron:   cron.New(),
+		db:     db,
+		task:   task,
+		mailer: mailer,
+		token:  tokenMaker,
+	}
+	if config.Environment == "production" {
+		server.session = session
 	}
 
 	gin.SetMode(gin.ReleaseMode)
@@ -54,6 +56,19 @@ func NewServer(config utils.Config, db *gorm.DB, task worker.TaskDistributor, ma
 
 func (server *Server) registerRoutes() {
 	r := gin.Default()
+	hostelRoutes := r.Group("/hostels")
+	{
+		hostelRoutes.POST("/", users.AuthMiddleware(server.token), server.CreateHostel)
+		hostelRoutes.GET("/:uid", server.GetHostel)
+		hostelRoutes.GET("/", server.ListHostels)
+		hostelRoutes.PATCH("/:uid", users.AuthMiddleware(server.token), server.UpdateHostel)
+		hostelRoutes.DELETE("/:uid", users.AuthMiddleware(server.token), server.DeleteHostel)
+	}
+
+	managerRoutes := r.Group("/hostel-managers")
+	{
+		managerRoutes.POST("/", users.AuthMiddleware(server.token), server.CreateHostelManager)
+	}
 
 	userRoutes := r.Group("/users")
 	{
@@ -66,46 +81,50 @@ func (server *Server) registerRoutes() {
 		userRoutes.PUT("/password-change", users.AuthMiddleware(server.token), server.ChangePassword)
 
 		// USER PROFILE MANAGEMENT ENDPOINTS
-		userRoutes.GET("/:username/profile", users.AuthMiddleware(server.token), server.GetUserProfile)
-		userRoutes.PUT("/:username/profile", users.AuthMiddleware(server.token), server.EditUserProfile)
-		userRoutes.DELETE("/:username", users.AuthMiddleware(server.token), server.DeleteUserProfile)
-		userRoutes.GET("/:username/history", users.AuthMiddleware(server.token), server.ViewProfileEditHistory)
-		userRoutes.GET("/:username/backups", users.AuthMiddleware(server.token), server.ListProfileBackups)
-		userRoutes.PUT("/:username/restore", users.AuthMiddleware(server.token), server.RestoreUserProfile)
-		userRoutes.GET("/:username/export", users.AuthMiddleware(server.token), server.ExportUserProfile)
-		userRoutes.PUT("/:username/deactivate", users.AuthMiddleware(server.token), server.DeactivateAccount)
-		userRoutes.PUT("/:username/reactivate", users.AuthMiddleware(server.token), server.ReactivateAccount)
+		//userRoutes.POST("/profile", users.AuthMiddleware(server.token), server.CreateUserProfile)
+		userRoutes.GET("/profile/:uid", users.AuthMiddleware(server.token), server.GetUserProfile)
+		userRoutes.PUT("/profile/:uid", users.AuthMiddleware(server.token), server.EditUserProfile)
+		userRoutes.DELETE("/:uid", users.AuthMiddleware(server.token), server.DeleteUserProfile)
+		userRoutes.GET("/:uid/history", users.AuthMiddleware(server.token), server.ViewProfileEditHistory)
+		userRoutes.GET("/:uid/backups", users.AuthMiddleware(server.token), server.ListProfileBackups)
+		userRoutes.PUT("/:uid/restore", users.AuthMiddleware(server.token), server.RestoreUserProfile)
+		userRoutes.GET("/:uid/export", users.AuthMiddleware(server.token), server.ExportUserProfile)
+		userRoutes.PUT("/:uid/deactivate", users.AuthMiddleware(server.token), server.DeactivateAccount)
+		userRoutes.PUT("/:uid/reactivate", users.AuthMiddleware(server.token), server.ReactivateAccount)
 
-		// USER PROFILE PICTURE ENDPOINTS
-		userRoutes.POST("/:username/picture", users.AuthMiddleware(server.token), server.UploadProfilePicture)
-		userRoutes.PUT("/:username/picture", users.AuthMiddleware(server.token), server.UpdateProfilePicture)
-		userRoutes.DELETE("/:username/picture", users.AuthMiddleware(server.token), server.DeleteProfilePicture)
+		// // USER PROFILE PICTURE ENDPOINTS
+		userRoutes.POST("/:uid/picture", users.AuthMiddleware(server.token), server.UploadProfilePicture)
+		userRoutes.PUT("/:uid/picture", users.AuthMiddleware(server.token), server.UpdateProfilePicture)
+		userRoutes.DELETE("/:uid/picture", users.AuthMiddleware(server.token), server.DeleteProfilePicture)
 
-		// USER NOTIFICATION ENDPOINTS
-		userRoutes.GET("/:username/notifications", users.AuthMiddleware(server.token), server.GetNotification)
-		userRoutes.PUT("/:username/notifications/notificationId/read", users.AuthMiddleware(server.token), server.UpdateNotification)
-		userRoutes.PUT("/:username/notifications/settings", users.AuthMiddleware(server.token), server.UpdateNotificationSettings)
-		userRoutes.GET("/:username/notifications/settings", users.AuthMiddleware(server.token), server.GetNotificationSettings)
+		//USER NOTIFICATION ENDPOINTS
+		userRoutes.GET("/:uid/notifications", users.AuthMiddleware(server.token), server.GetNotification)
+		userRoutes.PUT("/:uid/notifications/notificationId/read", users.AuthMiddleware(server.token), server.UpdateNotification)
+		userRoutes.PUT("/:uid/notifications/settings", users.AuthMiddleware(server.token), server.UpdateNotificationSettings)
+		userRoutes.GET("/:uid/notifications/settings", users.AuthMiddleware(server.token), server.GetNotificationSettings)
 
 		// USER SEARCH ENDPOINTS
 		userRoutes.GET("/search", users.AuthMiddleware(server.token), server.SearchUsers)
 
-		// USER PRIVACY SETTINGS ENDPOINTS
-		userRoutes.GET("/:username/privacy", users.AuthMiddleware(server.token), server.GetPrivacySettings)
-		userRoutes.PUT("/:username/privacy", users.AuthMiddleware(server.token), server.UpdatePrivacySettings)
+		// // USER PRIVACY SETTINGS ENDPOINTS
+		userRoutes.GET("/:uid/privacy", users.AuthMiddleware(server.token), server.GetPrivacySettings)
+		userRoutes.PUT("/:uid/privacy", users.AuthMiddleware(server.token), server.UpdatePrivacySettings)
 
 	}
-
+	referenceRoutes := r.Group("/references")
+	{
+		referenceRoutes.GET("/amenities", server.ListAmenities)
+		referenceRoutes.GET("/universities", server.ListUniversities)
+	}
+	studentRoutes := r.Group("/students")
+	{
+		studentRoutes.POST("/", users.AuthMiddleware(server.token), server.CreateStudent)
+	}
 	userRoute := r.Group("/user")
 	{
 		// USER 2FA ENDPOINTS
 		userRoute.POST("/2fa/setup", server.Setup2FA)
 		userRoute.POST("/2fa/verify", server.Verify2FA)
-	}
-
-	profileRoutes := r.Group("/profiles")
-	{
-		profileRoutes.GET("/:username", server.GetProfile)
 	}
 
 	// health check endpoint

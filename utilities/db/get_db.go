@@ -3,12 +3,14 @@ package db
 import (
 	"fmt"
 
-	"github.com/Smylet/symlet-backend/utilities/utils"
 	"github.com/rs/zerolog/log"
+
+	"github.com/Smylet/symlet-backend/utilities/utils"
 )
 
 // GetDB returns the reference to the database connection.
-func GetDB(config utils.Config) (DBProvider, error) {
+func GetDB() (DBProvider, error) {
+	config := *utils.EnvConfig
 	if config.Environment == "production" {
 		config.DatabaseReset = false
 	} else {

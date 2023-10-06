@@ -23,7 +23,7 @@ func GetMigrateModels() []interface{} {
 		student.Student{},
 
 		manager.HostelManager{},
-		reference.ReferenceHostelAmmenities{},
+		reference.ReferenceHostelAmenities{},
 		reference.ReferenceUniversity{},
 
 		// hostel

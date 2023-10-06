@@ -4,8 +4,9 @@ package users
 import (
 	"time"
 
-	"github.com/Smylet/symlet-backend/utilities/common"
 	"github.com/google/uuid"
+
+	"github.com/Smylet/symlet-backend/utilities/common"
 )
 
 type User struct {
@@ -14,6 +15,13 @@ type User struct {
 	Email              string `gorm:"unique;not null"`
 	Password           string `sql:"not null"`
 	Is_email_confirmed bool   `gorm:"default:false"`
+
+	//Polymorphic relationship with Student, Vendor and Hostel Owner
+	RoleID uint
+	RoleType string  
+	
+	ProfileID 		uint
+	Profile 		  Profile `gorm:"foreignKey:ProfileID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }
 
 type Profile struct {
@@ -21,6 +29,9 @@ type Profile struct {
 	UserID uint
 	Bio    string
 	Image  string
+	FirstName string
+	LastName string
+
 }
 
 type VerificationEmail struct {
