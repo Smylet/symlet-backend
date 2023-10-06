@@ -19,7 +19,7 @@ func (m *HostelManagerSerializer) Create(ctx *gin.Context, db *gorm.DB) error {
 	var user users.User
 	payload, err := users.GetAuthPayloadFromCtx(ctx)
 	if err != nil {
-		return  err
+		return err
 	}
 	err = db.Model(&users.User{}).Where("id = ?", payload.UserID).First(&user).Error
 	if err != nil {

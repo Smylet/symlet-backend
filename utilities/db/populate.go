@@ -133,7 +133,6 @@ func createStudent(ctx context.Context, db *gorm.DB, university reference.Refere
 		}
 		studentObj.User = studentUser
 		if err := tx.Create(&studentObj).Error; err != nil {
-
 			return err
 		}
 		return nil

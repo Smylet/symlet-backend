@@ -64,7 +64,6 @@ func (server *Server) GetUserProfile(c *gin.Context) {
 		return
 	}
 	utils.RespondWithSuccess(c, 200, profileSerializer.Response(), "Profile retrieved successfully")
-
 }
 
 func (server *Server) EditUserProfile(c *gin.Context) {

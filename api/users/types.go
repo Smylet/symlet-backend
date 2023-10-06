@@ -31,7 +31,7 @@ type CreateUserTxParams struct {
 	AfterCreate func(user User) error
 }
 
-type CreateUserTxResult struct {	
+type CreateUserTxResult struct {
 	User User
 }
 

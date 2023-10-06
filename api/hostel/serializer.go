@@ -21,7 +21,7 @@ import (
 
 type HostelFeeSerializer struct {
 	TotalAmount float64 `json:"total_amount"  form:"total_amount"`
-	PaymentPlan string  `json:"payment_plan" form:"payment_plan"` //binding:"oneof=monthly by_school_session annually"`
+	PaymentPlan string  `json:"payment_plan" form:"payment_plan"` // binding:"oneof=monthly by_school_session annually"`
 	Breakdown   Map     `json:"breakdown" form:"breakdown"`
 }
 
@@ -31,7 +31,6 @@ type AmmenitySerializer struct {
 }
 
 type HostelSerializer struct {
-
 	ManagerID             uint    `json:"-" form:"-"`
 	UniversityID          uint    `json:"university_id" form:"university_id" custom_binding:"requiredForCreate"`
 	Name                  *string `json:"name" form:"name" custom_binding:"requiredForCreate"`
@@ -47,8 +46,8 @@ type HostelSerializer struct {
 	Kitchen               *string `json:"kitchen" form:"kitchen" custom_binding:"requiredForCreate" binding:"oneof=shared none private"`
 
 	FloorSpace *uint                   `json:"floor_space" form:"floor_space" custom_binding:"requiredForCreate"`
-	HostelFee  HostelFeeSerializer     `json:"hostel_fee" form:"hostel_fee"` //binding:"required"`
-	Amenities  []AmmenitySerializer    `json:"amenities" form:"amenities"`   //binding:"required"`
+	HostelFee  HostelFeeSerializer     `json:"hostel_fee" form:"hostel_fee"` // binding:"required"`
+	Amenities  []AmmenitySerializer    `json:"amenities" form:"amenities"`   // binding:"required"`
 	Images     []*multipart.FileHeader `form:"images" binding:"max=10" swaggerignore:"true" validate:"ValidateImageExtension"`
 	Hostel     Hostel                  `json:"-" swaggerignore:"true"`
 }
@@ -77,7 +76,6 @@ func getManager(ctx *gin.Context, db *gorm.DB) (*manager.HostelManager, error) {
 		return nil, fmt.Errorf("failed to find manager with user id %d: %w", payload.UserID, err)
 	}
 	return &hostelManager, nil
-
 }
 
 // // CreateTx creates a new hostel
@@ -261,7 +259,7 @@ func getManager(ctx *gin.Context, db *gorm.DB) (*manager.HostelManager, error) {
 func (h *HostelSerializer) Create(ctx *gin.Context, db *gorm.DB, session *session.Session) error {
 	logger := common.NewLogger()
 
-	//Validate the fields
+	// Validate the fields
 	if err := h.Validate(); err != nil {
 		return err
 	}
@@ -273,7 +271,7 @@ func (h *HostelSerializer) Create(ctx *gin.Context, db *gorm.DB, session *sessio
 
 	h.ManagerID = hostelManager.ID
 
-	//Process the uploaded images
+	// Process the uploaded images
 
 	filePaths, err := utils.ProcessUploadedImages(h.Images, session)
 	if err != nil {
@@ -281,7 +279,7 @@ func (h *HostelSerializer) Create(ctx *gin.Context, db *gorm.DB, session *sessio
 		return err
 	}
 
-	//Create the hostel
+	// Create the hostel
 	err = common.ExecTx(ctx, db, func(tx *gorm.DB) error {
 		logger.Info("Creating hostel in transaction")
 		hostel := Hostel{
@@ -300,7 +298,7 @@ func (h *HostelSerializer) Create(ctx *gin.Context, db *gorm.DB, session *sessio
 			Kitchen:               *h.Kitchen,
 			FloorSpace:            *h.FloorSpace,
 		}
-		//Create hostel together with image
+		// Create hostel together with image
 		if err := tx.Model(&Hostel{}).Create(&hostel).Error; err != nil {
 			logger.Error("Hostel creation failed")
 			return err
@@ -339,7 +337,7 @@ func (h *HostelSerializer) Create(ctx *gin.Context, db *gorm.DB, session *sessio
 			breakdown[k] = v
 		}
 
-		//convert the map to json
+		// convert the map to json
 
 		hostelFee := HostelFee{
 			HostelID:    hostel.ID,
@@ -375,7 +373,7 @@ func (h *HostelSerializer) Create(ctx *gin.Context, db *gorm.DB, session *sessio
 
 // Validate validates the fields of the hostel
 func (h *HostelSerializer) Validate() error {
-	//Validate the fields
+	// Validate the fields
 	var errorMessage string
 	validate := validator.New()
 
@@ -654,5 +652,4 @@ func (d *HostelSerializer) getUpdatedFields() map[string]interface{} {
 		}
 	}
 	return data
-
 }

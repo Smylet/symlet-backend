@@ -28,7 +28,6 @@ func (server *Server) CreateHostelManager(c *gin.Context) {
 	}
 
 	err := HostelManagerSerializer.Create(c, server.db)
-
 	if err != nil {
 		utils.RespondWithError(c, 500, err.Error(), "Failed to create hostel manager")
 		return

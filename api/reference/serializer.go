@@ -7,12 +7,10 @@ import (
 	"gorm.io/gorm"
 )
 
-
 type AmenitySerializer struct {
-	ID uint `json:"id"`
+	ID   uint   `json:"id"`
 	Name string `json:"name"`
 }
-
 
 func (serializer *AmenitySerializer) List(db *gorm.DB) ([]ReferenceHostelAmenities, error) {
 	var amenities []ReferenceHostelAmenities
@@ -23,29 +21,25 @@ func (serializer *AmenitySerializer) List(db *gorm.DB) ([]ReferenceHostelAmeniti
 	return amenities, nil
 }
 
-
 func (serializer *AmenitySerializer) ResponseMany(amenities []ReferenceHostelAmenities) []AmenitySerializer {
 	var response []AmenitySerializer
 	for _, amenity := range amenities {
 		response = append(response, AmenitySerializer{
-			ID: amenity.ID,
+			ID:   amenity.ID,
 			Name: amenity.Name,
 		})
 	}
 	return response
 }
 
-
 type UniversitySerializer struct {
-	ID uint `json:"id"`
-	Name string `json:"name"`
-	Code string `json:"code"`
-	City string `json:"city"`
+	ID      uint   `json:"id"`
+	Name    string `json:"name"`
+	Code    string `json:"code"`
+	City    string `json:"city"`
 	Country string `json:"country"`
-	State string `json:"state"`
+	State   string `json:"state"`
 }
-
-
 
 func (serializer *UniversitySerializer) List(db *gorm.DB, queryParams UniversityQueryParams) ([]ReferenceUniversity, error) {
 	var universities []ReferenceUniversity
@@ -56,23 +50,22 @@ func (serializer *UniversitySerializer) List(db *gorm.DB, queryParams University
 	return universities, nil
 }
 
-
 func (serializer *UniversitySerializer) ResponseMany(universities []ReferenceUniversity) []UniversitySerializer {
 	var response []UniversitySerializer
 	for _, university := range universities {
 		response = append(response, UniversitySerializer{
-			ID: university.ID,
-			Name: university.Name,
-			Code: university.Code,
-			City: university.City,
+			ID:      university.ID,
+			Name:    university.Name,
+			Code:    university.Code,
+			City:    university.City,
 			Country: university.Country,
-			State: university.State,
+			State:   university.State,
 		})
 	}
 	return response
 }
 
-func (serializer *UniversitySerializer)Filter(db *gorm.DB, queryParams UniversityQueryParams) ([]ReferenceUniversity, error) {
+func (serializer *UniversitySerializer) Filter(db *gorm.DB, queryParams UniversityQueryParams) ([]ReferenceUniversity, error) {
 	var universities []ReferenceUniversity
 	fmt.Print(queryParams)
 	query := db.Model(&ReferenceUniversity{})

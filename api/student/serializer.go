@@ -89,5 +89,4 @@ func (serializer StudentSerializer) Response() interface{} {
 		"created_at":                    serializer.Student.CreatedAt,
 		"updated_at":                    serializer.Student.UpdatedAt,
 	}
-
 }

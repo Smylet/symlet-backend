@@ -36,7 +36,6 @@ func populateCmd(cmd *cobra.Command, args []string) error {
 }
 
 func initDB() (db.DBProvider, error) {
-
 	db, err := db.GetDB()
 	if err != nil {
 		if db != nil {

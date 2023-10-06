@@ -81,7 +81,7 @@ func (server *Server) registerRoutes() {
 		userRoutes.PUT("/password-change", users.AuthMiddleware(server.token), server.ChangePassword)
 
 		// USER PROFILE MANAGEMENT ENDPOINTS
-		//userRoutes.POST("/profile", users.AuthMiddleware(server.token), server.CreateUserProfile)
+		// userRoutes.POST("/profile", users.AuthMiddleware(server.token), server.CreateUserProfile)
 		userRoutes.GET("/profile/:uid", users.AuthMiddleware(server.token), server.GetUserProfile)
 		userRoutes.PUT("/profile/:uid", users.AuthMiddleware(server.token), server.EditUserProfile)
 		userRoutes.DELETE("/:uid", users.AuthMiddleware(server.token), server.DeleteUserProfile)
@@ -97,7 +97,7 @@ func (server *Server) registerRoutes() {
 		userRoutes.PUT("/:uid/picture", users.AuthMiddleware(server.token), server.UpdateProfilePicture)
 		userRoutes.DELETE("/:uid/picture", users.AuthMiddleware(server.token), server.DeleteProfilePicture)
 
-		//USER NOTIFICATION ENDPOINTS
+		// USER NOTIFICATION ENDPOINTS
 		userRoutes.GET("/:uid/notifications", users.AuthMiddleware(server.token), server.GetNotification)
 		userRoutes.PUT("/:uid/notifications/notificationId/read", users.AuthMiddleware(server.token), server.UpdateNotification)
 		userRoutes.PUT("/:uid/notifications/settings", users.AuthMiddleware(server.token), server.UpdateNotificationSettings)

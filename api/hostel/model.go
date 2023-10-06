@@ -12,8 +12,6 @@ import (
 	//"github.com/Smylet/symlet-backend/utilities/db"
 )
 
-
-
 type Map map[string]float64
 
 type Hostel struct {
@@ -34,13 +32,13 @@ type Hostel struct {
 	Students  []*student.Student                    `gorm:"many2many:hostel_students;"`
 
 	// Other features
-	NumberOfUnits         uint   `gorm:"not null"`
-	NumberOfOccupiedUnits uint   `gorm:"not null"`
-	NumberOfBedrooms      uint   `gorm:"not null"`
-	NumberOfBathrooms     uint   `gorm:"not null"`
-	Kitchen               string `gorm:"not null; oneof=shared none private"`
-	FloorSpace            uint   `gorm:"not null"`
-	HostelFee             HostelFee `gorm:"foreignKey:HostelID;constraint:OnDelete:CASCADE,OnUpdate:CASCADE"`
+	NumberOfUnits         uint          `gorm:"not null"`
+	NumberOfOccupiedUnits uint          `gorm:"not null"`
+	NumberOfBedrooms      uint          `gorm:"not null"`
+	NumberOfBathrooms     uint          `gorm:"not null"`
+	Kitchen               string        `gorm:"not null; oneof=shared none private"`
+	FloorSpace            uint          `gorm:"not null"`
+	HostelFee             HostelFee     `gorm:"foreignKey:HostelID;constraint:OnDelete:CASCADE,OnUpdate:CASCADE"`
 	HostelImages          []HostelImage `gorm:"foreignKey:HostelID;constraint:OnDelete:CASCADE,OnUpdate:CASCADE"`
 }
 
@@ -52,7 +50,7 @@ type HostelImage struct {
 
 type HostelFee struct {
 	common.AbstractBaseModel
-	HostelID    uint 
+	HostelID    uint
 	TotalAmount float64
 	PaymentPlan string `gorm:"oneof: 'monthly' 'by_school_session' 'annually'"`
 	Breakdown   Map    `gorm:"type:jsonb"`

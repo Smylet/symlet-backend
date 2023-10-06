@@ -9,8 +9,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-
-
 var (
 	FIELD_A_ERROR string = `{"FieldA":"FieldA is required"}`
 	FIELD_B_ERROR string = `{"FieldB":"FieldB is required"}`
@@ -24,11 +22,11 @@ type TestStruct struct {
 
 func BaseTestBinder(t *testing.T, expectedError bool) *gin.Engine {
 	// Create a test Gin context with a POST request
-	
+
 	router := gin.Default()
 	router.POST("/test", func(c *gin.Context) {
 		var serializer TestStruct
-		result := CustomBinder(c, &serializer)		
+		result := CustomBinder(c, &serializer)
 		if expectedError && result == nil {
 			t.Errorf("Expected error but got nil")
 		}
@@ -38,13 +36,12 @@ func BaseTestBinder(t *testing.T, expectedError bool) *gin.Engine {
 			t.Errorf("Expected JSON error response does not match actual response: %s", result)
 			c.JSON(http.StatusBadRequest, gin.H{"error": result})
 			return
-		}else if expectedError && result.Error() == string(FIELD_A_ERROR) {
+		} else if expectedError && result.Error() == string(FIELD_A_ERROR) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": result})
 			return
 		}
 
 		c.JSON(http.StatusCreated, gin.H{"message": "success"})
-
 	})
 	router.PATCH("/test", func(c *gin.Context) {
 		var serializer TestStruct
@@ -58,18 +55,17 @@ func BaseTestBinder(t *testing.T, expectedError bool) *gin.Engine {
 			c.JSON(http.StatusBadRequest, gin.H{"error": result})
 			return
 
-		}else if expectedError && result.Error() == string(FIELD_B_ERROR) {
+		} else if expectedError && result.Error() == string(FIELD_B_ERROR) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": result})
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{"message": "success"})
 	})
 	return router
-
 }
 
 func TestCustomBinder_POST_MissingRequiredField(t *testing.T) {
-    // setup for POST request and assertions for missing FieldA
+	// setup for POST request and assertions for missing FieldA
 	requestBody := `{"field_c": 1.0}`
 	router := BaseTestBinder(t, true)
 	w, req, err := sendRequest(http.MethodPost, requestBody)
@@ -81,11 +77,10 @@ func TestCustomBinder_POST_MissingRequiredField(t *testing.T) {
 	if w.Code != http.StatusBadRequest {
 		t.Errorf("Expected HTTP status code %d, but got %d", http.StatusBadRequest, w.Code)
 	}
-
 }
 
 func TestCustomBinder_PATCH_MissingRequiredField(t *testing.T) {
-    // setup for PATCH request and assertions for missing FieldB
+	// setup for PATCH request and assertions for missing FieldB
 	requestBody := `{"field_c": 1.0}`
 	router := BaseTestBinder(t, true)
 	w, req, err := sendRequest(http.MethodPatch, requestBody)
@@ -100,7 +95,7 @@ func TestCustomBinder_PATCH_MissingRequiredField(t *testing.T) {
 }
 
 func TestCustomBinder_POST_AllFieldsPresent(t *testing.T) {
-    // setup for POST request and assertions for all fields present
+	// setup for POST request and assertions for all fields present
 	router := BaseTestBinder(t, false)
 	w, req, err := sendRequest(http.MethodPost, `{"field_a": "test", "field_b": 1, "field_c": 1.0}`)
 	if err != nil {
@@ -113,7 +108,7 @@ func TestCustomBinder_POST_AllFieldsPresent(t *testing.T) {
 }
 
 func TestCustomBinder_PATCH_AllFieldsPresent(t *testing.T) {
-    // setup for PATCH request and assertions for all fields present
+	// setup for PATCH request and assertions for all fields present
 	router := BaseTestBinder(t, false)
 	w, req, err := sendRequest(http.MethodPatch, `{"field_a": "test", "field_b": 1, "field_c": 1.0}`)
 	if err != nil {
@@ -123,11 +118,9 @@ func TestCustomBinder_PATCH_AllFieldsPresent(t *testing.T) {
 	if w.Code != http.StatusOK {
 		t.Errorf("Expected HTTP status code %d, but got %d", http.StatusOK, w.Code)
 	}
-	
 }
 
 func sendRequest(method string, reqBody string) (*httptest.ResponseRecorder, *http.Request, error) {
-
 	req, err := http.NewRequest(method, "/test", strings.NewReader(reqBody))
 	if err != nil {
 		return nil, nil, err
@@ -138,5 +131,4 @@ func sendRequest(method string, reqBody string) (*httptest.ResponseRecorder, *ht
 
 	w := httptest.NewRecorder()
 	return w, req, nil
-
 }

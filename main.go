@@ -6,9 +6,9 @@ import (
 	"log"
 	"os"
 
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/hibiken/asynq"
 	"github.com/rs/zerolog"
-	"github.com/aws/aws-sdk-go/aws/session"
 	logger "github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 
@@ -19,7 +19,6 @@ import (
 	"github.com/Smylet/symlet-backend/utilities/utils"
 	"github.com/Smylet/symlet-backend/utilities/worker"
 )
-
 
 // @title           Smylet API
 // @version         1.0
@@ -39,7 +38,6 @@ import (
 // @securityDefinitions.apiKey JWT
 // @in header
 // @name Authorization
-
 
 // @externalDocs.description  OpenAPI
 // @externalDocs.url          https://swagger.io/resources/open-api/

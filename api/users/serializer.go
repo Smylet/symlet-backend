@@ -51,10 +51,8 @@ type ProfileSerializer struct {
 
 // }
 func (s *ProfileSerializer) Get(ctx *gin.Context, db *gorm.DB, uid string) error {
-
 	// Does this User already have a Profile?
 	err := db.Model(&Profile{}).Where("uid = ?", uid).First(&s.Profile).Error
-
 	if err != nil {
 		return fmt.Errorf("User does not have a profile")
 	}

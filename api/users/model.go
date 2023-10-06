@@ -16,22 +16,21 @@ type User struct {
 	Password           string `sql:"not null"`
 	Is_email_confirmed bool   `gorm:"default:false"`
 
-	//Polymorphic relationship with Student, Vendor and Hostel Owner
-	RoleID uint
-	RoleType string  
-	
-	ProfileID 		uint
-	Profile 		  Profile `gorm:"foreignKey:ProfileID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	// Polymorphic relationship with Student, Vendor and Hostel Owner
+	RoleID   uint
+	RoleType string
+
+	ProfileID uint
+	Profile   Profile `gorm:"foreignKey:ProfileID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }
 
 type Profile struct {
 	common.AbstractBaseModel
-	UserID uint
-	Bio    string
-	Image  string
+	UserID    uint
+	Bio       string
+	Image     string
 	FirstName string
-	LastName string
-
+	LastName  string
 }
 
 type VerificationEmail struct {

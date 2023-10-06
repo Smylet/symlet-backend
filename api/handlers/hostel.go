@@ -24,7 +24,7 @@ import (
 // @Router /hostels [post]
 func (server *Server) CreateHostel(c *gin.Context) {
 	var HostelSerializer hostel.HostelSerializer
-	//print header
+	// print header
 	file, err := c.FormFile("hostel_images")
 	if err != nil {
 		utils.RespondWithError(c, 400, err.Error(), "Invalid hostel images")
@@ -37,7 +37,7 @@ func (server *Server) CreateHostel(c *gin.Context) {
 	}
 
 	HostelSerializer.Images = append(HostelSerializer.Images, file)
-	//Get uploaded file
+	// Get uploaded file
 	err = HostelSerializer.Create(c, server.db, server.session)
 
 	if err != nil {

@@ -13,7 +13,6 @@ import (
 )
 
 func GetDB() (*gorm.DB, error) {
-
 	database, err := db.GetDB()
 	if err != nil {
 		return nil, err
@@ -28,7 +27,6 @@ func GetDB() (*gorm.DB, error) {
 func PopulateReference(cmd *cobra.Command, args []string, referenceModelMap map[string]reference.ReferenceModelInterface, database *gorm.DB) error {
 	var models []reference.ReferenceModelInterface
 	flags, err := cmd.Flags().GetStringSlice("table")
-
 	if err != nil {
 		return err
 	}
