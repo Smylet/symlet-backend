@@ -120,6 +120,11 @@ func (server *Server) registerRoutes() {
 	{
 		studentRoutes.POST("/", users.AuthMiddleware(server.token), server.CreateStudent)
 	}
+	vendorRoutes := r.Group("/vendors")
+	{
+		vendorRoutes.POST("/", users.AuthMiddleware(server.token), server.CreateVendor)
+		vendorRoutes.GET("/:uid", server.GetVendor)
+	}
 	userRoute := r.Group("/user")
 	{
 		// USER 2FA ENDPOINTS

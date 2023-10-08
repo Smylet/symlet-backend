@@ -116,7 +116,7 @@ test-go-unit: ## run go unit tests.
 	go test -v ./...
 
 .PHONY: test-go-integration
-test-go-integration create-migrate migrate:  ## run go integration tests.
+test-go-integration:  ## run go integration tests.
 	@echo ">>> Running integration tests."
 	docker-compose -f ./tests/integration/docker-compose.yml  up --build
 

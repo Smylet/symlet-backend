@@ -25,6 +25,11 @@ func (m *HostelManagerSerializer) Create(ctx *gin.Context, db *gorm.DB) error {
 	if err != nil {
 		return fmt.Errorf("unable to retrieve user with id %v %w", payload.UserID, err)
 	}
+
+	if user.RoleType != ""{
+		return fmt.Errorf("user is as already associated with a %v role", user.RoleType)
+	}
+	
 	hostelManager := HostelManager{
 		User: user,
 	}
