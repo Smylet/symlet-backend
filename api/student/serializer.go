@@ -15,7 +15,6 @@ import (
 )
 
 type StudentSerializer struct {
-	UserUID       uuid.UUID `json:"user_uid"`
 	UniversityUID uuid.UUID `json:"university_uid"`
 
 	Department                  string    `json:"department"`
@@ -33,9 +32,14 @@ func (h *StudentSerializer) Create(ctx *gin.Context, db *gorm.DB, AWSsession *se
 		StudentIdentificationNumber: h.StudentIdentificationNumber,
 	}
 
-	err := db.Model(&users.User{}).Preload(clause.Associations).Where("uid = ?", h.UserUID).First(&h.Student.User).Error
+	payload, err := users.GetAuthPayloadFromCtx(ctx)
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to retrieve user payload from context %w", err)
+	}
+	// Does this User already have a Profile?
+	err = db.Model(&users.User{}).Preload(clause.Associations).Where("id = ?", payload.UserID).First(&h.Student.User).Error
+	if err != nil {
+		return fmt.Errorf("unable to retrieve user with id %v %w", payload.UserID, err)
 	}
 	if h.Student.User.RoleID != 0 {
 		return fmt.Errorf("user is already associated with a %v", h.Student.User.RoleType)

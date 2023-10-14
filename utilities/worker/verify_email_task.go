@@ -5,14 +5,19 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/hibiken/asynq"
+	"github.com/rs/zerolog/log"
+
 	"github.com/Smylet/symlet-backend/api/users"
 	"github.com/Smylet/symlet-backend/utilities/mail"
 	"github.com/Smylet/symlet-backend/utilities/utils"
-	"github.com/hibiken/asynq"
-	"github.com/rs/zerolog/log"
 )
 
-const TaskSendVerifyEmail = "task:send_verify_email"
+const (
+
+	TaskSendVerifyEmail = "task:send_verify_email"
+)
+
 
 type PayloadSendVerifyEmail struct {
 	Username string `json:"username"`
@@ -98,3 +103,4 @@ func (processor *RedisTaskProcessor) ProcessTaskSendVerifyEmail(ctx context.Cont
 		Str("email", user.Email).Msg("processed task")
 	return nil
 }
+

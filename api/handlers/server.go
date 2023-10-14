@@ -13,6 +13,7 @@ import (
 	"github.com/Smylet/symlet-backend/api/users"
 	_ "github.com/Smylet/symlet-backend/docs"
 	"github.com/Smylet/symlet-backend/utilities/mail"
+	"github.com/Smylet/symlet-backend/utilities/sms"
 	"github.com/Smylet/symlet-backend/utilities/token"
 	"github.com/Smylet/symlet-backend/utilities/utils"
 	"github.com/Smylet/symlet-backend/utilities/worker"
@@ -27,10 +28,11 @@ type Server struct {
 	mailer  mail.EmailSender
 	session *session.Session
 	token   token.Maker
+	sms *sms.SMSSender
 }
 
 // NewServer creates a new HTTP server and set up routing.
-func NewServer(config utils.Config, db *gorm.DB, task worker.TaskDistributor, mailer mail.EmailSender, session *session.Session) (*Server, error) {
+func NewServer(config utils.Config, db *gorm.DB, task worker.TaskDistributor, mailer mail.EmailSender, session *session.Session, sms *sms.SMSSender) (*Server, error) {
 	tokenMaker, err := token.NewPasetoMaker(config.TokenSymmetricKey)
 	if err != nil {
 		return nil, err
@@ -42,6 +44,8 @@ func NewServer(config utils.Config, db *gorm.DB, task worker.TaskDistributor, ma
 		task:   task,
 		mailer: mailer,
 		token:  tokenMaker,
+		sms: sms,
+		
 	}
 	if config.Environment == "production" {
 		server.session = session

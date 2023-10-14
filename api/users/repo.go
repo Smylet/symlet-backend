@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Smylet/symlet-backend/utilities/common"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+
+	"github.com/Smylet/symlet-backend/utilities/common"
 )
 
 type UserRepositoryProvider interface {
@@ -45,6 +46,10 @@ func (user UserRepository) CreateUserTx(ctx context.Context, arg CreateUserTxPar
 			UserID: user.ID,
 		}
 		if err := tx.Create(&profile).Error; err != nil {
+			return err
+		}
+		user.ProfileID = profile.ID
+		if err := tx.Save(&user).Error; err != nil {
 			return err
 		}
 		result.User = user

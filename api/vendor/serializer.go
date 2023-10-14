@@ -3,12 +3,13 @@ package vendor
 import (
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
 	"github.com/Smylet/symlet-backend/api/users"
+	"github.com/Smylet/symlet-backend/utilities/common"
+	"github.com/Smylet/symlet-backend/utilities/sms"
 )
 
 type VendorSerializer struct {
@@ -23,12 +24,23 @@ type VendorSerializer struct {
 	Vendor      *Vendor `json:"-`
 }
 
-func (s *VendorSerializer) Create(ctx *gin.Context, db *gorm.DB, AWSsession *session.Session) error {
+func (s *VendorSerializer) Create(ctx *gin.Context, db *gorm.DB, sms *sms.SMSSender) error {
+	s.Vendor = &Vendor{
+		CompanyName: s.CompanyName,
+		Address:     s.Address,
+		Email:       s.Email,
+		Phone:       s.Phone,
+		Website:     s.Website,
+		Description: s.Description,
+		Service:     s.Service,
+	}
+
 	payload, err := users.GetAuthPayloadFromCtx(ctx)
 	if err != nil {
 		return fmt.Errorf("unable to retrieve user payload from context %w", err)
 	}
 	// Does this User already have a Profile?
+	fmt.Printf("payload %v", payload)
 	err = db.Model(&users.User{}).Preload(clause.Associations).Where("id = ?", payload.UserID).First(&s.Vendor.User).Error
 	if err != nil {
 		return fmt.Errorf("unable to retrieve user with id %v %w", payload.UserID, err)
@@ -47,9 +59,21 @@ func (s *VendorSerializer) Create(ctx *gin.Context, db *gorm.DB, AWSsession *ses
 		Description: s.Description,
 		Service:     s.Service,
 	}
+ 	err = common.ExecTx(ctx, db, func(tx *gorm.DB) error {
 	if err = db.Create(&s.Vendor).Error; err != nil {
-		return err
+			return fmt.Errorf("unable to create vendor %w", err)
+		}
+		if err = sms.SendSMS(s.Vendor.Phone, "Welcome to Symlet, your account has been created"); err!= nil {
+				return fmt.Errorf("unable to send sms %w", err)
+			
+		}
+		return nil
+	},
+	)
+	if err != nil {
+		return fmt.Errorf("unable to create vendor %w", err)
 	}
+
 	return nil
 }
 

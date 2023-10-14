@@ -3,10 +3,11 @@ package common
 import (
 	"fmt"
 
-	"github.com/Smylet/symlet-backend/utilities/utils"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
+
+	"github.com/Smylet/symlet-backend/utilities/utils"
 )
 
 func CreateAWSSession(config *utils.Config) (*session.Session, error) {

@@ -6,9 +6,9 @@ import (
 	"log"
 	"os"
 
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/hibiken/asynq"
 	"github.com/rs/zerolog"
-	"github.com/aws/aws-sdk-go/aws/session"
 	logger "github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 
@@ -16,10 +16,10 @@ import (
 	"github.com/Smylet/symlet-backend/utilities/common"
 	"github.com/Smylet/symlet-backend/utilities/db"
 	"github.com/Smylet/symlet-backend/utilities/mail"
+	"github.com/Smylet/symlet-backend/utilities/sms"
 	"github.com/Smylet/symlet-backend/utilities/utils"
 	"github.com/Smylet/symlet-backend/utilities/worker"
 )
-
 
 // @title           Smylet API
 // @version         1.0
@@ -39,7 +39,6 @@ import (
 // @securityDefinitions.apiKey JWT
 // @in header
 // @name Authorization
-
 
 // @externalDocs.description  OpenAPI
 // @externalDocs.url          https://swagger.io/resources/open-api/
@@ -78,6 +77,7 @@ func main() {
 
 	redisOption := asynq.RedisClientOpt{Addr: config.RedisAddress}
 	var awsSession *session.Session
+	
 	go func() {
 		awsSession, err = common.CreateAWSSession(&config)
 		if err != nil {
@@ -100,10 +100,10 @@ func main() {
 		awsSession,
 		config),
 		worker.NewRedisTaskDistributor(redisOption)
-
+	sms := sms.NewSMSSender(awsSession)
 	go worker.RunTaskProcessor(config, redisOption, database, mailer)
 
-	server, err := handlers.NewServer(config, database, task, mailer, awsSession)
+	server, err := handlers.NewServer(config, database, task, mailer, awsSession, sms)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("failed to create server")
 	}

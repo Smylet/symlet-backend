@@ -21,7 +21,7 @@ type User struct {
 	RoleType string  
 	
 	ProfileID 		uint
-	Profile 		  Profile `gorm:"foreignKey:ProfileID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Profile 		  Profile 
 }
 
 type Profile struct {

@@ -99,9 +99,9 @@ install-atlas: ## Install atlas CLI tool
 
 
 .PHONY: create-migrate
-create-migrate: install-atlas ## create migration files.
+create-migrate:  ## create migration files.
 	@echo ">>> Creating migration files."
-	@bash -c 'source ./resources/env/app_test.env && @atlas migrate diff --env gorm
+	@atlas migrate diff --env gorm
 
 migrate:  ## run migrations.
 	@echo ">>> Running migrations."
