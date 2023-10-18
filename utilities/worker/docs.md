@@ -1,126 +1,140 @@
-# Task processing with Asynq
+# Integrating Asynchronous Tasks with Asynq in smylet-backend
 
-## How to Add a New Task:
+This document guides you through the process of adding a new asynchronous task in the API. Each task comprises a payload definition, distribution logic, processing function, and server integration.
 
-### 1. Define Your Payload:
+## Steps to Add a New Task
 
-This is the data you want to process asynchronously. 
+### 1. Define the Task Payload
 
-`task_name.go`:
+Start by specifying the data structure that your task will process asynchronously.
+
+In `task_name.go`:
+
 ```go
 type PayloadYourTaskName struct {
-    Field1 string    `json:"field1"`
-    Field2 int       `json:"field2"`
-    // ... other fields
+    Field1 string `json:"field1"`
+    Field2 int    `json:"field2"`
+    // ... add other fields as needed
 }
 ```
 
-### 2. Distribute the Task:
+### 2. Distribute the Task
 
-Create a method similar to `DistributeTaskSendVerifyEmail`:
+Set up the task distribution by creating a new method in `task_name.go`. This method will queue the task for processing.
 
-`task_name.go`:
 ```go
 func (distributor *RedisTaskDistributor) DistributeYourTaskName(
-	ctx context.Context,
-	payload *PayloadYourTaskName,
-	opts ...asynq.Option,
+    ctx context.Context,
+    payload *PayloadYourTaskName,
+    opts ...asynq.Option,
 ) error {
-	jsonPayload, err := json.Marshal(payload)
-	if err != nil {
-		return fmt.Errorf("failed to marshal task payload: %w", err)
-	}
+    // Convert the payload into JSON format
+    jsonPayload, err := json.Marshal(payload)
+    if err != nil {
+        return fmt.Errorf("failed to marshal task payload: %w", err)
+    }
 
-	task := asynq.NewTask("task:your_task_name", jsonPayload, opts...)
-	info, err := distributor.client.EnqueueContext(ctx, task)
-	if err != nil {
-		return fmt.Errorf("failed to enqueue task: %w", err)
-	}
+    // Create a new task with the specified payload
+    task := asynq.NewTask("task:your_task_name", jsonPayload, opts...)
+    
+    // Enqueue the task for processing
+    info, err := distributor.client.EnqueueContext(ctx, task)
+    if err != nil {
+        return fmt.Errorf("failed to enqueue task: %w", err)
+    }
 
-	log.Info().Str("type", task.Type()).Bytes("payload", task.Payload()).
-		Str("queue", info.Queue).Int("max_retry", info.MaxRetry).Msg("enqueued task")
-	return nil
+    // Log task enqueuing details
+    log.Info().Str("type", task.Type()).Bytes("payload", task.Payload()).
+        Str("queue", info.Queue).Int("max_retry", info.MaxRetry).Msg("enqueued task")
+    
+    return nil
 }
 ```
 
-### 3. Process the Task:
+### 3. Process the Task
 
-Define a method to handle the task processing:
+Implement the task processing logic. This function will execute the task when it's dequeued.
 
 ```go
 func (processor *RedisTaskProcessor) ProcessYourTaskName(ctx context.Context, task *asynq.Task) error {
-	var payload PayloadYourTaskName
-	if err := json.Unmarshal(task.Payload(), &payload); err != nil {
-		return fmt.Errorf("failed to unmarshal payload: %w", asynq.SkipRetry)
-	}
+    // Parse the task payload
+    var payload PayloadYourTaskName
+    if err := json.Unmarshal(task.Payload(), &payload); err != nil {
+        return fmt.Errorf("failed to unmarshal payload: %w", asynq.SkipRetry)
+    }
 
-	// ... Your task processing logic here ...
+    // ... Implement your task processing logic here ...
 
-	log.Info().Str("type", task.Type()).Bytes("payload", task.Payload()).
-		Msg("processed task")
-	return nil
+    // Log task processing details
+    log.Info().Str("type", task.Type()).Bytes("payload", task.Payload()).
+        Msg("processed task")
+    
+    return nil
 }
 ```
 
-### 4. Add Task to the Task Processor:
+### 4. Register the Task Handler
 
-You will need to register the task with the `asynq.ServeMux`:
+Integrate the task processing function into the Asynq server by registering it with the `asynq.ServeMux`.
 
 ```go
 func (processor *RedisTaskProcessor) Start() error {
-	mux := asynq.NewServeMux()
+    mux := asynq.NewServeMux()
 
-	mux.HandleFunc("task:your_task_name", processor.ProcessYourTaskName)
-	// ... other task handlers ...
+    // Register task processing handlers
+    mux.HandleFunc("task:your_task_name", processor.ProcessYourTaskName)
+    // ... other task handlers ...
 
-	return processor.server.Start(mux)
+    // Start the Asynq server with the registered handlers
+    return processor.server.Start(mux)
 }
 ```
 
-### 5. Integration:
+### 5. Execute the Task
 
-When you want to add this task in your main logic or elsewhere - Where you want the task to be processed asynchronously:
+When you're ready to execute this task asynchronously within your application:
 
-- Define your payload.
-- Call the `DistributeYourTaskName` method with the appropriate context, payload, and options.
-  
-Example:
+1. Define your task payload.
+2. Call the `DistributeYourTaskName` method with the appropriate context, payload, and options.
 
 ```go
-// Define payload
+// Example to distribute your task
+
+// Define task payload
 payload := PayloadYourTaskName{
-	Field1: "SampleData",
-	Field2: 1234,
+    Field1: "SampleData",
+    Field2: 1234,
+}
+
+// Set task options
+opts := []asynq.Option{
+    asynq.MaxRetry(10),
+    asynq.ProcessIn(5 * time.Second),
+    asynq.Queue(worker.QueueDefault),
 }
 
 // Distribute task
-opts := []asynq.Option{
-	asynq.MaxRetry(10),
-	asynq.ProcessIn(5 * time.Second),
-	asynq.Queue(worker.QueueDefault),
-}
-
 task.DistributeYourTaskName(ctx, &payload, opts...)
 ```
 
-### 6. Add the DistributeYourTaskName func definition to TaskDistributor interface
+### 6. Update Interfaces
 
- `distributor.go`:
+Don't forget to update the `TaskDistributor` and `TaskProcessor` interfaces to include your new methods.
+
+In `utilities/worker/interfaces.go`:
 
 ```go
-
-
 type TaskDistributor interface {
-	DistributeTaskSendVerifyEmail(
-		ctx context.Context,
-		payload *PayloadSendVerifyEmail,
-		opts ...asynq.Option,
-	) error,
-    DistributeYourTaskName(
-        ctx context.Context,
-        payload *PayloadYourTaskName,
-        opts ...asynq.Option,
-    ) error
+    // ... other methods ...
+    DistributeYourTaskName(ctx context.Context, payload *PayloadYourTaskName, opts ...asynq.Option) error
 }
 
+type TaskProcessor interface {
+    // ... other methods ...
+    ProcessYourTaskName(ctx context.Context, task *asynq.Task) error
+}
 ```
+
+---
+
+Remember, it's important to maintain consistency in code documentation and commenting within your team to ensure that everyone can understand and follow the intended use and functionality. Also, ensure that any variable or file names used in the documentation match those in the actual codebase.
