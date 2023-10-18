@@ -26,11 +26,14 @@ services:
   app-service:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: docker/Dockerfile.dev
     depends_on:
       - postgres
     ports:
       - "8000:8000"
+    volumes:
+      - .:/app
+      - /app/tmp  # for the build cache
 
 volumes:
   db:
