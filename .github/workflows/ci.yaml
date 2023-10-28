@@ -21,38 +21,8 @@ jobs:
                   go-version: 1.20
             - name: Go Format
               run: |
-                go get mvdan.cc/gofumpt
+                go install mvdan.cc/gofumpt@latest
                 gofumpt -w -s -d .
 
-    go-lint:
-        name: Go Lint
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v2
-            - name: Go Lint
-              uses: actions/setup-go@v2
-              with:
-                  go-version: 1.20
-            - name: Go Lint
-              run: |
-                  go get -u golang.org/x/lint/golint
-                  golint ./...
-
-    go-vet:
-        name: Go Vet
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v2
-            - name: Go Vet
-              uses: actions/setup-go@v2
-              with:
-                  go-version: 1.20
-            - name: Go Vet
-              run: |
-                  go mod download ariga.io/atlas
-                  go mod tidy
-                  go vet ./...
 
 

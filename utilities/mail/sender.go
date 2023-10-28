@@ -139,10 +139,16 @@ func GeneratePersonalizedEmail(data Data) (string, error) {
 		return "", err
 	}
 
+	to := ""
 	// Compose the email
+	if len(data.To) > 0 {
+		// Now it's safe to access sliceOrArray[0]
+		to = data.To[0]
+	}
+
 	msg := []byte("Subject: " + data.Subject + "\r\n" +
 		"From: " + data.From + "\r\n" +
-		"To: " + data.To[0] + "\r\n" +
+		"To: " + to + "\r\n" +
 		"MIME-Version: 1.0\r\n" +
 		"Content-Type: text/html; charset=utf-8\r\n" +
 		"\r\n" +
