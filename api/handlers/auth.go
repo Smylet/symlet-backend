@@ -2,16 +2,12 @@
 package handlers
 
 import (
-	"log"
-	"time"
+	"net/http"
 
 	"github.com/Smylet/symlet-backend/api/users"
 	"github.com/Smylet/symlet-backend/utilities/common"
-	"github.com/Smylet/symlet-backend/utilities/token"
 	"github.com/Smylet/symlet-backend/utilities/utils"
-	"github.com/Smylet/symlet-backend/utilities/worker"
 	"github.com/gin-gonic/gin"
-	"github.com/hibiken/asynq"
 )
 
 // Register godoc
@@ -25,57 +21,27 @@ import (
 // @Failure 400 {object} utils.ErrorMessage "Invalid request body or validation failure"
 // @Failure 500 {object} utils.ErrorMessage "Server error or unexpected issues"
 // @Router /users/register [post]
-func (server *Server) Register(c *gin.Context) {
-	var req users.CreateUserReq
+func (server *Server) CreateUser(c *gin.Context) {
+	var userSerializer users.UserSerializer
 
-	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.RespondWithError(c, 400, err.Error(), "Invalid request body")
-		return
-	}
-
-	if status := users.ValidateRegisterUserReq(req); !status.Valid {
-		utils.RespondWithError(c, 400, "", status.Message)
-		return
-	}
-
-	hashedPassword, err := common.HashPassword(req.Password)
+	err := common.CustomBinder(c, common.ScenarioCreate, &userSerializer)
 	if err != nil {
-		utils.RespondWithError(c, 500, err.Error(), "Failed to hash password")
+		utils.RespondWithError(c, http.StatusBadRequest, err.Error(), "Invalid request body")
 		return
 	}
 
-	arg := users.CreateUserTxParams{
-		CreateUserReq: users.CreateUserReq{
-			Username: req.Username,
-			Email:    req.Email,
-			Password: hashedPassword,
-		},
-		AfterCreate: func(user users.User) error {
-			taskPayload := &worker.PayloadSendVerifyEmail{
-				Username: user.Username,
-			}
-			opts := []asynq.Option{
-				asynq.MaxRetry(10),
-				asynq.ProcessIn(10 * time.Second),
-				asynq.Queue(worker.QueueCritical),
-			}
+	if err := userSerializer.Create(c, server.db, server.task, server.cron); err != nil {
+		if err != nil {
+			utils.RespondWithError(c, userSerializer.StatusCode, err.Error(), "Failed to create user")
+			return
+		}
 
-			return server.task.DistributeTaskSendVerifyEmail(c, taskPayload, opts...)
-		},
-	}
-	userRepo := users.NewUserRepository(server.db)
-
-	txResult, err := userRepo.CreateUserTx(c, arg)
-	if err != nil {
-		utils.RespondWithError(c, 500, err.Error(), "Failed to create user")
-		return
 	}
 
-	user := users.UserSerializer{User: txResult.User}
-	utils.RespondWithSuccess(c, 200, user.Response(), "User created successfully")
+	utils.RespondWithSuccess(c, http.StatusCreated, userSerializer.Response(common.ScenarioCreate), "User created successfully")
 }
 
-// ConfirmEmail godoc
+// verifyEmail godoc
 // @Summary Confirm a user's email
 // @Description Confirm a user's email using verification parameters.
 // @Tags users
@@ -88,31 +54,26 @@ func (server *Server) Register(c *gin.Context) {
 // @Failure 400 {object} utils.ErrorMessage "Invalid request or parameters"
 // @Failure 500 {object} utils.ErrorMessage "Server error or unexpected issues"
 // @Router /users/confirm-email [post]
-func (server *Server) ConfirmEmail(c *gin.Context) {
-	var req users.ConfirmVerifyEmailParams
+func (server *Server) verifyEmail(c *gin.Context) {
+	var userSerializer users.UserSerializer
 
-	if err := c.ShouldBindQuery(&req); err != nil {
-		utils.RespondWithError(c, 400, err.Error(), "Invalid request body")
+	err := common.CustomBinder(c, common.ScenarioVerifyEmail, &userSerializer)
+	if err != nil {
+		utils.RespondWithError(c, http.StatusBadRequest, err.Error(), "Invalid request body")
 		return
 	}
 
-	userRepo := users.NewUserRepository(server.db)
-
-	if err := userRepo.VerifyEmailTx(c, users.ConfirmVerifyEmailParams{
-		UserID:     req.UserID,
-		VerEmailID: req.VerEmailID,
-		SecretCode: req.SecretCode,
-	}); err != nil {
-		utils.RespondWithError(c, 500, err.Error(), "Failed to verify email")
+	if err := userSerializer.VerifyEmail(c, server.db); err != nil {
+		utils.RespondWithError(c, userSerializer.StatusCode, err.Error(), "Failed to confirm email")
 		return
 	}
 
-	utils.RespondWithSuccess(c, 200, nil, "Email confirmed")
+	utils.RespondWithSuccess(c, http.StatusOK, userSerializer.Response(common.ScenarioVerifyEmail), "Email successfully confirmed")
 }
 
-// Login godoc
-// @Summary Login a user
-// @Description Login a user with the system.
+// LoginUser godoc
+// @Summary LoginUser a user
+// @Description LoginUser a user with the system.
 // @Tags users
 // @Accept  json
 // @Produce  json
@@ -121,126 +82,168 @@ func (server *Server) ConfirmEmail(c *gin.Context) {
 // @Failure 400 {object} utils.ErrorMessage
 // @Failure 500 {object} utils.ErrorMessage
 // @Router /users/login [post]
-func (server *Server) Login(c *gin.Context) {
-	var req users.LoginReq
+func (server *Server) LoginUser(c *gin.Context) {
+	var userSerializer users.UserSerializer
 
-	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.RespondWithError(c, 400, err.Error(), "Invalid request body")
-		return
-	}
-
-	userRepo := users.NewUserRepository(server.db)
-	user, err := userRepo.FindUser(c, users.FindUserParams{
-		User: users.User{
-			Email: req.Email,
-		},
-	})
+	err := common.CustomBinder(c, common.ScenarioLogin, &userSerializer)
 	if err != nil {
-		utils.RespondWithError(c, 500, err.Error(), "Failed to find user")
+		utils.RespondWithError(c, http.StatusBadRequest, err.Error(), "Invalid request body")
 		return
 	}
 
-	err = common.CheckPassword(req.Password, user.Password)
+	err = userSerializer.LoginUser(c, server.db, server.token, server.config, server.redisClient)
 	if err != nil {
-		utils.RespondWithError(c, 400, err.Error(), "Invalid password")
+		utils.RespondWithError(c, userSerializer.StatusCode, err.Error(), "Failed to login")
 		return
 	}
 
-	accessToken, accessPayload, err := server.token.CreateToken(
-		user.Username,
-		user.ID,
-		server.config.AccessTokenDuration,
-	)
-	if err != nil {
-		utils.RespondWithError(c, 500, err.Error(), "Failed to create access token")
-		return
-	}
-
-	refreshToken, refreshPayload, err := server.token.CreateToken(
-		user.Username,
-		user.ID,
-		server.config.RefreshTokenDuration,
-	)
-	if err != nil {
-		utils.RespondWithError(c, 500, err.Error(), "Failed to create refresh token")
-		return
-	}
-
-	session, err := userRepo.CreateSession(c, users.CreateSessionParams{
-		ID:           refreshPayload.ID,
-		Username:     user.Username,
-		RefreshToken: refreshToken,
-		UserAgent:    c.Request.UserAgent(),
-		ClientIP:     c.ClientIP(),
-		ExpiresAt:    refreshPayload.ExpiresAt,
-	})
-	if err != nil {
-		utils.RespondWithError(c, 500, err.Error(), "Failed to create session")
-		return
-	}
-
-	response := users.LoginUserResponse{
-		SessionID:             session.ID,
-		AccessToken:           accessToken,
-		AccessTokenExpiresAt:  accessPayload.ExpiresAt,
-		RefreshToken:          refreshToken,
-		RefreshTokenExpiresAt: refreshPayload.ExpiresAt,
-		User:                  user,
-	}
-	utils.RespondWithSuccess(c, 200, response, "Logged in successfully")
+	utils.RespondWithSuccess(c, http.StatusOK, userSerializer.Response(common.ScenarioLogin), "Logged in successfully")
 }
 
-func (server *Server) Logout(c *gin.Context) {
-	// Handle user logout logic
-	// This would typically involve revoking tokens or clearing sessions.
-	c.JSON(200, gin.H{
-		"message": "Logged out successfully",
-	})
+func (server *Server) RenewAccessToken(c *gin.Context) {
+
+	var userSerializer users.UserSerializer
+
+	err := common.CustomBinder(c, common.ScenarioRenewAccessToken, &userSerializer)
+	if err != nil {
+		utils.RespondWithError(c, http.StatusBadRequest, err.Error(), "Invalid request body")
+		return
+	}
+
+	err = userSerializer.RenewAccessToken(c, server.db, server.token, server.config)
+	if err != nil {
+		utils.RespondWithError(c, userSerializer.StatusCode, err.Error(), "Failed to renew access token")
+		return
+	}
+
+	utils.RespondWithSuccess(c, 200, userSerializer.Response(common.ScenarioRenewAccessToken), "Access token renewed successfully")
 }
 
-func (server *Server) ResendEmailConfirmation(c *gin.Context) {
-	// Handle resending of email confirmation logic
-	c.JSON(200, gin.H{
-		"message": "Email confirmation resent",
-	})
+func (server *Server) ForgotPassword(c *gin.Context) {
+	var userSerializer users.UserSerializer
+
+	err := common.CustomBinder(c, common.ScenarioForgotPassword, &userSerializer)
+	if err != nil {
+		utils.RespondWithError(c, http.StatusBadRequest, err.Error(), "Invalid request body")
+		return
+	}
+
+	err = userSerializer.ForgotPassword(c, server.db, server.task, server.token)
+	if err != nil {
+		utils.RespondWithError(c, userSerializer.StatusCode, err.Error(), "Failed to request password reset")
+		return
+	}
+
+	utils.RespondWithSuccess(c, http.StatusOK, userSerializer.Response(common.ScenarioForgotPassword), "Password reset link sent successfully")
 }
 
-func (server *Server) RequestPasswordReset(c *gin.Context) {
-	// Handle password reset request logic
-	c.JSON(200, gin.H{
-		"message": "Password reset link sent",
-	})
+func (server *Server) PasswordReset(c *gin.Context) {
+	var userSerializer users.UserSerializer
+
+	err := common.CustomBinder(c, common.ScenarioPasswordReset, &userSerializer)
+	if err != nil {
+		utils.RespondWithError(c, http.StatusBadRequest, err.Error(), "Invalid request body")
+		return
+	}
+
+	err = userSerializer.PasswordReset(c, server.db, server.token)
+	if err != nil {
+		utils.RespondWithError(c, userSerializer.StatusCode, err.Error(), "Failed to reset password")
+		return
+	}
+
+	utils.RespondWithSuccess(c, http.StatusOK, userSerializer.Response(common.ScenarioPasswordReset), "Password reset successfully")
+
+}
+func (server *Server) LogoutUser(c *gin.Context) {
+	var userSerializer users.UserSerializer
+
+	err := common.CustomBinder(c, common.ScenarioLogout, &userSerializer)
+	if err != nil {
+		utils.RespondWithError(c, http.StatusBadRequest, err.Error(), "Invalid request body")
+		return
+	}
+
+	err = userSerializer.LogoutUser(c, server.db, server.redisClient)
+	if err != nil {
+		utils.RespondWithError(c, userSerializer.StatusCode, err.Error(), "Failed to logout")
+		return
+	}
+
+	utils.RespondWithSuccess(c, http.StatusOK, userSerializer.Response(common.ScenarioLogout), "Logged out successfully")
+}
+
+func (server *Server) ResendEmailVerification(c *gin.Context) {
+	var userSerializer users.UserSerializer
+
+	err := common.CustomBinder(c, common.ScenarioResendEmailConfirmation, &userSerializer)
+	if err != nil {
+		utils.RespondWithError(c, http.StatusBadRequest, err.Error(), "Invalid request body")
+		return
+	}
+
+	err = userSerializer.ResendEmailVerification(c, server.db, server.task)
+	if err != nil {
+		utils.RespondWithError(c, userSerializer.StatusCode, err.Error(), "Failed to resend email confirmation")
+		return
+	}
+
+	utils.RespondWithSuccess(c, http.StatusOK, userSerializer.Response(common.ScenarioResendEmailConfirmation), "Email confirmation resent successfully")
+
 }
 
 func (server *Server) ChangePassword(c *gin.Context) {
-	authPayload := c.MustGet(users.AuthorizationPayloadKey).(*token.Payload)
-	log.Println(authPayload)
-	// Handle password change logic
-	c.JSON(200, gin.H{
-		"message": "Password changed successfully",
-	})
+	var userSerializer users.UserSerializer
+
+	err := common.CustomBinder(c, common.ScenarioLogin, &userSerializer)
+	if err != nil {
+		utils.RespondWithError(c, http.StatusBadRequest, err.Error(), "Invalid request body")
+		return
+	}
+
+	err = userSerializer.ChangePassword(c, server.db, server.task)
+	if err != nil {
+		utils.RespondWithError(c, userSerializer.StatusCode, err.Error(), "Failed to change password")
+		return
+	}
+
+	utils.RespondWithSuccess(c, http.StatusOK, userSerializer.Response(common.ScenarioChangePassword), "Password changed successfully")
 }
 
 func (server *Server) Setup2FA(c *gin.Context) {
-	// Handle 2FA setup logic
-	c.JSON(200, gin.H{
-		"message": "2FA setup successfully",
-	})
+
+	var userSerializer users.UserSerializer
+
+	err := common.CustomBinder(c, common.ScenarioSetup2FA, &userSerializer)
+	if err != nil {
+		utils.RespondWithError(c, http.StatusBadRequest, err.Error(), "Invalid request body")
+		return
+	}
+
+	err = userSerializer.Setup2FA(c, server.db)
+	if err != nil {
+		utils.RespondWithError(c, userSerializer.StatusCode, err.Error(), "Failed to setup 2FA")
+		return
+	}
+
+	utils.RespondWithSuccess(c, http.StatusOK, userSerializer.Response(common.ScenarioSetup2FA), "2FA setup successfully")
 }
 
 func (server *Server) Verify2FA(c *gin.Context) {
-	// Handle 2FA verification logic
-	c.JSON(200, gin.H{
-		"message": "2FA verified",
-	})
-}
 
-func (server *Server) GetProfile(c *gin.Context) {
-	username := c.Param("username")
-	// Fetch the profile based on the username
-	// This would involve querying your data source for profile information
-	c.JSON(200, gin.H{
-		"username": username,
-		"bio":      "Sample bio for the user",
-	})
+	var userSerializer users.UserSerializer
+
+	err := common.CustomBinder(c, common.ScenarioVerify2FA, &userSerializer)
+	if err != nil {
+		utils.RespondWithError(c, http.StatusBadRequest, err.Error(), "Invalid request body")
+		return
+	}
+
+	err = userSerializer.Verify2FA(c, server.db, server.redisClient, server.token, server.config)
+	if err != nil {
+		utils.RespondWithError(c, userSerializer.StatusCode, err.Error(), "Failed to setup 2FA")
+		return
+	}
+
+	utils.RespondWithSuccess(c, http.StatusOK, userSerializer.Response(common.ScenarioVerify2FA), "2FA setup successfully")
 }

@@ -16,12 +16,12 @@ var server = smtpmock.New(smtpmock.ConfigurationAttr{
 	LogServerActivity: true,
 })
 
-func init() {
-	// Starting the mock SMTP server on init, so it's ready for any function calls.
-	if err := server.Start(); err != nil {
-		fmt.Println("Failed to start mock SMTP server:", err)
-	}
-}
+// func init() {
+// 	// Starting the mock SMTP server on init, so it's ready for any function calls.
+// 	if err := server.Start(); err != nil {
+// 		fmt.Println("Failed to start mock SMTP server:", err)
+// 	}
+// }
 
 func SendEmailDev(
 	subject string,
@@ -52,6 +52,7 @@ func SendEmailDev(
 
 	for _, recipient := range to {
 		if err := client.Rcpt(recipient); err != nil {
+			fmt.Println(recipient)
 			return fmt.Errorf("failed to set recipient %s: %w", recipient, err)
 		}
 	}

@@ -8,8 +8,8 @@ import (
 )
 
 type CreateUserReq struct {
-	Username string `json:"username" binding:"required"`
-	Email    string `json:"email" binding:"required,email"`
+	UserName string `json:"username" binding:"required"`
+	Email    string `json:"email" binding:"required"`
 	Password string `json:"password" binding:"required"`
 }
 
@@ -26,22 +26,31 @@ type LoginUserResponse struct {
 	RefreshTokenExpiresAt time.Time      `json:"refresh_token_expires_at"`
 	User                  UserSerializer `json:"user"`
 }
-type CreateUserTxParams struct {
-	CreateUserReq
-	AfterCreate func(user User) error
+type FindUserParams struct {
+	User
+	IncludeProfile bool
+}
+type UpdateUserParams struct {
+	Criteria User // Fields to search for the user
+	Updates  User // Fields to update for the user
 }
 
-type CreateUserTxResult struct {	
+type CreateUserTxParams struct {
+	CreateUserReq
+	AfterCreate func() error
+}
+
+type CreateUserTxResult struct {
 	User User
 }
 
-type CreateVerifyEmailParams struct {
+type ConfirmVerificationEmailParams struct {
 	UserID     uint
 	Email      string `json:"email"`
 	SecretCode string `json:"secret_code"`
 }
 
-type ConfirmVerifyEmailParams struct {
+type CreateVerificationEmailParams struct {
 	UserID     uint   `form:"user_id" binding:"required"`
 	VerEmailID uint   `form:"ver_email_id" binding:"required"`
 	SecretCode string `form:"secret_code" binding:"required"`
@@ -58,7 +67,8 @@ type UpdateVerifyEmailParams struct {
 
 type CreateSessionParams struct {
 	ID           uuid.UUID
-	Username     string
+	UserID       uint
+	UserName     string
 	RefreshToken string
 	UserAgent    string
 	ClientIP     string

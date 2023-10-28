@@ -4,18 +4,22 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 
-	"github.com/Smylet/symlet-backend/api/users"
+	"github.com/Smylet/symlet-backend/utilities/common"
 	"github.com/Smylet/symlet-backend/utilities/mail"
-	"github.com/Smylet/symlet-backend/utilities/utils"
+	"github.com/Smylet/symlet-backend/utilities/mail/templates"
 	"github.com/hibiken/asynq"
-	"github.com/rs/zerolog/log"
 )
 
 const TaskSendVerifyEmail = "task:send_verify_email"
 
 type PayloadSendVerifyEmail struct {
-	Username string `json:"username"`
+	UserName            string `json:"username"`
+	UserID              uint   `json:"user_id"`
+	SecretCode          uint   `json:"secret_code"`
+	VerificationEmailID uint   `json:"ver_email_id"`
+	Email               string `json:"email"`
 }
 
 func (distributor *RedisTaskDistributor) DistributeTaskSendVerifyEmail(
@@ -23,78 +27,71 @@ func (distributor *RedisTaskDistributor) DistributeTaskSendVerifyEmail(
 	payload *PayloadSendVerifyEmail,
 	opts ...asynq.Option,
 ) error {
+	logger := common.NewLogger()
+
 	jsonPayload, err := json.Marshal(payload)
 	if err != nil {
+		logger.Error(err.Error())
 		return fmt.Errorf("failed to marshal task payload: %w", err)
 	}
 
 	task := asynq.NewTask(TaskSendVerifyEmail, jsonPayload, opts...)
 	info, err := distributor.client.EnqueueContext(ctx, task)
 	if err != nil {
+		logger.Error(err.Error())
 		return fmt.Errorf("failed to enqueue task: %w", err)
 	}
 
-	log.Info().Str("type", task.Type()).Bytes("payload", task.Payload()).
-		Str("queue", info.Queue).Int("max_retry", info.MaxRetry).Msg("enqueued task")
+	logger.Printf(ctx, "enqueued task: %s", info.ID)
 	return nil
 }
 
 func (processor *RedisTaskProcessor) ProcessTaskSendVerifyEmail(ctx context.Context, task *asynq.Task) error {
+	logger := common.NewLogger()
+
 	var payload PayloadSendVerifyEmail
 	if err := json.Unmarshal(task.Payload(), &payload); err != nil {
+		logger.Error(err.Error())
 		return fmt.Errorf("failed to unmarshal payload: %w", asynq.SkipRetry)
 	}
 
-	arg := users.FindUserParams{
-		User:           users.User{Username: payload.Username},
-		IncludeProfile: false,
-	}
-
-	userRepo := users.NewUserRepository(processor.db)
-
-	user, err := userRepo.FindUser(ctx, arg)
-	if err != nil {
-		return fmt.Errorf("failed to get user: %w", err)
-	}
-
-	verifyEmail, err := userRepo.CreateVerifyEmail(ctx, users.CreateVerifyEmailParams{
-		UserID:     user.ID,
-		Email:      user.Email,
-		SecretCode: utils.RandomString(32),
-	})
-	if err != nil {
-		return fmt.Errorf("failed to create verify email: %w", err)
-	}
+	// Convert payload.SecretCode to a string
+	secretCodeStr := strconv.Itoa(int(payload.SecretCode))
 
 	// TODO: replace this URL with an environment variable that points to a front-end page - GET /users/confirm-email
 	verifyUrl := fmt.Sprintf("http://%s/users/confirm-email?user_id=%d&ver_email_id=%d&secret_code=%s",
 		processor.config.HTTPServerAddress,
-		verifyEmail.UserID,
-		verifyEmail.ID, verifyEmail.SecretCode)
+		payload.UserID,
+		payload.VerificationEmailID,
+		secretCodeStr)
 
-	data := mail.PersonalizedData{
-		User:    user,
-		Subject: "Welcome to Smylet!",
-		Cc:      []string{},
-		Bcc:     []string{},
-		Others: map[string]interface{}{
-			"VerificationLink": verifyUrl,
-		},
+	data := mail.Data{
+		Subject:       "Welcome to Smylet!",
+		To:            []string{payload.Email},
+		From:          processor.config.EmailSenderName,
+		Cc:            []string{},
+		Bcc:           []string{},
+		UserName:      payload.UserName,
+		Url:           verifyUrl,
+		EmailTemplate: templates.RegistrationTemplate,
+		TemplateName:  templates.Registration,
+		Email:         payload.Email,
 	}
 
 	content, err := mail.GeneratePersonalizedEmail(data)
 	if err != nil {
+		logger.Error(err.Error())
 		return fmt.Errorf("failed to generate email content: %w", err)
 	}
 
 	data.Content = content
 
-	errs := processor.mailer.SendEmail([]mail.PersonalizedData{data})
+	errs := processor.mailer.SendEmail([]mail.Data{data})
 	if len(errs) > 0 {
+		logger.Error(errs[0].Error())
 		return fmt.Errorf("failed to send email: %w", errs[0])
 	}
 
-	log.Info().Str("type", task.Type()).Bytes("payload", task.Payload()).
-		Str("email", user.Email).Msg("processed task")
+	logger.Printf(ctx, "sent verification email to %s", payload.Email)
 	return nil
 }

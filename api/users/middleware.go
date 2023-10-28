@@ -2,15 +2,18 @@
 package users
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/Smylet/symlet-backend/utilities/token"
 	"github.com/Smylet/symlet-backend/utilities/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis/v8"
 )
 
 const (
@@ -20,13 +23,14 @@ const (
 )
 
 // AuthMiddleware creates a gin middleware for authorization
-func AuthMiddleware(tokenMaker token.Maker) gin.HandlerFunc {
+func AuthMiddleware(tokenMaker token.Maker, redis *redis.Client) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		authorizationHeader := ctx.GetHeader(AuthorizationHeaderKey)
 
 		if len(authorizationHeader) == 0 {
 			err := errors.New("authorization header is not provided")
 			utils.RespondWithError(ctx, http.StatusUnauthorized, err.Error(), "Unauthorized")
+			ctx.Abort()
 			return
 		}
 
@@ -34,6 +38,7 @@ func AuthMiddleware(tokenMaker token.Maker) gin.HandlerFunc {
 		if len(fields) < 2 {
 			err := errors.New("invalid authorization header format")
 			utils.RespondWithError(ctx, http.StatusUnauthorized, err.Error(), "Unauthorized")
+			ctx.Abort()
 			return
 		}
 
@@ -41,17 +46,34 @@ func AuthMiddleware(tokenMaker token.Maker) gin.HandlerFunc {
 		if authorizationType != AuthorizationTypeBearer {
 			err := fmt.Errorf("unsupported authorization type %s", authorizationType)
 			utils.RespondWithError(ctx, http.StatusUnauthorized, err.Error(), "Unauthorized")
+			ctx.Abort()
 			return
 		}
 
 		accessToken := fields[1]
-		payload, err := tokenMaker.VerifyToken(accessToken)
-		if err != nil {
+
+		key := fmt.Sprintf("invalid_tokens:%s", accessToken)
+		if redis.Exists(ctx, key).Val() == 1 {
+			err := errors.New("invalid access token")
 			utils.RespondWithError(ctx, http.StatusUnauthorized, err.Error(), "Unauthorized")
 			return
 		}
 
+		payload, err := tokenMaker.VerifyToken(accessToken)
+		if err != nil {
+			utils.RespondWithError(ctx, http.StatusUnauthorized, err.Error(), "Unauthorized")
+			ctx.Abort()
+			return
+		}
+
+		if payload.Valid() != nil {
+			utils.RespondWithError(ctx, http.StatusUnauthorized, err.Error(), "Unauthorized")
+			ctx.Abort()
+			return
+		}
+
 		ctx.Set(AuthorizationPayloadKey, payload)
+		ctx.Set("access_token", accessToken)
 		ctx.Next()
 	}
 }
@@ -71,19 +93,56 @@ func AuthorizationMiddleware() gin.HandlerFunc {
 	}
 }
 
-// 3. Rate Limiting Middleware
-func RateLimitingMiddleware() gin.HandlerFunc {
-	// This is a very basic implementation. You might want to use a more sophisticated approach with Redis or another store.
-	rate := time.Second / 10 // For demonstration: Limit to 10 requests per second.
-	lastRequest := time.Now()
+func RateLimitingMiddleware(redisClient *redis.Client) gin.HandlerFunc {
+	rate := 10 // Allow 10 requests per second per client IP address.
 
 	return func(c *gin.Context) {
-		if time.Since(lastRequest) < rate {
+		clientIP := c.ClientIP()
+
+		// Get the current request count for the client IP from Redis
+		ctx := context.Background()
+		currentCount, err := redisClient.Get(ctx, clientIP).Int()
+		if err != nil && err != redis.Nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Redis error"})
+			c.Abort()
+			return
+		}
+
+		// Calculate the remaining requests until the rate limit
+		remainingRequests := rate - currentCount
+
+		// Check if the request rate limit has been exceeded
+		if remainingRequests < 0 {
+			// Set the rate limiting headers
+			c.Header("X-RateLimit-Limit", strconv.Itoa(rate))
+			c.Header("X-RateLimit-Remaining", "0") // Rate limit exceeded, no remaining requests
+			c.Header("X-RateLimit-Reset", "0")     // Reset value is 0 as the limit is exceeded
+
 			c.JSON(http.StatusTooManyRequests, gin.H{"error": "Too Many Requests"})
 			c.Abort()
 			return
 		}
-		lastRequest = time.Now()
+
+		// Set the rate limiting headers
+		c.Header("X-RateLimit-Limit", strconv.Itoa(rate))
+		c.Header("X-RateLimit-Remaining", strconv.Itoa(remainingRequests))
+		c.Header("X-RateLimit-Reset", strconv.Itoa(1)) // Reset value: 1 second
+
+		// Increment the request count in Redis
+		_, err = redisClient.Incr(ctx, clientIP).Result()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Redis error"})
+			c.Abort()
+			return
+		}
+
+		// Set an expiration time for the key in Redis (e.g., 1 second)
+		if err := redisClient.Expire(ctx, clientIP, time.Second).Err(); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Redis error"})
+			c.Abort()
+			return
+		}
+
 		c.Next()
 	}
 }

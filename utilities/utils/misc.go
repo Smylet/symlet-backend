@@ -15,7 +15,6 @@ import (
 )
 
 func uploadToS3(fileHeader *multipart.FileHeader, awsSession *session.Session) (string, error) {
-
 	// Create an S3 service client
 	svc := s3.New(awsSession)
 
@@ -76,7 +75,7 @@ func uploadImageLocally(file *multipart.FileHeader) (string, error) {
 		return "", fmt.Errorf("file %s already exists", filePath)
 	}
 
-	dst, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 0644)
+	dst, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 0o644)
 	if err != nil {
 		return "", err
 	}
@@ -95,14 +94,14 @@ func uploadImageLocally(file *multipart.FileHeader) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	//Get server address and combine it with filename
+	// Get server address and combine it with filename
 	serverAddress := EnvConfig.HTTPServerAddress
 	filePath = fmt.Sprintf("%s/%s", serverAddress, filename)
 
 	return filePath, nil
 }
 
-func ProcessUploadedImage(Image *multipart.FileHeader, awsSession *session.Session)(string, error){
+func ProcessUploadedImage(Image *multipart.FileHeader, awsSession *session.Session) (string, error) {
 	// Decide whether to upload to AWS S3 or save locally
 	if EnvConfig.Environment == "production" {
 		// In production, upload to AWS S3
@@ -114,27 +113,27 @@ func ProcessUploadedImage(Image *multipart.FileHeader, awsSession *session.Sessi
 
 	} else {
 		// In development, save locally in the media folder
-		filePath, err := uploadImageLocally(Image) //saveLocally(fileHeader)
+		filePath, err := uploadImageLocally(Image) // saveLocally(fileHeader)
 		if err != nil {
 			return "", fmt.Errorf("unable to upload image locally, %w", err)
 		}
 		return filePath, nil
 	}
 }
+
 func ProcessUploadedImages(Images []*multipart.FileHeader, awsSession *session.Session) ([]string, error) {
 	filePaths := []string{}
 
 	for _, Image := range Images {
 		// Process each uploaded file here (e.g., save to storage)
 		fmt.Printf("Received file: %s\n", Image.Filename)
-		filePath, err := ProcessUploadedImage(Image, awsSession) 
-		if err != nil{
+		filePath, err := ProcessUploadedImage(Image, awsSession)
+		if err != nil {
 			return nil, fmt.Errorf("unable to process images %w", err)
 		}
 		filePaths = append(filePaths, filePath)
-	
+
 	}
 
 	return filePaths, nil
-
 }

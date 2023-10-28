@@ -4,7 +4,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/Smylet/symlet-backend/api/users"
 	"github.com/Smylet/symlet-backend/utilities/common"
 	"github.com/Smylet/symlet-backend/utilities/utils"
 	"github.com/stretchr/testify/require"
@@ -33,13 +32,9 @@ func TestSendEmailWithGmail(t *testing.T) {
 	<p>This is a test message from <a href="http://symlet.com">Symlet</a></p>
 	`
 
-	errs := sender.SendEmail([]PersonalizedData{
+	errs := sender.SendEmail([]Data{
 		{
-			User: users.UserSerializer{
-				User: users.User{
-					Email: "abdulrahmanolamilekan88@gmail.com",
-				},
-			},
+			Email:         "abdulrahmanolamilekan88@gmail.com",
 			Subject:       subject,
 			Content:       content,
 			Cc:            []string{},

@@ -1,9 +1,11 @@
+# Authentication Flow
+
 1. **Create User Account:**
-   - The user initiates the process by signing up with basic details (email, password, etc.) through a "Create User" endpoint.
+   - The user initiates the process by signing up with basic details (email, password, etc.) through a "Create User" endpoint. `users/register`
    - After successful registration, generate a verification code and send it to the user's email address.
 
 2. **Verify Email:**
-   - Provide a verification link in the email sent to the user.
+   - Provide a verification link in the email sent to the user. 
    - When the user clicks the link, it should lead to a "Verify Email" endpoint.
    - Verify the code from the link against the one stored during registration. If it matches, mark the email as verified.
 
@@ -13,7 +15,7 @@
    - Store this information in the database associated with the user's account.
 
 4. **Select User Type:**
-   - On the same "Complete Profile" page, include an option for the user to select their user type. You can present this as a dropdown menu or a set of radio buttons with options like "Hostel Owner," "Student," or "Vendor."
+   - On the same "Complete Profile" page, include an option for the user to select their user type. You can present this as a dropdown menu with options like "Hostel Owner," "Student," or "Vendor."
 
 5. **Frontend Redirection:**
    - When the user selects their user type and submits the form, the frontend handles the redirection based on the user's selection.

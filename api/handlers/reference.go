@@ -19,7 +19,6 @@ func (server *Server) ListAmenities(c *gin.Context) {
 	var amenitySerializer reference.AmenitySerializer
 
 	amenities, err := amenitySerializer.List(server.db)
-
 	if err != nil {
 		utils.RespondWithError(c, 500, err.Error(), "Failed to list amenities")
 		return
@@ -28,7 +27,6 @@ func (server *Server) ListAmenities(c *gin.Context) {
 
 	utils.RespondWithSuccess(c, 200, response, "Amenities listed successfully")
 }
-
 
 // @Summary List universities
 // @Description List all universities

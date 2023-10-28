@@ -7,8 +7,7 @@ import (
 	"github.com/Smylet/symlet-backend/utilities/utils"
 )
 
-
-func (server *Server)CreateStudent(c *gin.Context){
+func (server *Server) CreateStudent(c *gin.Context) {
 	var studentSerializer student.StudentSerializer
 	if err := c.ShouldBindJSON(&studentSerializer); err != nil {
 		utils.RespondWithError(c, 400, err.Error(), "Invalid request payload")

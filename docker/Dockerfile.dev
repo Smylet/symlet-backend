@@ -1,0 +1,37 @@
+# Build stage
+FROM golang:1.20-alpine3.16 AS builder
+
+WORKDIR /app
+
+# Install git for fetching the dependencies.
+RUN apk add --no-cache git
+
+# Copy go.mod and go.sum files
+COPY ../go.mod ../go.sum ./
+
+# Download all dependencies. Dependencies will be cached if the go.mod and go.sum files are not changed
+RUN go mod download
+
+# Install Air for live reloading
+RUN go install github.com/cosmtrek/air@latest
+
+# Copy the source from your host to your image filesystem.
+COPY ../. .
+
+# Run stage
+FROM golang:1.20-alpine3.16
+
+WORKDIR /app
+
+# Copy the Air binary and .air.toml config from the builder stage
+COPY --from=builder /go/bin/air /usr/bin/air
+COPY --from=builder /app/.air.toml ./
+
+# Copy the rest of the app
+COPY --from=builder /app .
+
+# Expose development port
+EXPOSE 8000
+
+# Command to run the executable
+ENTRYPOINT ["air"]

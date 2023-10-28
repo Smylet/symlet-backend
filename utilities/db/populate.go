@@ -20,7 +20,7 @@ import (
 
 func createVendor(ctx context.Context, db *gorm.DB) (vendor.Vendor, error) {
 	vendorUser := users.User{
-		Username: faker.Username(),
+		UserName: faker.Username(),
 		Email:    faker.Email(),
 		Password: faker.Password(),
 	}
@@ -53,7 +53,7 @@ func createVendor(ctx context.Context, db *gorm.DB) (vendor.Vendor, error) {
 
 func createHostelManager(ctx context.Context, db *gorm.DB) (manager.HostelManager, error) {
 	managerUser := users.User{
-		Username: faker.Username(),
+		UserName: faker.Username(),
 		Email:    faker.Email(),
 		Password: faker.Password(),
 	}
@@ -118,7 +118,7 @@ func createHostel(ctx context.Context, db *gorm.DB, university *reference.Refere
 
 func createStudent(ctx context.Context, db *gorm.DB, university reference.ReferenceUniversity) (student.Student, error) {
 	studentUser := users.User{
-		Username: faker.Username(),
+		UserName: faker.Username(),
 		Email:    faker.Email(),
 		Password: faker.Password(),
 	}
@@ -133,7 +133,6 @@ func createStudent(ctx context.Context, db *gorm.DB, university reference.Refere
 		}
 		studentObj.User = studentUser
 		if err := tx.Create(&studentObj).Error; err != nil {
-
 			return err
 		}
 		return nil

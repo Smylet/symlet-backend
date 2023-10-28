@@ -2,29 +2,32 @@ package mail
 
 import (
 	"bytes"
-	"html/template"
 	"sync"
+	"text/template"
 
-	"github.com/Smylet/symlet-backend/api/users"
-	"github.com/Smylet/symlet-backend/utilities/mail/templates"
 	"github.com/Smylet/symlet-backend/utilities/utils"
 	"github.com/aws/aws-sdk-go/aws/session"
 )
 
 type EmailSender interface {
 	SendEmail(
-		[]PersonalizedData,
+		[]Data,
 	) []error
 }
 
-type PersonalizedData struct {
+type Data struct {
 	Subject       string
+	To            []string
+	From          string
 	Cc            []string
 	Bcc           []string
 	Content       string
-	User          users.UserSerializer
+	Email         string
 	AttachedFiles []string
-	Others        map[string]interface{}
+	Url           string
+	UserName      string
+	EmailTemplate string
+	TemplateName  string
 }
 type SESEmailSender struct {
 	fromEmailAddress string
@@ -41,7 +44,7 @@ func NewSESEmailSender(fromEmailAddress string, session *session.Session, config
 }
 
 func (sender *SESEmailSender) SendEmail(
-	dataList []PersonalizedData,
+	dataList []Data,
 ) []error {
 	// Create a channel to receive errors
 	errorsChan := make(chan error, len(dataList))
@@ -54,7 +57,7 @@ func (sender *SESEmailSender) SendEmail(
 
 	for _, data := range dataList {
 		wg.Add(1)
-		go func(data PersonalizedData) {
+		go func(data Data) {
 			defer wg.Done()
 			sem <- struct{}{}
 			defer func() { <-sem }()
@@ -67,23 +70,23 @@ func (sender *SESEmailSender) SendEmail(
 			}
 
 			// Send email
-			if sender.config.Environment == "development" || sender.config.Environment == "test" {
-				err = SendEmailDev(data.Subject, content, []string{data.User.Email}, sender.fromEmailAddress)
+			switch sender.config.Environment {
+			case "development", "test":
+				// log the email to the terminal
 				if err != nil {
 					errorsChan <- err
 					return
 				}
 
-			} else {
-
-				err = SendEmailProd(sender.session, sender.fromEmailAddress, []string{data.User.Email}, data.Subject, content, data.AttachedFiles)
+			default:
+				err = SendEmailProd(sender.session, sender.fromEmailAddress, data.To, data.Subject, content, data.AttachedFiles)
 				if err != nil {
 					errorsChan <- err
 					return
 				}
-
 			}
 		}(data)
+
 	}
 
 	go func() {
@@ -101,21 +104,55 @@ func (sender *SESEmailSender) SendEmail(
 }
 
 // Function to generate personalized email content
-func GeneratePersonalizedEmail(data PersonalizedData) (string, error) {
-	// Parse the registration template
-	t, err := template.New("registrationEmail").Parse(templates.RegistrationTemplate)
+// func GeneratePersonalizedEmail(data Data) (string, error) {
+// 	// Parse the registration template
+// 	t, err := template.New(data.TemplateName).Parse(data.EmailTemplate)
+// 	if err != nil {
+// 		return "", err
+// 	}
+
+// 	// Create a buffer to store the generated email content
+// 	var emailContent bytes.Buffer
+
+// 	// Execute the template with the provided personalized data
+// 	err = t.Execute(&emailContent, data)
+// 	if err != nil {
+// 		return "", err
+// 	}
+
+// 	return emailContent.String(), nil
+// }
+
+func GeneratePersonalizedEmail(data Data) (string, error) {
+	// Parse the HTML template
+	tmpl, err := template.New("emailTemplate").Parse(data.EmailTemplate)
 	if err != nil {
 		return "", err
 	}
 
-	// Create a buffer to store the generated email content
+	// Create a buffer to store the generated HTML
 	var emailContent bytes.Buffer
 
-	// Execute the template with the provided personalized data
-	err = t.Execute(&emailContent, data)
+	// Execute the template with email data
+	err = tmpl.Execute(&emailContent, data)
 	if err != nil {
 		return "", err
 	}
 
-	return emailContent.String(), nil
+	to := ""
+	// Compose the email
+	if len(data.To) > 0 {
+		// Now it's safe to access sliceOrArray[0]
+		to = data.To[0]
+	}
+
+	msg := []byte("Subject: " + data.Subject + "\r\n" +
+		"From: " + data.From + "\r\n" +
+		"To: " + to + "\r\n" +
+		"MIME-Version: 1.0\r\n" +
+		"Content-Type: text/html; charset=utf-8\r\n" +
+		"\r\n" +
+		emailContent.String())
+
+	return string(msg), nil
 }

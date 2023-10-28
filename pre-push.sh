@@ -5,14 +5,15 @@
 
 # Navigate to .git/hooks and create a file called pre-push
 # Add the following code to the file
-# Run chmod +x .git/hooks/pre-push to make the file executable
+# Run chmod +x pre-push to make the file executable
 # run gh auth login and add your Github Token(classic)
 # Run ./.git/hooks/pre-push to execute the file 
 
 
 #!/bin/bash
 
-base64 -i /Users/Abdulrahman/Smylet/symlet-backend/resources/env/app_test.env -o gh.txt
+base64 -i $(pwd)/resources/env/app_test.env -o gh.txt
+
 
 # Update the GitHub secret using the GitHub CLI
 

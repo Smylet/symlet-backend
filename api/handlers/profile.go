@@ -64,7 +64,6 @@ func (server *Server) GetUserProfile(c *gin.Context) {
 		return
 	}
 	utils.RespondWithSuccess(c, 200, profileSerializer.Response(), "Profile retrieved successfully")
-
 }
 
 func (server *Server) EditUserProfile(c *gin.Context) {
@@ -148,10 +147,6 @@ func (server *Server) DeleteProfilePicture(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"message": "Profile picture deleted",
 	})
-}
-
-func (server *Server) SearchUsers(c *gin.Context) {
-	// ...
 }
 
 func (server *Server) GetPrivacySettings(c *gin.Context) {

@@ -15,7 +15,6 @@ import (
 
 func GetMigrateModels() []interface{} {
 	return []interface{}{
-
 		users.User{},
 		users.Profile{},
 		users.VerificationEmail{},

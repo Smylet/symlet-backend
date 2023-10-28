@@ -17,6 +17,7 @@ type SuccessMessage struct {
 
 // RespondWithError sends an error response with a given status code, error message, and a general message.
 func RespondWithError(c *gin.Context, status int, errorMsg string, generalMsg string) {
+
 	c.AbortWithStatusJSON(status, ErrorMessage{
 		Error: errorMsg,
 		Msg:   generalMsg,

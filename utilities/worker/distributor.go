@@ -12,6 +12,21 @@ type TaskDistributor interface {
 		payload *PayloadSendVerifyEmail,
 		opts ...asynq.Option,
 	) error
+	DistributeTaskSendForgetPasswordEmail(
+		ctx context.Context,
+		payload *PayloadSendForgetPasswordEmail,
+		opts ...asynq.Option,
+	) error
+	DistributeTaskSendChangePasswordEmail(
+		ctx context.Context,
+		payload *PayloadSendChangePasswordEmail,
+		opts ...asynq.Option,
+	) error
+	DistributeTaskSendVerifyEmailReminder(
+		ctx context.Context,
+		payload *PayloadSendVerifyEmailReminder,
+		opts ...asynq.Option,
+	) error
 }
 
 type RedisTaskDistributor struct {

@@ -1,0 +1,65 @@
+name: Run unit and integration tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: "34 1 * * *"
+
+jobs:
+
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:14-alpine
+        env:
+          POSTGRES_USER: root
+          POSTGRES_PASSWORD: secret
+          POSTGRES_DB: simple_bank
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps: 
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.21
+      id: go
+
+    - name: Create .env from secrets
+      env:
+        GH_ENV_FILE: ${{ secrets.APP_ENV_TEST }}
+      run: |
+        cd $(pwd)/resources/env/
+        echo $GH_ENV_FILE | base64 --decode > app_test.env
+        echo $GH_ENV_FILE | base64 --decode > app.env
+
+
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v2
+
+    - name: Install atlas
+      run: |
+        curl -sSf https://atlasgo.sh | sh
+        atlas version
+
+
+    - name: Run migrations
+      run: make migrate
+
+    - name: Test
+      run: make test-go-integration
+
+    - name: Test
+      run: make test-go-unit

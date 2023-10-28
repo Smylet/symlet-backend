@@ -131,13 +131,17 @@ func NewSqliteDBInstance(
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
 
-	db.Use(
+	err = db.Use(
 		dbresolver.Register(dbresolver.Config{
 			Replicas: []gorm.Dialector{
 				replicaConn,
 			},
 		}),
 	)
+	if err != nil {
+		db.Close()
+		return nil, fmt.Errorf("failed to register replica connection: %w", err)
+	}
 
 	return &db, nil
 }

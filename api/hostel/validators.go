@@ -24,7 +24,7 @@ func ValidateImageExtension(fl validator.FieldLevel) bool {
 		buffer := make([]byte, 512)
 		n, err := fileContent.Read(buffer)
 		if err != nil {
-            logger.Error("failed to read file: ", err.Error())
+			logger.Error("failed to read file: ", err.Error())
 			return false
 		}
 
