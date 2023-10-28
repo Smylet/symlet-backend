@@ -1,13 +1,9 @@
 package fixtures
 
-import (
-	"github.com/Smylet/symlet-backend/api/users"
-)
-
-type UserFixures struct {
-	baseFixtures
-	userRepository users.UserRepositoryProvider
-}
+// type UserFixures struct {
+// 	baseFixtures
+// 	userRepository users.UserRepositoryProvider
+// }
 
 // func NewUserFixtures(db db.DBProvider) (*UserFixures, error) {
 // 	return &UserFixures{

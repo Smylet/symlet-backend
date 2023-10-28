@@ -439,7 +439,13 @@ func (s *UserSerializer) ForgotPassword(ctx *gin.Context, db *gorm.DB, task work
 		asynq.Queue(worker.QueueCritical),
 	}
 
-	go task.DistributeTaskSendForgetPasswordEmail(ctx, &payload, opts...)
+	go func() {
+		err := task.DistributeTaskSendForgetPasswordEmail(ctx, &payload, opts...)
+		if err != nil {
+			// Handle the error here, e.g., log it
+			logger.Error(err.Error())
+		}
+	}()
 
 	// User clicks the link and is redirected to a "Reset Password" page - Client GET /reset-password?token=unique-reset-token
 	// The "Reset Password" page render a password reset form for the user to enter a new password.
@@ -552,7 +558,13 @@ func (s *UserSerializer) ChangePassword(ctx *gin.Context, db *gorm.DB, task work
 		asynq.Queue(worker.QueueDefault),
 	}
 
-	go task.DistributeTaskSendChangePasswordEmail(ctx, &payload, opts...)
+	go func() {
+		err := task.DistributeTaskSendChangePasswordEmail(ctx, &payload, opts...)
+		if err != nil {
+			// Handle the error here, e.g., log it
+			logger.Error(err.Error())
+		}
+	}()
 
 	s.UserID = user.ID
 	s.Email = user.Email

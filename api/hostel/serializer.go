@@ -378,7 +378,9 @@ func (h *HostelSerializer) Validate() error {
 	validate := validator.New()
 
 	// Register the custom validation function
-	validate.RegisterValidation("ValidateImageExtension", ValidateImageExtension)
+	if err := validate.RegisterValidation("ValidateImageExtension", ValidateImageExtension); err != nil {
+		return fmt.Errorf("failed to register validation: %v", err)
+	}
 
 	if err := validate.Struct(h); err != nil {
 		validationErrors := err.(validator.ValidationErrors)

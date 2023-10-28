@@ -1,6 +1,8 @@
 package common
 
 import (
+	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -28,17 +30,25 @@ func DatabaseTransactionMiddleware(db *gorm.DB) gin.HandlerFunc {
 		if ctx.Writer.Status() >= http.StatusInternalServerError {
 			// An HTTP 500 error occurred, rollback the database transaction
 			if err := tx.Rollback().Error; err != nil {
-				// Handle rollback error
-				ctx.Error(err)
+				// Handle rollback error and report to Gin's error handling
+				reportToGinContext(ctx, fmt.Errorf("failed to rollback transaction: %w", err))
 				return
 			}
 		} else {
 			// Commit the transaction if no errors occurred
 			if err := tx.Commit().Error; err != nil {
-				// Handle commit error
-				ctx.Error(err)
+				// Handle commit error and report to Gin's error handling
+				reportToGinContext(ctx, fmt.Errorf("failed to commit transaction: %w", err))
 				return
 			}
 		}
+	}
+}
+
+func reportToGinContext(ctx *gin.Context, err error) {
+	ginErr := ctx.Error(err)
+	if ginErr != nil {
+		// In case ctx.Error itself returns an error, log it
+		log.Printf("Error encountered when reporting to Gin context: %v", ginErr)
 	}
 }

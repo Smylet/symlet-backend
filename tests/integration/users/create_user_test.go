@@ -1,22 +1,14 @@
 package users
 
-import (
-	"testing"
+// type CreateUserTestSuite struct {
+// 	suite.Suite
+// 	client       *helpers.HttpClient
+// 	userFixtures *fixtures.UserFixures
+// }
 
-	"github.com/Smylet/symlet-backend/tests/integration/fixtures"
-	"github.com/Smylet/symlet-backend/tests/integration/helpers"
-	"github.com/stretchr/testify/suite"
-)
-
-type CreateUserTestSuite struct {
-	suite.Suite
-	client       *helpers.HttpClient
-	userFixtures *fixtures.UserFixures
-}
-
-func TestCreateUserTestSuite(t *testing.T) {
-	suite.Run(t, new(CreateUserTestSuite))
-}
+// func TestCreateUserTestSuite(t *testing.T) {
+// 	suite.Run(t, new(CreateUserTestSuite))
+// }
 
 // func (s *CreateUserTestSuite) SetupSuite() {
 // 	config, err := utils.LoadConfig()
