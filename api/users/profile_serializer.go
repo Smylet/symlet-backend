@@ -8,10 +8,6 @@ import (
 	"gorm.io/gorm"
 )
 
-type UserSerializer struct {
-	User
-}
-
 type ProfileSerializer struct {
 	FirstName string                `json:"first_name" form:"first_name" custom_binding:"requiredForCreate"`
 	LastName  string                `json:"last_name" form:"last_name" custom_binding:"requiredForCreate"`
@@ -64,23 +60,13 @@ func (s *ProfileSerializer) Response() map[string]interface{} {
 	response := map[string]interface{}{
 		"id":         s.Profile.ID,
 		"uid":        s.Profile.UID,
-		"created_at": s.Profile.CreatedAt,
-		"updated_at": s.Profile.UpdatedAt,
+		"created_at": s.Profile.CreatedAt.Format("2006-01-02T15:04:05.000Z"),
+		"updated_at": s.Profile.UpdatedAt.Format("2006-01-02T15:04:05.000Z"),
 		"bio":        s.Profile.Bio,
 		"image":      s.Profile.Image,
 		"first_name": s.Profile.FirstName,
 		"last_name":  s.Profile.LastName,
 		"user_id":    s.Profile.UserID,
-	}
-	return response
-}
-
-func (s *UserSerializer) Response() map[string]interface{} {
-	response := map[string]interface{}{
-		"id":         s.ID,
-		"username":   s.Username,
-		"email":      s.Email,
-		"created_at": s.CreatedAt.Format("2006-01-02T15:04:05.000Z"),
 	}
 	return response
 }

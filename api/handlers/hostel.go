@@ -30,7 +30,7 @@ func (server *Server) CreateHostel(c *gin.Context) {
 		utils.RespondWithError(c, 400, err.Error(), "Invalid hostel images")
 		return
 	}
-	errs := common.CustomBinder(c, &HostelSerializer)
+	errs := common.CustomBinder(c, common.ScenarioCreate, &HostelSerializer)
 	if errs != nil {
 		utils.RespondWithError(c, http.StatusBadRequest, errs.Error(), "Invalid hostel data")
 		return
@@ -154,7 +154,7 @@ func (server *Server) ListHostels(c *gin.Context) {
 func (server *Server) UpdateHostel(c *gin.Context) {
 	var HostelSerializer hostel.HostelSerializer
 	uidString := c.Param("uid")
-	errs := common.CustomBinder(c, &HostelSerializer)
+	errs := common.CustomBinder(c, common.ScenarioUpdate, &HostelSerializer)
 	if errs != nil {
 		utils.RespondWithError(c, http.StatusBadRequest, errs.Error(), "Invalid hostel data")
 		return

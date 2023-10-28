@@ -1,15 +1,17 @@
 # Smylet
 ## For best results, run these make targets inside the devcontainer
 
+
+DATABASE_URI=postgres://postgres:postgres@localhost:5432/smylet?sslmode=disable&search_path=public
 #
 # Project-specific variables
 #
 # App name.
-include ./resources/env/app.env
-export
+# include ./resources/env/app.env
+# export
 
-include ./resources/env/app_test.env
-export
+# include ./resources/env/app_test.env
+# export
 
 APP=symlet-backend
 ifeq ($(shell go env GOOS),windows)
@@ -90,23 +92,40 @@ go-dist: go-build ## archive app binary.
 	@$(ARCHIVE_CMD) $(ARCHIVE_NAME) $(ARCHIVE_FILES)
 
 
-# Migratio targets.
+# Migration targets.
 
 .PHONY: install-atlas
 install-atlas: ## Install atlas CLI tool
-	@echo ">>> Installing atlas..."
-	@curl -sSf https://atlasgo.sh | sh
+	@which atlas > /dev/null 2>&1; \
+	if [ $$? -ne 0 ]; then \
+		echo ">>> Installing atlas..."; \
+		curl -sSf https://atlasgo.sh | sh; \
+	else \
+		echo ">>> Atlas is already installed. Skipping installation."; \
+	fi
 
+# Define a variable for the migration target
+MIGRATION_TARGET := setup-user-auth
 
 .PHONY: create-migrate
-create-migrate: install-atlas ## create migration files.
+create-migrate:  ## create migration files.
 	@echo ">>> Creating migration files."
-	@bash -c 'source ./resources/env/app_test.env && @atlas migrate diff --env gorm
+	@atlas migrate diff --env gorm $(MIGRATION_TARGET)
 
+
+
+# You can override the variable when calling make like this:
+# make create-migrate MIGRATION_TARGET=new-target
+
+.PHONY: migrate
 migrate:  ## run migrations.
 	@echo ">>> Running migrations."
-	@bash -c 'source ./resources/env/app_test.env && atlas migrate apply --dir file://./migrations --url "postgresql://$${DB_USER}:$${DB_PASS}@$${DB_PORT}/$${DB_NAME}?sslmode=disable"'
+	@atlas migrate apply --dir file://./migrations --url "$(DATABASE_URI)" --env gorm
 
+
+.PHONY: lint-migrate
+lint-migrate:
+	@atlas migrate lint --dev-url "$(DATABASE_URI)" --base=20231009112817
 # Tests targets.
 #
 
@@ -116,7 +135,7 @@ test-go-unit: ## run go unit tests.
 	go test -v ./...
 
 .PHONY: test-go-integration
-test-go-integration create-migrate migrate:  ## run go integration tests.
+test-go-integration:  ## run go integration tests.
 	@echo ">>> Running integration tests."
 	docker-compose -f ./tests/integration/docker-compose.yml  up --build
 
@@ -181,3 +200,4 @@ PHONY: run
 run:  ## run the Symlet app
 	@echo ">>> Running the Smylet app."
 	./$(APP)
+

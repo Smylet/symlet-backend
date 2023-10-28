@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/go-redis/redis/v8"
 	"github.com/hibiken/asynq"
 	"github.com/rs/zerolog"
 	logger "github.com/rs/zerolog/log"
@@ -76,6 +77,8 @@ func main() {
 
 	redisOption := asynq.RedisClientOpt{Addr: config.RedisAddress}
 	var awsSession *session.Session
+	var RedisClient *redis.Client
+
 	go func() {
 		awsSession, err = common.CreateAWSSession(&config)
 		if err != nil {
@@ -85,8 +88,25 @@ func main() {
 		errCh <- nil // Send nil to signify successful completion.
 	}()
 
+	go func() {
+		RedisClient = redis.NewClient(&redis.Options{
+			Addr:        config.RedisAddress,
+			DB:          0,
+			MaxRetries:  3,
+			IdleTimeout: 0,
+			PoolSize:    10,
+		})
+
+		_, err := RedisClient.Ping(RedisClient.Context()).Result()
+		if err != nil {
+			errCh <- fmt.Errorf("failed to connect to redis: %w", err)
+			return
+		}
+		errCh <- nil // Send nil to signify successful completion.
+	}()
+
 	// Wait for both goroutines to complete and check for errors.
-	for i := 0; i < 2; i++ {
+	for i := 0; i < 3; i++ {
 		if err := <-errCh; err != nil {
 			logger.Fatal().Err(err)
 			os.Exit(1)
@@ -101,7 +121,7 @@ func main() {
 
 	go worker.RunTaskProcessor(config, redisOption, database, mailer)
 
-	server, err := handlers.NewServer(config, database, task, mailer, awsSession)
+	server, err := handlers.NewServer(config, database, task, mailer, awsSession, RedisClient)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("failed to create server")
 	}

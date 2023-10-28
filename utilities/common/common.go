@@ -14,6 +14,7 @@ type ModelInterface interface {
 // AbstractBaseModel holds common fields for all tables.
 
 type AbstractBaseModel struct {
+	// gorm.Model
 	UID       uuid.UUID  `pg:"type:uuid"`
 	ID        uint       `json:"id" gorm:"primaryKey" swagger:"description:The primary key for the record."`
 	CreatedAt time.Time  `json:"created_at" swagger:"description:Record creation time."`

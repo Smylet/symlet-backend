@@ -20,6 +20,8 @@ const (
 type TaskProcessor interface {
 	Start() error
 	ProcessTaskSendVerifyEmail(ctx context.Context, task *asynq.Task) error
+	ProcessTaskSendForgetPasswordEmail(ctx context.Context, task *asynq.Task) error
+	ProcessTaskSendChangePasswordEmail(ctx context.Context, task *asynq.Task) error
 }
 
 type RedisTaskProcessor struct {
@@ -41,8 +43,7 @@ func NewRedisTaskProcessor(redisOpt asynq.RedisClientOpt, db *gorm.DB, mailer ma
 				QueueDefault:  5,
 			},
 			ErrorHandler: asynq.ErrorHandlerFunc(func(ctx context.Context, task *asynq.Task, err error) {
-				log.Error().Err(err).Str("type", task.Type()).
-					Bytes("payload", task.Payload()).Msg("process task failed")
+				logger.Printf(ctx, "task=%q err=%v", task.Type(), err)
 			}),
 			Logger: logger,
 		},
@@ -67,6 +68,9 @@ func (processor *RedisTaskProcessor) Start() error {
 	mux := asynq.NewServeMux()
 
 	mux.HandleFunc(TaskSendVerifyEmail, processor.ProcessTaskSendVerifyEmail)
+	mux.HandleFunc(TaskSendForgetPasswordEmail, processor.ProcessTaskSendForgetPasswordEmail)
+	mux.HandleFunc(TaskSendChangePasswordEmail, processor.ProcessTaskSendChangePasswordEmail)
+	mux.HandleFunc(TaskSendVerifyEmailReminder, processor.ProcessTaskSendVerifyEmailReminder)
 
 	return processor.server.Start(mux)
 }

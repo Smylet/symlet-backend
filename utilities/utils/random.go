@@ -43,3 +43,19 @@ func RandomMoney() int64 {
 func RandomEmail() string {
 	return fmt.Sprintf("%s@email.com", RandomString(6))
 }
+
+// RandomVerificationCode generates a numeric code of a given length for use as a verification code.
+// RandomCode generates a random unsigned integer of a specified length (number of digits).
+func RandomCode(length int) uint {
+	// Calculate the maximum value based on the length: 10^length - 1
+	max := 1
+	for i := 0; i < length; i++ {
+		max *= 10
+	}
+
+	// Generate a random number in the range [0, max - 1].
+	// We're assuming that 'max' will not be greater than the maximum value a uint can hold.
+	randomNumber := uint(r.Intn(max))
+
+	return randomNumber
+}

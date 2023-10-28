@@ -134,7 +134,3 @@ type TaskProcessor interface {
     ProcessYourTaskName(ctx context.Context, task *asynq.Task) error
 }
 ```
-
----
-
-Remember, it's important to maintain consistency in code documentation and commenting within your team to ensure that everyone can understand and follow the intended use and functionality. Also, ensure that any variable or file names used in the documentation match those in the actual codebase.

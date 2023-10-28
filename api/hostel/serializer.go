@@ -32,20 +32,20 @@ type AmmenitySerializer struct {
 
 type HostelSerializer struct {
 	ManagerID             uint    `json:"-" form:"-"`
-	UniversityID          uint    `json:"university_id" form:"university_id" custom_binding:"requiredForCreate"`
-	Name                  *string `json:"name" form:"name" custom_binding:"requiredForCreate"`
-	Address               *string `json:"address" form:"address" custom_binding:"requiredForCreate"`
-	City                  *string `json:"city" form:"city" custom_binding:"requiredForCreate"`
-	State                 *string `json:"state" form:"state" custom_binding:"requiredForCreate"`
-	Country               *string `json:"country" form:"country" custom_binding:"requiredForCreate"`
-	Description           *string `json:"description" form:"description" custom_binding:"requiredForCreate"`
-	NumberOfUnits         *uint   `json:"number_of_units" form:"number_of_units" custom_binding:"requiredForCreate"`
-	NumberOfOccupiedUnits *uint   `json:"number_of_occupied_units" form:"number_of_occupied_units" custom_binding:"requiredForCreate"`
-	NumberOfBedrooms      *uint   `json:"number_of_bedrooms" form:"number_of_bedrooms" custom_binding:"requiredForCreate"`
-	NumberOfBathrooms     *uint   `json:"number_of_bathrooms" form:"number_of_bathrooms" custom_binding:"requiredForCreate"`
-	Kitchen               *string `json:"kitchen" form:"kitchen" custom_binding:"requiredForCreate" binding:"oneof=shared none private"`
+	UniversityID          uint    `json:"university_id" form:"university_id" custom_binding:"requiredFor:create"`
+	Name                  *string `json:"name" form:"name" custom_binding:"requiredFor:create"`
+	Address               *string `json:"address" form:"address" custom_binding:"requiredFor:create"`
+	City                  *string `json:"city" form:"city" custom_binding:"requiredFor:create"`
+	State                 *string `json:"state" form:"state" custom_binding:"requiredFor:create"`
+	Country               *string `json:"country" form:"country" custom_binding:"requiredFor:create"`
+	Description           *string `json:"description" form:"description" custom_binding:"requiredFor:create"`
+	NumberOfUnits         *uint   `json:"number_of_units" form:"number_of_units" custom_binding:"requiredFor:create"`
+	NumberOfOccupiedUnits *uint   `json:"number_of_occupied_units" form:"number_of_occupied_units" custom_binding:"requiredFor:create"`
+	NumberOfBedrooms      *uint   `json:"number_of_bedrooms" form:"number_of_bedrooms" custom_binding:"requiredFor:create"`
+	NumberOfBathrooms     *uint   `json:"number_of_bathrooms" form:"number_of_bathrooms" custom_binding:"requiredFor:create"`
+	Kitchen               *string `json:"kitchen" form:"kitchen" custom_binding:"requiredFor:create" binding:"oneof=shared none private"`
 
-	FloorSpace *uint                   `json:"floor_space" form:"floor_space" custom_binding:"requiredForCreate"`
+	FloorSpace *uint                   `json:"floor_space" form:"floor_space" custom_binding:"requiredFor:create"`
 	HostelFee  HostelFeeSerializer     `json:"hostel_fee" form:"hostel_fee"` // binding:"required"`
 	Amenities  []AmmenitySerializer    `json:"amenities" form:"amenities"`   // binding:"required"`
 	Images     []*multipart.FileHeader `form:"images" binding:"max=10" swaggerignore:"true" validate:"ValidateImageExtension"`

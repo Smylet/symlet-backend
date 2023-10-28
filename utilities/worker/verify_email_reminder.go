@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"strconv"
 
 	"github.com/Smylet/symlet-backend/utilities/common"
 	"github.com/Smylet/symlet-backend/utilities/mail"
@@ -12,19 +11,16 @@ import (
 	"github.com/hibiken/asynq"
 )
 
-const TaskSendVerifyEmail = "task:send_verify_email"
+const TaskSendVerifyEmailReminder = "task:send_verify_email_reminder"
 
-type PayloadSendVerifyEmail struct {
-	UserName            string `json:"username"`
-	UserID              uint   `json:"user_id"`
-	SecretCode          uint   `json:"secret_code"`
-	VerificationEmailID uint   `json:"ver_email_id"`
-	Email               string `json:"email"`
+type PayloadSendVerifyEmailReminder struct {
+	UserName string `json:"username"`
+	Email    string `json:"email"`
 }
 
-func (distributor *RedisTaskDistributor) DistributeTaskSendVerifyEmail(
+func (distributor *RedisTaskDistributor) DistributeTaskSendVerifyEmailReminder(
 	ctx context.Context,
-	payload *PayloadSendVerifyEmail,
+	payload *PayloadSendVerifyEmailReminder,
 	opts ...asynq.Option,
 ) error {
 	logger := common.NewLogger()
@@ -35,7 +31,7 @@ func (distributor *RedisTaskDistributor) DistributeTaskSendVerifyEmail(
 		return fmt.Errorf("failed to marshal task payload: %w", err)
 	}
 
-	task := asynq.NewTask(TaskSendVerifyEmail, jsonPayload, opts...)
+	task := asynq.NewTask(TaskSendVerifyEmailReminder, jsonPayload, opts...)
 	info, err := distributor.client.EnqueueContext(ctx, task)
 	if err != nil {
 		logger.Error(err.Error())
@@ -46,35 +42,24 @@ func (distributor *RedisTaskDistributor) DistributeTaskSendVerifyEmail(
 	return nil
 }
 
-func (processor *RedisTaskProcessor) ProcessTaskSendVerifyEmail(ctx context.Context, task *asynq.Task) error {
+func (processor *RedisTaskProcessor) ProcessTaskSendVerifyEmailReminder(ctx context.Context, task *asynq.Task) error {
 	logger := common.NewLogger()
 
-	var payload PayloadSendVerifyEmail
+	var payload PayloadSendVerifyEmailReminder
 	if err := json.Unmarshal(task.Payload(), &payload); err != nil {
 		logger.Error(err.Error())
 		return fmt.Errorf("failed to unmarshal payload: %w", asynq.SkipRetry)
 	}
 
-	// Convert payload.SecretCode to a string
-	secretCodeStr := strconv.Itoa(int(payload.SecretCode))
-
-	// TODO: replace this URL with an environment variable that points to a front-end page - GET /users/confirm-email
-	verifyUrl := fmt.Sprintf("http://%s/users/confirm-email?user_id=%d&ver_email_id=%d&secret_code=%s",
-		processor.config.HTTPServerAddress,
-		payload.UserID,
-		payload.VerificationEmailID,
-		secretCodeStr)
-
 	data := mail.Data{
-		Subject:       "Welcome to Smylet!",
+		Subject:       "Complete Your Registration: Email Verification Pending",
 		To:            []string{payload.Email},
 		From:          processor.config.EmailSenderName,
 		Cc:            []string{},
 		Bcc:           []string{},
 		UserName:      payload.UserName,
-		Url:           verifyUrl,
-		EmailTemplate: templates.RegistrationTemplate,
-		TemplateName:  templates.Registration,
+		EmailTemplate: templates.EmailVerificationReminderTemplate,
+		TemplateName:  templates.EmailVerificationReminder,
 		Email:         payload.Email,
 	}
 
@@ -92,6 +77,6 @@ func (processor *RedisTaskProcessor) ProcessTaskSendVerifyEmail(ctx context.Cont
 		return fmt.Errorf("failed to send email: %w", errs[0])
 	}
 
-	logger.Printf(ctx, "sent verification email to %s", payload.Email)
+	logger.Printf(ctx, "sent verification reminder to %s", payload.Email)
 	return nil
 }

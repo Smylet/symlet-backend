@@ -149,10 +149,6 @@ func (server *Server) DeleteProfilePicture(c *gin.Context) {
 	})
 }
 
-func (server *Server) SearchUsers(c *gin.Context) {
-	// ...
-}
-
 func (server *Server) GetPrivacySettings(c *gin.Context) {
 	// ...
 }

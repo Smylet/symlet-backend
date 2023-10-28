@@ -1,6 +1,7 @@
 -- Create "sessions" table
 CREATE TABLE "sessions" (
   "id" text NOT NULL,
+  "user_id" bigint NULL,
   "user_name" text NULL,
   "refresh_token" text NULL,
   "user_agent" text NULL,
@@ -11,11 +12,11 @@ CREATE TABLE "sessions" (
 );
 -- Create "notifications" table
 CREATE TABLE "notifications" (
+  "uid" text NULL,
   "id" bigserial NOT NULL,
   "created_at" timestamptz NULL,
   "updated_at" timestamptz NULL,
   "deleted_at" timestamptz NULL,
-  "uid" text NULL,
   "user_id" bigint NULL,
   "content" text NULL,
   "is_read" boolean NULL DEFAULT false,
@@ -24,7 +25,7 @@ CREATE TABLE "notifications" (
   PRIMARY KEY ("id")
 );
 -- Create index "idx_notifications_deleted_at" to table: "notifications"
-CREATE INDEX "idx_notifications_deleted_at" ON "notifications" ("deleted_at", "deleted_at");
+CREATE INDEX "idx_notifications_deleted_at" ON "notifications" ("deleted_at");
 -- Create "verification_emails" table
 CREATE TABLE "verification_emails" (
   "id" bigserial NOT NULL,
@@ -36,22 +37,22 @@ CREATE TABLE "verification_emails" (
 );
 -- Create "hostel_managers" table
 CREATE TABLE "hostel_managers" (
+  "uid" text NULL,
   "id" bigserial NOT NULL,
   "created_at" timestamptz NULL,
   "updated_at" timestamptz NULL,
   "deleted_at" timestamptz NULL,
-  "uid" text NULL,
   PRIMARY KEY ("id")
 );
 -- Create index "idx_hostel_managers_deleted_at" to table: "hostel_managers"
-CREATE INDEX "idx_hostel_managers_deleted_at" ON "hostel_managers" ("deleted_at", "deleted_at");
+CREATE INDEX "idx_hostel_managers_deleted_at" ON "hostel_managers" ("deleted_at");
 -- Create "reference_universities" table
 CREATE TABLE "reference_universities" (
+  "uid" text NULL,
   "id" bigserial NOT NULL,
   "created_at" timestamptz NULL,
   "updated_at" timestamptz NULL,
   "deleted_at" timestamptz NULL,
-  "uid" text NULL,
   "name" text NULL,
   "slug" text NULL,
   "state" text NULL,
@@ -61,14 +62,14 @@ CREATE TABLE "reference_universities" (
   PRIMARY KEY ("id")
 );
 -- Create index "idx_reference_universities_deleted_at" to table: "reference_universities"
-CREATE INDEX "idx_reference_universities_deleted_at" ON "reference_universities" ("deleted_at", "deleted_at");
+CREATE INDEX "idx_reference_universities_deleted_at" ON "reference_universities" ("deleted_at");
 -- Create "hostels" table
 CREATE TABLE "hostels" (
+  "uid" text NULL,
   "id" bigserial NOT NULL,
   "created_at" timestamptz NULL,
   "updated_at" timestamptz NULL,
   "deleted_at" timestamptz NULL,
-  "uid" text NULL,
   "name" text NOT NULL,
   "university_id" bigint NOT NULL,
   "address" text NOT NULL,
@@ -88,20 +89,20 @@ CREATE TABLE "hostels" (
   CONSTRAINT "fk_hostels_university" FOREIGN KEY ("university_id") REFERENCES "reference_universities" ("id") ON UPDATE CASCADE ON DELETE SET NULL
 );
 -- Create index "idx_hostels_deleted_at" to table: "hostels"
-CREATE INDEX "idx_hostels_deleted_at" ON "hostels" ("deleted_at", "deleted_at");
+CREATE INDEX "idx_hostels_deleted_at" ON "hostels" ("deleted_at");
 -- Create "reference_hostel_amenities" table
 CREATE TABLE "reference_hostel_amenities" (
+  "uid" text NULL,
   "id" bigserial NOT NULL,
   "created_at" timestamptz NULL,
   "updated_at" timestamptz NULL,
   "deleted_at" timestamptz NULL,
-  "uid" text NULL,
   "name" text NULL,
   "description" text NULL,
   PRIMARY KEY ("id")
 );
 -- Create index "idx_reference_hostel_amenities_deleted_at" to table: "reference_hostel_amenities"
-CREATE INDEX "idx_reference_hostel_amenities_deleted_at" ON "reference_hostel_amenities" ("deleted_at", "deleted_at");
+CREATE INDEX "idx_reference_hostel_amenities_deleted_at" ON "reference_hostel_amenities" ("deleted_at");
 -- Create "hostel_ammenities" table
 CREATE TABLE "hostel_ammenities" (
   "hostel_id" bigint NOT NULL,
@@ -112,11 +113,11 @@ CREATE TABLE "hostel_ammenities" (
 );
 -- Create "students" table
 CREATE TABLE "students" (
+  "uid" text NULL,
   "id" bigserial NOT NULL,
   "created_at" timestamptz NULL,
   "updated_at" timestamptz NULL,
   "deleted_at" timestamptz NULL,
-  "uid" text NULL,
   "university_id" bigint NOT NULL,
   "department" text NOT NULL,
   "year_of_entry" timestamptz NULL,
@@ -126,14 +127,14 @@ CREATE TABLE "students" (
   CONSTRAINT "fk_students_university" FOREIGN KEY ("university_id") REFERENCES "reference_universities" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 -- Create index "idx_students_deleted_at" to table: "students"
-CREATE INDEX "idx_students_deleted_at" ON "students" ("deleted_at", "deleted_at");
+CREATE INDEX "idx_students_deleted_at" ON "students" ("deleted_at");
 -- Create "hostel_bookings" table
 CREATE TABLE "hostel_bookings" (
+  "uid" text NULL,
   "id" bigserial NOT NULL,
   "created_at" timestamptz NULL,
   "updated_at" timestamptz NULL,
   "deleted_at" timestamptz NULL,
-  "uid" text NULL,
   "student_id" bigint NOT NULL,
   "hostel_id" bigint NOT NULL,
   PRIMARY KEY ("id"),
@@ -141,14 +142,14 @@ CREATE TABLE "hostel_bookings" (
   CONSTRAINT "fk_hostel_bookings_student" FOREIGN KEY ("student_id") REFERENCES "students" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 -- Create index "idx_hostel_bookings_deleted_at" to table: "hostel_bookings"
-CREATE INDEX "idx_hostel_bookings_deleted_at" ON "hostel_bookings" ("deleted_at", "deleted_at");
+CREATE INDEX "idx_hostel_bookings_deleted_at" ON "hostel_bookings" ("deleted_at");
 -- Create "hostel_fees" table
 CREATE TABLE "hostel_fees" (
+  "uid" text NULL,
   "id" bigserial NOT NULL,
   "created_at" timestamptz NULL,
   "updated_at" timestamptz NULL,
   "deleted_at" timestamptz NULL,
-  "uid" text NULL,
   "hostel_id" bigint NULL,
   "total_amount" numeric NULL,
   "payment_plan" text NULL,
@@ -157,28 +158,28 @@ CREATE TABLE "hostel_fees" (
   CONSTRAINT "fk_hostels_hostel_fee" FOREIGN KEY ("hostel_id") REFERENCES "hostels" ("id") ON UPDATE CASCADE ON DELETE CASCADE
 );
 -- Create index "idx_hostel_fees_deleted_at" to table: "hostel_fees"
-CREATE INDEX "idx_hostel_fees_deleted_at" ON "hostel_fees" ("deleted_at", "deleted_at");
+CREATE INDEX "idx_hostel_fees_deleted_at" ON "hostel_fees" ("deleted_at");
 -- Create "hostel_images" table
 CREATE TABLE "hostel_images" (
+  "uid" text NULL,
   "id" bigserial NOT NULL,
   "created_at" timestamptz NULL,
   "updated_at" timestamptz NULL,
   "deleted_at" timestamptz NULL,
-  "uid" text NULL,
   "image_url" text NOT NULL,
   "hostel_id" bigint NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_hostels_hostel_images" FOREIGN KEY ("hostel_id") REFERENCES "hostels" ("id") ON UPDATE CASCADE ON DELETE CASCADE
 );
 -- Create index "idx_hostel_images_deleted_at" to table: "hostel_images"
-CREATE INDEX "idx_hostel_images_deleted_at" ON "hostel_images" ("deleted_at", "deleted_at");
+CREATE INDEX "idx_hostel_images_deleted_at" ON "hostel_images" ("deleted_at");
 -- Create "users" table
 CREATE TABLE "users" (
+  "uid" text NULL,
   "id" bigserial NOT NULL,
   "created_at" timestamptz NULL,
   "updated_at" timestamptz NULL,
   "deleted_at" timestamptz NULL,
-  "uid" text NULL,
   "user_name" text NOT NULL,
   "email" text NOT NULL,
   "password" text NULL,
@@ -186,21 +187,28 @@ CREATE TABLE "users" (
   "role_id" bigint NULL,
   "role_type" text NULL,
   "profile_id" bigint NULL,
+  "reset_password_token" text NULL,
+  "reset_password_expires_at" timestamptz NULL,
+  "email_reminder_count" bigint NULL,
+  "is_two_fa_enabled" boolean NULL DEFAULT false,
+  "two_fa_secret" bigint NULL,
+  "preferences" text NULL,
+  "past_searches" json NULL,
   PRIMARY KEY ("id")
 );
 -- Create index "idx_users_deleted_at" to table: "users"
-CREATE INDEX "idx_users_deleted_at" ON "users" ("deleted_at", "deleted_at");
+CREATE INDEX "idx_users_deleted_at" ON "users" ("deleted_at");
 -- Create index "users_email_key" to table: "users"
 CREATE UNIQUE INDEX "users_email_key" ON "users" ("email");
 -- Create index "users_user_name_key" to table: "users"
 CREATE UNIQUE INDEX "users_user_name_key" ON "users" ("user_name");
 -- Create "hostel_maintenance_requests" table
 CREATE TABLE "hostel_maintenance_requests" (
+  "uid" text NULL,
   "id" bigserial NOT NULL,
   "created_at" timestamptz NULL,
   "updated_at" timestamptz NULL,
   "deleted_at" timestamptz NULL,
-  "uid" text NULL,
   "hostel_id" bigint NOT NULL,
   "student_id" bigint NOT NULL,
   "resolved_by_id" integer NULL,
@@ -215,28 +223,28 @@ CREATE TABLE "hostel_maintenance_requests" (
   CONSTRAINT "fk_hostel_maintenance_requests_student" FOREIGN KEY ("student_id") REFERENCES "students" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 -- Create index "idx_hostel_maintenance_requests_deleted_at" to table: "hostel_maintenance_requests"
-CREATE INDEX "idx_hostel_maintenance_requests_deleted_at" ON "hostel_maintenance_requests" ("deleted_at", "deleted_at");
+CREATE INDEX "idx_hostel_maintenance_requests_deleted_at" ON "hostel_maintenance_requests" ("deleted_at");
 -- Create "hostel_maintenance_request_images" table
 CREATE TABLE "hostel_maintenance_request_images" (
+  "uid" text NULL,
   "id" bigserial NOT NULL,
   "created_at" timestamptz NULL,
   "updated_at" timestamptz NULL,
   "deleted_at" timestamptz NULL,
-  "uid" text NULL,
   "image_url" text NOT NULL,
   "hostel_maintenance_request_id" bigint NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_hostel_maintenance_requests_request_images" FOREIGN KEY ("hostel_maintenance_request_id") REFERENCES "hostel_maintenance_requests" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 -- Create index "idx_hostel_maintenance_request_images_deleted_at" to table: "hostel_maintenance_request_images"
-CREATE INDEX "idx_hostel_maintenance_request_images_deleted_at" ON "hostel_maintenance_request_images" ("deleted_at", "deleted_at");
+CREATE INDEX "idx_hostel_maintenance_request_images_deleted_at" ON "hostel_maintenance_request_images" ("deleted_at");
 -- Create "hostel_manager_reviews" table
 CREATE TABLE "hostel_manager_reviews" (
+  "uid" text NULL,
   "id" bigserial NOT NULL,
   "created_at" timestamptz NULL,
   "updated_at" timestamptz NULL,
   "deleted_at" timestamptz NULL,
-  "uid" text NULL,
   "reviewer_id" bigint NOT NULL,
   "manager_id" bigint NOT NULL,
   "rating" numeric NULL DEFAULT 0,
@@ -256,14 +264,14 @@ CREATE TABLE "hostel_manager_reviews" (
   CONSTRAINT "chk_hostel_manager_reviews_responsiveness_rating" CHECK ((responsiveness_rating >= (1)::numeric) AND (responsiveness_rating <= (5)::numeric))
 );
 -- Create index "idx_hostel_manager_reviews_deleted_at" to table: "hostel_manager_reviews"
-CREATE INDEX "idx_hostel_manager_reviews_deleted_at" ON "hostel_manager_reviews" ("deleted_at", "deleted_at");
+CREATE INDEX "idx_hostel_manager_reviews_deleted_at" ON "hostel_manager_reviews" ("deleted_at");
 -- Create "hostel_reviews" table
 CREATE TABLE "hostel_reviews" (
+  "uid" text NULL,
   "id" bigserial NOT NULL,
   "created_at" timestamptz NULL,
   "updated_at" timestamptz NULL,
   "deleted_at" timestamptz NULL,
-  "uid" text NULL,
   "hostel_id" bigint NOT NULL,
   "reviewer_id" bigint NOT NULL,
   "rating" numeric NULL,
@@ -293,27 +301,27 @@ CREATE TABLE "hostel_reviews" (
   CONSTRAINT "chk_hostel_reviews_water_rating" CHECK ((water_rating >= (1)::numeric) AND (water_rating <= (5)::numeric))
 );
 -- Create index "idx_hostel_reviews_deleted_at" to table: "hostel_reviews"
-CREATE INDEX "idx_hostel_reviews_deleted_at" ON "hostel_reviews" ("deleted_at", "deleted_at");
+CREATE INDEX "idx_hostel_reviews_deleted_at" ON "hostel_reviews" ("deleted_at");
 -- Create "hostel_agreement_templates" table
 CREATE TABLE "hostel_agreement_templates" (
+  "uid" text NULL,
   "id" bigserial NOT NULL,
   "created_at" timestamptz NULL,
   "updated_at" timestamptz NULL,
   "deleted_at" timestamptz NULL,
-  "uid" text NULL,
   "hostel_id" bigint NOT NULL,
   "document_url" text NOT NULL,
   PRIMARY KEY ("id")
 );
 -- Create index "idx_hostel_agreement_templates_deleted_at" to table: "hostel_agreement_templates"
-CREATE INDEX "idx_hostel_agreement_templates_deleted_at" ON "hostel_agreement_templates" ("deleted_at", "deleted_at");
+CREATE INDEX "idx_hostel_agreement_templates_deleted_at" ON "hostel_agreement_templates" ("deleted_at");
 -- Create "hostel_students" table
 CREATE TABLE "hostel_students" (
+  "uid" text NULL,
   "id" bigserial NOT NULL,
   "created_at" timestamptz NULL,
   "updated_at" timestamptz NULL,
   "deleted_at" timestamptz NULL,
-  "uid" text NULL,
   "student_id" bigint NOT NULL,
   "hostel_id" bigint NOT NULL,
   "check_in_date" timestamptz NULL,
@@ -333,14 +341,14 @@ CREATE TABLE "hostel_students" (
   CONSTRAINT "fk_hostel_students_hostel_booking" FOREIGN KEY ("hostel_booking_id") REFERENCES "hostel_bookings" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
 );
 -- Create index "idx_hostel_students_deleted_at" to table: "hostel_students"
-CREATE INDEX "idx_hostel_students_deleted_at" ON "hostel_students" ("deleted_at", "deleted_at");
+CREATE INDEX "idx_hostel_students_deleted_at" ON "hostel_students" ("deleted_at");
 -- Create "payment_plans" table
 CREATE TABLE "payment_plans" (
+  "uid" text NULL,
   "id" bigserial NOT NULL,
   "created_at" timestamptz NULL,
   "updated_at" timestamptz NULL,
   "deleted_at" timestamptz NULL,
-  "uid" text NULL,
   "amount" numeric NOT NULL,
   "hostel_booking_id" bigint NOT NULL,
   "payment_type" text NOT NULL DEFAULT 'all',
@@ -354,14 +362,14 @@ CREATE TABLE "payment_plans" (
   CONSTRAINT "chk_payment_plans_payment_type" CHECK (payment_type = ANY (ARRAY['all'::text, 'spread'::text, 'stay'::text, 'deferred'::text]))
 );
 -- Create index "idx_payment_plans_deleted_at" to table: "payment_plans"
-CREATE INDEX "idx_payment_plans_deleted_at" ON "payment_plans" ("deleted_at", "deleted_at");
+CREATE INDEX "idx_payment_plans_deleted_at" ON "payment_plans" ("deleted_at");
 -- Create "payment_distributions" table
 CREATE TABLE "payment_distributions" (
+  "uid" text NULL,
   "id" bigserial NOT NULL,
   "created_at" timestamptz NULL,
   "updated_at" timestamptz NULL,
   "deleted_at" timestamptz NULL,
-  "uid" text NULL,
   "payment_plan_id" bigint NOT NULL,
   "date" timestamptz NOT NULL,
   "amount" numeric NOT NULL,
@@ -369,14 +377,14 @@ CREATE TABLE "payment_distributions" (
   CONSTRAINT "fk_payment_plans_payment_distributions" FOREIGN KEY ("payment_plan_id") REFERENCES "payment_plans" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 -- Create index "idx_payment_distributions_deleted_at" to table: "payment_distributions"
-CREATE INDEX "idx_payment_distributions_deleted_at" ON "payment_distributions" ("deleted_at", "deleted_at");
+CREATE INDEX "idx_payment_distributions_deleted_at" ON "payment_distributions" ("deleted_at");
 -- Create "profiles" table
 CREATE TABLE "profiles" (
+  "uid" text NULL,
   "id" bigserial NOT NULL,
   "created_at" timestamptz NULL,
   "updated_at" timestamptz NULL,
   "deleted_at" timestamptz NULL,
-  "uid" text NULL,
   "user_id" bigint NULL,
   "bio" text NULL,
   "image" text NULL,
@@ -386,14 +394,14 @@ CREATE TABLE "profiles" (
   CONSTRAINT "fk_users_profile" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 -- Create index "idx_profiles_deleted_at" to table: "profiles"
-CREATE INDEX "idx_profiles_deleted_at" ON "profiles" ("deleted_at", "deleted_at");
+CREATE INDEX "idx_profiles_deleted_at" ON "profiles" ("deleted_at");
 -- Create "vendors" table
 CREATE TABLE "vendors" (
+  "uid" text NULL,
   "id" bigserial NOT NULL,
   "created_at" timestamptz NULL,
   "updated_at" timestamptz NULL,
   "deleted_at" timestamptz NULL,
-  "uid" text NULL,
   "company_name" text NOT NULL,
   "address" text NOT NULL,
   "email" text NOT NULL,
@@ -407,14 +415,14 @@ CREATE TABLE "vendors" (
   PRIMARY KEY ("id")
 );
 -- Create index "idx_vendors_deleted_at" to table: "vendors"
-CREATE INDEX "idx_vendors_deleted_at" ON "vendors" ("deleted_at", "deleted_at");
+CREATE INDEX "idx_vendors_deleted_at" ON "vendors" ("deleted_at");
 -- Create "vendor_reviews" table
 CREATE TABLE "vendor_reviews" (
+  "uid" text NULL,
   "id" bigserial NOT NULL,
   "created_at" timestamptz NULL,
   "updated_at" timestamptz NULL,
   "deleted_at" timestamptz NULL,
-  "uid" text NULL,
   "vendor_id" bigint NOT NULL,
   "reviewer_id" bigint NOT NULL,
   "rating" numeric NULL DEFAULT 0,
@@ -458,14 +466,14 @@ CREATE TABLE "vendor_reviews" (
   CONSTRAINT "chk_vendor_reviews_timeliness" CHECK ((timeliness >= (1)::numeric) AND (timeliness <= (5)::numeric))
 );
 -- Create index "idx_vendor_reviews_deleted_at" to table: "vendor_reviews"
-CREATE INDEX "idx_vendor_reviews_deleted_at" ON "vendor_reviews" ("deleted_at", "deleted_at");
+CREATE INDEX "idx_vendor_reviews_deleted_at" ON "vendor_reviews" ("deleted_at");
 -- Create "work_orders" table
 CREATE TABLE "work_orders" (
+  "uid" text NULL,
   "id" bigserial NOT NULL,
   "created_at" timestamptz NULL,
   "updated_at" timestamptz NULL,
   "deleted_at" timestamptz NULL,
-  "uid" text NULL,
   "hostel_maintenance_request_id" bigint NULL,
   "vendor_id" bigint NULL,
   "description" character varying(1023) NULL,
@@ -477,14 +485,14 @@ CREATE TABLE "work_orders" (
   CONSTRAINT "fk_work_orders_vendor" FOREIGN KEY ("vendor_id") REFERENCES "users" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 -- Create index "idx_work_orders_deleted_at" to table: "work_orders"
-CREATE INDEX "idx_work_orders_deleted_at" ON "work_orders" ("deleted_at", "deleted_at");
+CREATE INDEX "idx_work_orders_deleted_at" ON "work_orders" ("deleted_at");
 -- Create "work_order_comments" table
 CREATE TABLE "work_order_comments" (
+  "uid" text NULL,
   "id" bigserial NOT NULL,
   "created_at" timestamptz NULL,
   "updated_at" timestamptz NULL,
   "deleted_at" timestamptz NULL,
-  "uid" text NULL,
   "work_order_id" bigint NULL,
   "comment" character varying(1023) NULL,
   "commented_by" bigint NULL,
@@ -493,18 +501,18 @@ CREATE TABLE "work_order_comments" (
   CONSTRAINT "fk_work_orders_comments" FOREIGN KEY ("work_order_id") REFERENCES "work_orders" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 -- Create index "idx_work_order_comments_deleted_at" to table: "work_order_comments"
-CREATE INDEX "idx_work_order_comments_deleted_at" ON "work_order_comments" ("deleted_at", "deleted_at");
+CREATE INDEX "idx_work_order_comments_deleted_at" ON "work_order_comments" ("deleted_at");
 -- Create "work_order_images" table
 CREATE TABLE "work_order_images" (
+  "uid" text NULL,
   "id" bigserial NOT NULL,
   "created_at" timestamptz NULL,
   "updated_at" timestamptz NULL,
   "deleted_at" timestamptz NULL,
-  "uid" text NULL,
   "image_url" text NOT NULL,
   "work_order_id" bigint NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_work_orders_work_order_images" FOREIGN KEY ("work_order_id") REFERENCES "work_orders" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 -- Create index "idx_work_order_images_deleted_at" to table: "work_order_images"
-CREATE INDEX "idx_work_order_images_deleted_at" ON "work_order_images" ("deleted_at", "deleted_at");
+CREATE INDEX "idx_work_order_images_deleted_at" ON "work_order_images" ("deleted_at");
