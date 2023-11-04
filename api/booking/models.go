@@ -42,6 +42,8 @@ type HostelBooking struct {
 	Student      student.Student
 	HostelID     uint `gorm:"not null"`
 	Hostel       hostel.Hostel
+	PartStay     bool `gorm:"default:false"`
+	NumberOfMonths int `gorm:"default:12"`
 	PaymentPlans []PaymentPlan `gorm:"foreignKey:HostelBookingID;constraint:OnDelete:CASCADE"`
 }
 
@@ -50,11 +52,14 @@ type PaymentPlan struct {
 	Amount               float64 `gorm:"not null"`
 	HostelBookingID      uint    `gorm:"not null"`
 	HostelBooking        HostelBooking
-	PaymentType          string         `gorm:"not null;default:'all';check:payment_type IN ('all', 'spread', 'stay', 'deferred')"`
+	// allowed values: all, spread, stay, deferred
+	// all: pay all at once
+	// spread: spread the payment across multiple months
+	// deferred: pay at a later date
+	PaymentType          string         `gorm:"not null;default:'all';check:payment_type IN ('all', 'spread', 'deferred')"`
 	PaymentInterval      sql.NullString `gorm:"check:payment_interval IN ('equal', 'unequal')"` // not needed if ALL
 	IntervalDuration     sql.NullInt32  // `gorm:"check:interval_duration LESS"` // Only for 'equal' distribution
 	DeferredDate         sql.NullTime   // Only for 'deferred' payment
-	NumberOfMonths       sql.NullInt32  // Only for 'stay' payment
 	PaymentDistributions []PaymentDistribution
 }
 
